@@ -106,7 +106,7 @@
 
     /* Students and role popup (names at the bottom, popup directly below the tapped name) */
     .students-footer-bar { margin-top: auto; background: #131b2e; border: 2px solid #22304f; border-radius: 12px; padding: 0.7rem 1rem; display: flex; justify-content: center; align-items: flex-start; gap: 0.9rem; flex-wrap: wrap; min-height: 4.5rem; flex-shrink: 0; }
-    .popup-zone { flex: none; height: 9rem; }
+    .popup-zone { flex: none; height: 10rem; }
     .student-pill-wrapper { position: relative; display: inline-block; }
     .student-pill { background: #1f293d; border: 2px solid #3b4d71; color: #cfd8dc; padding: 0.55rem 1.2rem; border-radius: 25px; font-size: 1.25rem; font-weight: bold; letter-spacing: 0.5px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); cursor: pointer; transition: all 0.2s ease; text-align: center; }
     .student-pill:hover { border-color: #00ffcc; transform: translateY(-2px); }
@@ -237,12 +237,53 @@
     .repair-result { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 5rem; font-weight: 900; letter-spacing: 4px; z-index: 5; }
     .repair-result.good { background: rgba(10,60,30,0.94); color: #55efc4; }
     .repair-result.bad { background: rgba(90,0,10,0.94); color: #ff7675; }
+    /* Popup with buttons (later opens): bigger, with the buttons spread apart for a finger on a phone */
+    .student-popup-card.big { width: 30rem; padding: 0.8rem 1rem 1rem; }
+    .student-popup-card.big h3 { font-size: 1.1rem; }
+    .student-popup-card.big .official { font-size: 1.15rem; }
+    .student-popup-card.big .status-line { font-size: 0.9rem; }
+    .student-popup-card.big .popup-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem; }
+    .student-popup-card.big .popup-buttons button { font-size: 1.2rem; padding: 0.85rem 0.5rem; border-radius: 10px; }
+    .student-popup-card.big .popup-buttons button:only-child { grid-column: 1 / -1; }
+    .popup-bar { height: 5px; background: #00ffcc; border-radius: 3px; margin-top: 0.4rem; transform-origin: left center; animation: popupBar 5s linear forwards; }
+    @keyframes popupBar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+    /* Crew scan (Assign roles) */
+    .scan-list { display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center; max-width: 70rem; }
+    .scan-chip { position: relative; padding: 0.6rem 1.4rem; border: 3px solid #3b4d71; border-radius: 12px; font-size: 1.6rem; font-weight: 700; color: #8a90a0; min-width: 9rem; overflow: hidden; text-align: center; }
+    .scan-chip.scanning { border-color: #00ffcc; color: #fff; }
+    .scan-chip.scanning::after { content: ''; position: absolute; left: -30%; top: 0; bottom: 0; width: 30%; background: linear-gradient(90deg, transparent, rgba(0,255,204,0.6), transparent); animation: scanSweep 0.45s linear; }
+    @keyframes scanSweep { to { left: 110%; } }
+    .scan-chip.scanned { border-color: #55efc4; color: #fff; }
+    .scan-stamp { display: block; font-size: 0.8rem; color: #55efc4; min-height: 1rem; }
+    .assign-big.glitch { animation: glitchText 0.12s steps(2, end) 14; }
+    @keyframes glitchText { 0% { transform: translate(0, 0) skewX(0); text-shadow: 3px 0 #0ff, -3px 0 #f0f; } 50% { transform: translate(-6px, 2px) skewX(-8deg); text-shadow: -4px 0 #0ff, 4px 0 #f0f; } 100% { transform: translate(5px, -2px) skewX(6deg); text-shadow: 2px 0 #0ff, -2px 0 #f0f; } }
+    .filerow { display: flex; gap: 0.5rem; align-items: center; }
+    .filerow input[type="text"] { flex: 1; }
+
+    /* Rocket fire */
+    .rocket-flame { position: absolute; left: calc(100% - 1rem); top: 50%; width: 18rem; height: 5.2rem; margin-top: -2.6rem; transform-origin: left center; transform: scaleX(0); opacity: 0; pointer-events: none; z-index: -1; }
+    .rocket-container.firing .rocket-flame { opacity: 1; animation: flameGrow var(--grow, 1.2s) ease-out forwards; }
+    @keyframes flameGrow { from { transform: scaleX(0.12); } to { transform: scaleX(1.25); } }
+    .flame-core { position: absolute; inset: 0; border-radius: 0 60% 60% 0 / 0 50% 50% 0; background: radial-gradient(ellipse at left center, #ffffff 0%, #b9f2ff 14%, #4ac3ff 34%, rgba(255,150,40,0.85) 62%, rgba(255,60,0,0) 100%); filter: blur(1.5px) drop-shadow(0 0 14px #5cf); transform-origin: left center; animation: flameFlicker 0.12s infinite alternate ease-in-out; }
+    @keyframes flameFlicker { from { transform: scaleY(0.88) scaleX(0.95); } to { transform: scaleY(1.08) scaleX(1.04); } }
+    .rocket-container.fire-g1 .flame-core { background: radial-gradient(ellipse at left center, #fff7d6 0%, #ffd36b 22%, #ff8a1f 48%, rgba(255,60,0,0.85) 72%, rgba(255,60,0,0) 100%); filter: blur(1.5px) drop-shadow(0 0 14px #ff9a2e); animation-duration: 0.07s; }
+    .rocket-container.fire-g2 .flame-core { background: radial-gradient(ellipse at left center, #ffe9b0 0%, #ff9d2e 26%, #ff4a0f 55%, rgba(120,20,0,0.8) 80%, rgba(80,0,0,0) 100%); filter: blur(2px) drop-shadow(0 0 16px #ff5a1f); animation: flameSputter 0.28s steps(1, end) infinite; }
+    .rocket-container.fire-g3 .flame-core { background: radial-gradient(ellipse at left center, #ffd9a0 0%, #ff6a1a 30%, #c01800 60%, rgba(60,0,0,0.8) 82%, rgba(40,0,0,0) 100%); filter: blur(2px) drop-shadow(0 0 18px #ff2200); animation: flameCut 1.1s steps(1, end) infinite; }
+    @keyframes flameSputter { 0% { opacity: 1; transform: scaleY(1) scaleX(1); } 25% { opacity: 0.35; transform: scaleY(0.7) scaleX(0.6); } 50% { opacity: 1; transform: scaleY(1.1) scaleX(1.05); } 75% { opacity: 0.5; transform: scaleY(0.8) scaleX(0.75); } }
+    @keyframes flameCut { 0% { opacity: 1; transform: scaleX(1); } 30% { opacity: 0.15; transform: scaleX(0.2); } 52% { opacity: 0; transform: scaleX(0); } 62% { opacity: 1; transform: scaleX(1.1); } 82% { opacity: 0.4; transform: scaleX(0.5); } }
+    #fx-layer { position: fixed; inset: 0; pointer-events: none; z-index: 3050; overflow: hidden; }
+    .smoke { position: absolute; border-radius: 50%; background: rgba(205,205,212,0.55); filter: blur(7px); animation: smokeDrift 1.7s ease-out forwards; }
+    .smoke.dark { background: rgba(70,70,78,0.7); }
+    @keyframes smokeDrift { from { transform: translate(0, 0) scale(0.4); opacity: 0.75; } to { transform: translate(var(--dx), var(--dy)) scale(2.6); opacity: 0; } }
+    .spark { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: #ffb43a; box-shadow: 0 0 8px #ff7a00; animation: sparkFly 0.9s ease-out forwards; }
+    @keyframes sparkFly { from { transform: translate(0, 0); opacity: 1; } to { transform: translate(var(--dx), var(--dy)); opacity: 0; } }
 </style>
 </head>
 <body>
 
 <div class="meltdown-flash"></div>
-<div id="youtube-audio-container" style="display:none;"></div>
+<div id="fx-layer"></div>
 
 <div class="explosion-overlay" id="explosion-overlay">
     <div class="explosion-flash-core"></div>
@@ -264,6 +305,7 @@
             <button class="btn btn-assign" id="btn-assign">🎲 Assign roles</button>
             <button class="btn btn-test" id="btn-test">⚡ Test All Green</button>
             <button class="btn btn-rules" id="btn-rules">📜 Rules</button>
+            <button class="btn" id="btn-video">🚀 Video</button>
             <button class="btn" id="btn-settings">⚙ Settings</button>
             <button class="btn btn-emergency" id="btn-meeting">🚨 Emergency Meeting (<span id="meeting-count">0</span>)</button>
         </div>
@@ -285,6 +327,7 @@
                 <div class="rocket-exhaust-nozzle"><div class="plasma-core" id="plasma-core"></div></div>
             </div>
         </div>
+        <div class="rocket-flame"><div class="flame-core"></div></div>
     </div>
 
     <div class="students-footer-bar" id="students-bar"></div>
@@ -323,14 +366,15 @@
             <div class="form-group"><label for="setting-impostor-count">Number of impostors (1 or 2)</label><input type="number" id="setting-impostor-count" min="1" max="2"></div>
             <div class="form-group"><label>Cannot be the impostor</label><div class="noimp-list" id="noimp-list"></div></div>
             <div class="form-group"><label for="setting-weight">Chance of a student who has not been picked yet (times)</label><input type="number" id="setting-weight" min="1" max="10"></div>
-            <div class="form-group"><label for="setting-takeoff-sound">Take-off YouTube video URL</label><input type="text" id="setting-takeoff-sound"></div>
-            <div class="form-group"><label for="setting-damage-sound">Meltdown sound URL (blank for the built-in sound)</label><input type="text" id="setting-damage-sound" placeholder="https://example.com/damage.mp3"></div>
+            <div class="form-group"><label for="setting-takeoff-sound">Take-off sound file (in the same folder as this game; blank for the built-in sound)</label><div class="filerow"><input type="text" id="setting-takeoff-sound" placeholder="takeoff.mp3"><button class="btn" id="pick-takeoff" type="button">Choose file</button></div><input type="file" accept="audio/*" id="file-takeoff" hidden></div>
+            <div class="form-group"><label for="setting-damage-sound">Meltdown sound file (in the same folder as this game; blank for the built-in sound)</label><div class="filerow"><input type="text" id="setting-damage-sound" placeholder="meltdown.mp3"><button class="btn" id="pick-damage" type="button">Choose file</button></div><input type="file" accept="audio/*" id="file-damage" hidden></div>
         </div>
         <div class="settings-col">
             <div class="form-group checkbox-group"><input type="checkbox" id="setting-sabotage-enabled"><label for="setting-sabotage-enabled">Enable sabotage</label></div>
             <div class="form-group"><label for="setting-sabotage-delay">Sabotage delay after the floor is finished (seconds)</label><input type="number" id="setting-sabotage-delay" min="0"></div>
             <div class="form-group"><label for="setting-delegates">Repair game delegates</label><select id="setting-delegates"><option value="nominate">The class nominates two students</option><option value="random">The game draws two students at random</option></select></div>
             <div class="form-group"><label for="setting-window">Repair game: both taps within (milliseconds)</label><input type="number" id="setting-window" min="200" max="2000" step="100"></div>
+            <div class="form-group"><label for="setting-video">Rocket video address (the 🚀 Video button opens it)</label><input type="text" id="setting-video"></div>
             <div class="form-group"><label>Who is the impostor? (press and hold)</label>
                 <button class="btn" id="btn-reveal" style="width:100%; justify-content:center;">👁 Hold to show</button>
                 <div class="reveal-box" id="reveal-box"></div></div>
@@ -338,7 +382,7 @@
             <button class="btn" id="btn-undo" style="align-self:flex-start;">↩ Undo</button>
         </div>
         <div class="settings-col">
-            <div class="form-group grow"><label for="setting-config">Exercises (JSON): page, exercise, questions and time in seconds</label><textarea id="setting-config"></textarea></div>
+            <div class="form-group grow"><label for="setting-config">Exercises (JSON): page, exercise, questions and time in seconds</label><div style="display:flex; gap:0.6rem; align-items:center; margin-bottom:0.3rem;"><button class="btn" id="btn-copy-format" type="button">📋 Copy format</button><span id="copy-format-msg" style="font-size:0.8rem; color:#55efc4;"></span></div><textarea id="setting-config"></textarea></div>
             <div class="form-group grow"><label for="setting-pairs">Repair game words, one pair per line like "cat = hat" (a word alone is an extra decoy)</label><textarea id="setting-pairs"></textarea></div>
         </div>
     </div>
@@ -369,6 +413,7 @@
 <!-- Assign roles animation -->
 <div class="fullscreen-overlay assign-overlay" id="assign-overlay">
     <h2 id="assign-title">Assigning roles…</h2>
+    <div class="scan-list" id="scan-list"></div>
     <p id="assign-sub"></p>
     <div class="assign-big" id="assign-big"></div>
 </div>
@@ -385,7 +430,6 @@
     <p class="kill" id="warning-kill">KILL KILL KILL</p>
 </div>
 
-<script src="https://www.youtube.com/iframe_api"></script>
 <script>
 (function () {
     'use strict';
@@ -405,8 +449,9 @@
         students: ['Alex', 'Maria', 'Liam', 'Sofia', 'Noah', 'Emma'],
         impostorCount: 1,
         noImpostor: [],
-        takeoffSoundUrl: 'https://www.youtube.com/watch?v=Vfn_u768UoQ',
-        damageSoundUrl: '',
+        takeoffSound: '',
+        damageSound: '',
+        videoUrl: 'https://www.youtube.com/watch?v=Vfn_u768UoQ',
         sabotageEnabled: true,
         sabotageDelay: 20,
         unpickedWeight: 3,
@@ -515,18 +560,10 @@
     function save() { lsSet(LS_STATE, state); saveDirty = false; }
 
     /* ---------- Audio ---------- */
-    var audioCtx = null, ytPlayer = null;
+    var audioCtx = null;
     function ensureAudio() {
         try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) { audioCtx = null; }
         return audioCtx;
-    }
-    window.onYouTubeIframeAPIReady = function () {
-        try { ytPlayer = new YT.Player('youtube-audio-container', { height: '0', width: '0', videoId: extractYouTubeId(config.takeoffSoundUrl) || 'Vfn_u768UoQ', playerVars: { autoplay: 0, controls: 0 } }); } catch (e) { ytPlayer = null; }
-    };
-    function extractYouTubeId(url) {
-        if (!url) return null;
-        var m = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/);
-        return (m && m[2].length === 11) ? m[2] : (url.length === 11 ? url : null);
     }
     function tone(type, f0, f1, dur, vol) {
         var ctx = ensureAudio(); if (!ctx) return;
@@ -550,17 +587,14 @@
         var g = ctx.createGain(); g.gain.setValueAtTime(vol, now); g.gain.exponentialRampToValueAtTime(0.001, now + seconds);
         src.connect(filter); filter.connect(g); g.connect(ctx.destination); src.start(now); src.stop(now + seconds);
     }
-    function playMeltdownSound() {
-        if (config.damageSoundUrl && config.damageSoundUrl.trim()) { try { new Audio(config.damageSoundUrl).play().catch(function () {}); return; } catch (e) { /* fall through */ } }
-        noiseBurst(3.5, 500, 40, 0.7);
+    // A sound file chosen in Settings is played from the folder of this game; the built-in sound plays when it is blank or missing
+    function playFile(name, fallback) {
+        if (name && String(name).trim()) { try { var a = new Audio(String(name).trim()); var pr = a.play(); if (pr && pr.catch) pr.catch(function () { fallback(); }); return; } catch (e) { /* use the built-in sound */ } }
+        fallback();
     }
-    function playTakeoffAudio() {
-        var ok = false;
-        if (config.takeoffSoundUrl && config.takeoffSoundUrl.trim() && ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
-            try { ytPlayer.loadVideoById(extractYouTubeId(config.takeoffSoundUrl) || 'Vfn_u768UoQ'); ytPlayer.playVideo(); ok = true; } catch (e) { ok = false; }
-        }
-        if (!ok) noiseBurst(5, 200, 1800, 0.45);
-    }
+    function playMeltdownSound() { playFile(config.damageSound, function () { noiseBurst(3.5, 500, 40, 0.7); }); }
+    function playTakeoffAudio() { playFile(config.takeoffSound, function () { noiseBurst(5, 200, 1800, 0.45); }); }
+    function thump(vol) { tone('sine', 70, 40, 0.22, vol); setTimeout(function () { tone('sine', 60, 35, 0.2, vol * 0.7); }, 160); }
     function startSiren(ms) {
         var ctx = ensureAudio(); if (!ctx) return;
         try {
@@ -769,17 +803,25 @@
         if (state.rolesAssigned || ui.assigning) return;
         ensureAudio();
         ui.assigning = true;
-        var ov = $('assign-overlay'), n = totalImpostors();
-        $('assign-title').textContent = 'Assigning roles…'; $('assign-sub').textContent = ''; $('assign-big').textContent = '';
+        var ov = $('assign-overlay'), n = totalImpostors(), list = $('scan-list'), done = false;
+        $('assign-title').textContent = 'Scanning the crew…'; $('assign-sub').textContent = ''; $('assign-big').textContent = ''; $('assign-big').classList.remove('glitch');
+        list.innerHTML = '';
+        var chips = state.students.map(function (st) { var c = el('div', 'scan-chip'); c.appendChild(el('span', 'scan-name', st.name)); c.appendChild(el('span', 'scan-stamp', '')); list.appendChild(c); return c; });
         ov.style.display = 'flex';
-        var ticks = 0, iv = setInterval(function () { playTickSound(); if (++ticks > 12) clearInterval(iv); }, 200);
+        var per = 700, start = 900, gap = 1000;
+        (function heartbeat() { if (done) return; thump(0.35); gap = Math.max(330, gap * 0.88); setTimeout(heartbeat, gap); })();
+        chips.forEach(function (c, k) {
+            setTimeout(function () { c.classList.add('scanning'); tone('square', 900, 1200, 0.08, 0.06); }, start + k * per);
+            setTimeout(function () { c.classList.remove('scanning'); c.classList.add('scanned'); c.lastChild.textContent = '✔ SCANNED'; playTickSound(); }, start + k * per + Math.round(per * 0.65));
+        });
+        var tEnd = start + chips.length * per + 500;
         setTimeout(function () {
-            $('assign-title').textContent = 'Roles assigned';
-            $('assign-big').textContent = n + (n === 1 ? ' IMPOSTOR' : ' IMPOSTORS') + ' AMONG US';
+            $('assign-title').textContent = 'Scan complete';
+            $('assign-big').textContent = n + (n === 1 ? ' IMPOSTOR' : ' IMPOSTORS') + ' AMONG US'; $('assign-big').classList.add('glitch');
             $('assign-sub').textContent = 'Tap your name to see your role. You can look only once.';
-            playSuccessSound();
-        }, 2600);
-        setTimeout(function () { ov.style.display = 'none'; ui.assigning = false; state.rolesAssigned = true; save(); render(); }, 5600);
+            tone('sawtooth', 300, 80, 0.6, 0.25);
+        }, tEnd);
+        setTimeout(function () { done = true; ov.style.display = 'none'; ui.assigning = false; state.rolesAssigned = true; save(); render(); }, tEnd + 3500);
     };
 
     /* ---------- Tick loop ---------- */
@@ -873,25 +915,28 @@
         ui.popup = i;
         var s = state.students[i];
         ui.firstView = !s.viewed;       // the first look shows the secret role and no buttons
-        if (!s.viewed) { s.viewed = true; save(); }
+        if (ui.popupTimer) { clearTimeout(ui.popupTimer); ui.popupTimer = null; }
+        if (!s.viewed) {
+            s.viewed = true; save(); ui.popupStart = Date.now();
+            ui.popupTimer = setTimeout(function () { if (ui.popup === i && ui.firstView) { ui.popup = -1; renderStudents(); } }, 5000);   // the first look closes by itself
+        }
         renderStudents();
     }
     function buildPopup(s, i) {
-        var pop = el('div', 'student-popup-card'); pop.onclick = function (e) { e.stopPropagation(); };
+        var pop = el('div', 'student-popup-card' + (ui.firstView ? '' : ' big')); pop.onclick = function (e) { e.stopPropagation(); };
         pop.appendChild(el('h3', '', s.name));
         pop.appendChild(el('div', 'official', s.official.icon + ' ' + s.official.name));
         if (ui.firstView) {
             pop.appendChild(el('div', 'secret ' + (s.impostor ? 'impostor' : 'crew'), s.impostor ? 'IMPOSTOR' : 'CREWMATE'));
+            var bar = el('div', 'popup-bar'); bar.style.animationDelay = '-' + Math.max(0, (Date.now() - (ui.popupStart || Date.now())) / 1000).toFixed(2) + 's'; pop.appendChild(bar);
             return pop;
         }
         if (s.status !== 'active') pop.appendChild(el('div', 'status-line', STATUS_LABEL[s.status] + (s.status === 'ejected' ? ' (was ' + (s.impostor ? 'an impostor' : 'a crewmate') + ')' : '')));
         var btns = el('div', 'popup-buttons');
         function add(text, c, fn) { var b = el('button', c, text); b.onclick = fn; btns.appendChild(b); }
-        add('Close', 'neutral', function () { ui.popup = -1; renderStudents(); });
         if (s.status === 'active') {
             add('Ejected', 'danger', function () { setStatus(i, 'ejected'); });
             add('Killed', 'danger', function () { setStatus(i, 'killed'); });
-            add('Casualty', 'yellow', function () { setStatus(i, 'casualty'); });
         } else add('Undo', '', function () { restoreStudent(i); });
         pop.appendChild(btns);
         return pop;
@@ -914,6 +959,7 @@
         var mb = $('btn-meeting'); mb.disabled = !meetingAllowed(); mb.classList.toggle('flash', !!state.meetingFlash && meetingAllowed());
         $('ribbon').hidden = !allImpostorsGone();
         $('btn-assign').style.display = state.rolesAssigned ? 'none' : '';
+        $('btn-video').style.display = /^https?:\/\//i.test(config.videoUrl || '') ? '' : 'none';
         $('rocket').classList.toggle('shake-pre-takeoff', !state.ended && unfinishedCount() <= 2 && !ui.fx);
         $('night-overlay').style.display = state.phase === 'night' && !state.ended ? 'flex' : 'none';
     }
@@ -955,16 +1001,39 @@
         var rocket = $('rocket'), g = GRADES[state.grade] || GRADES[0], core = $('plasma-core');
         if (instant) { rocket.classList.add('gone'); showTakeoffBanner(); return; }
         playTakeoffAudio();
-        rocket.classList.remove('shake-pre-takeoff'); rocket.classList.add(g.shake); core.classList.add('flicker');
+        rocket.style.setProperty('--grow', g.ms + 'ms');
+        rocket.classList.remove('shake-pre-takeoff'); rocket.classList.add(g.shake, 'firing', 'fire-g' + state.grade); core.classList.add('flicker');
+        startFire(state.grade);
         setTimeout(function () {
             rocket.classList.remove(g.shake);
             void rocket.offsetWidth;                                   // let the browser draw the resting rocket before it flies
             requestAnimationFrame(function () { requestAnimationFrame(function () {
                 rocket.classList.add('flying');
-                setTimeout(function () { rocket.classList.add('gone'); core.classList.remove('flicker'); showTakeoffBanner(); }, 2700);
+                setTimeout(function () { rocket.classList.add('gone'); core.classList.remove('flicker'); showTakeoffBanner(); setTimeout(stopFire, 1800); }, 2700);
             }); });
         }, g.ms);
     }
+    var fireTimer = null;
+    function startFire(grade) {
+        stopFire();
+        var layer = $('fx-layer');
+        fireTimer = setInterval(function () {
+            var r = $('rocket').getBoundingClientRect(); if (!r.width) return;
+            var x = r.right + 6, y = r.top + r.height / 2, i, p, size;
+            var smokeN = grade >= 2 ? 3 : (grade === 1 ? 2 : 1), sparkN = [1, 2, 3, 4][grade] || 1;
+            for (i = 0; i < smokeN; i++) {
+                size = 28 + Math.random() * 40; p = el('div', 'smoke' + (grade >= 2 ? ' dark' : ''));
+                p.style.cssText = 'width:' + size + 'px;height:' + size + 'px;left:' + (x + Math.random() * 60) + 'px;top:' + (y - size / 2 + (Math.random() - 0.5) * r.height * 0.6) + 'px;--dx:' + (90 + Math.random() * 220) + 'px;--dy:' + ((Math.random() - 0.5) * 90) + 'px;';
+                layer.appendChild(p); (function (q) { setTimeout(function () { if (q.parentNode) q.parentNode.removeChild(q); }, 1800); })(p);
+            }
+            for (i = 0; i < sparkN; i++) {
+                p = el('div', 'spark');
+                p.style.cssText = 'left:' + (x + Math.random() * 80) + 'px;top:' + (y + (Math.random() - 0.5) * 50) + 'px;--dx:' + (120 + Math.random() * 300) + 'px;--dy:' + ((Math.random() - 0.5) * 260) + 'px;';
+                layer.appendChild(p); (function (q) { setTimeout(function () { if (q.parentNode) q.parentNode.removeChild(q); }, 1000); })(p);
+            }
+        }, 70);
+    }
+    function stopFire() { if (fireTimer) { clearInterval(fireTimer); fireTimer = null; } }
     function runImpostorWin(instant) {
         $('rocket').classList.add('lights-off');
         if (!instant) playSlowAlarm();
@@ -977,6 +1046,7 @@
         $('takeoff-banner').style.display = 'none';
         $('failed-screen').style.display = 'none';
         $('plasma-core').classList.remove('flicker');
+        stopFire(); $('fx-layer').innerHTML = '';
     }
     function applyEndEffects() {
         var kind = state.ended;
@@ -1272,7 +1342,7 @@
         $('setting-impostor-count').value = config.impostorCount || 1;
         $('noimp-list').innerHTML = ''; buildNoImp();
         $('setting-weight').value = config.unpickedWeight || 3;
-        $('setting-takeoff-sound').value = config.takeoffSoundUrl; $('setting-damage-sound').value = config.damageSoundUrl;
+        $('setting-takeoff-sound').value = config.takeoffSound || ''; $('setting-damage-sound').value = config.damageSound || ''; $('setting-video').value = config.videoUrl || '';
         $('setting-sabotage-enabled').checked = !!config.sabotageEnabled; $('setting-sabotage-delay').value = config.sabotageDelay;
         $('setting-delegates').value = config.delegateMode || 'nominate'; $('setting-window').value = config.matchWindowMs || 1000;
         $('setting-config').value = JSON.stringify(config.exercises, null, 2); $('setting-pairs').value = config.repairPairs || '';
@@ -1301,7 +1371,9 @@
         next.impostorCount = Math.max(1, Math.min(2, imp)); if (next.students.length < 2) next.impostorCount = 1;
         next.noImpostor = Array.prototype.filter.call($('noimp-list').querySelectorAll('input'), function (c) { return c.checked; }).map(function (c) { return c.value; }).filter(function (n) { return next.students.indexOf(n) > -1; });
         var wt = parseInt($('setting-weight').value, 10); next.unpickedWeight = isNaN(wt) ? 3 : Math.max(1, Math.min(10, wt));
-        next.takeoffSoundUrl = $('setting-takeoff-sound').value.trim(); next.damageSoundUrl = $('setting-damage-sound').value.trim();
+        next.takeoffSound = $('setting-takeoff-sound').value.trim(); next.damageSound = $('setting-damage-sound').value.trim();
+        next.videoUrl = $('setting-video').value.trim();
+        if (next.videoUrl && !/^https?:\/\//i.test(next.videoUrl)) { err.textContent = 'The video address must start with http:// or https://'; return; }
         next.sabotageEnabled = $('setting-sabotage-enabled').checked;
         var sd = parseInt($('setting-sabotage-delay').value, 10); next.sabotageDelay = isNaN(sd) || sd < 0 ? 20 : sd;
         next.delegateMode = $('setting-delegates').value === 'random' ? 'random' : 'nominate';
@@ -1322,6 +1394,21 @@
         resetEffects(); save(); closeSettings(); render();
     };
 
+    ['takeoff', 'damage'].forEach(function (key) {
+        $('pick-' + key).onclick = function () { $('file-' + key).click(); };
+        $('file-' + key).onchange = function () { var f = this.files && this.files[0]; if (f) $('setting-' + (key === 'takeoff' ? 'takeoff-sound' : 'damage-sound')).value = f.name; this.value = ''; };
+    });
+    $('btn-video').onclick = function () { var u = (config.videoUrl || '').trim(); if (/^https?:\/\//i.test(u)) window.open(u, '_blank', 'noopener'); };
+    $('btn-copy-format').onclick = function () {
+        var text = 'Exercises format (JSON). One line for each floor of the rocket:\n[\n  { "page": 10, "exercise": 4, "questions": 4, "time": 90 },\n  { "page": 10, "exercise": 5, "questions": 8, "time": 180 },\n  { "page": 12, "exercise": 3, "questions": 5, "time": 120 }\n]\n\npage = page number in the book, shown on the floor as "P.10"\nexercise = exercise number, shown as "Ex.4"\nquestions = number of questions in the exercise (1 to 12)\ntime = time for the floor in seconds (90 means 1:30)\nPut a comma after every line except the last one.';
+        var msg = $('copy-format-msg');
+        function done(ok) { msg.textContent = ok ? '✔ Copied' : 'Select the box and press Ctrl+C'; setTimeout(function () { msg.textContent = ''; }, 2500); }
+        function fallback() {
+            var ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;'; document.body.appendChild(ta); ta.select();
+            var ok = false; try { ok = document.execCommand('copy'); } catch (e) { ok = false; } document.body.removeChild(ta); done(ok);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { done(true); }, fallback); else fallback();
+    };
     $('btn-test').onclick = testAllGreen;
     $('btn-meeting').onclick = openMeeting;
     $('meeting-close').onclick = function () { ui.meetingEnd = 0; $('meeting-overlay').style.display = 'none'; renderStatus(); };
