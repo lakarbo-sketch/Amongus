@@ -192,7 +192,7 @@
     .takeoff-banner.barely { border-color: #ff3838; box-shadow: 0 0 40px rgba(255,56,56,0.8); }
     .takeoff-banner h2 { font-size: 3rem; letter-spacing: 3px; }
     .takeoff-banner p { font-size: 1.4rem; margin-top: 0.4rem; color: #cfd8dc; }
-    .failed-screen { position: fixed; inset: 0; z-index: 3000; pointer-events: none; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 1rem; background: radial-gradient(circle, rgba(90,0,10,0.55), rgba(20,0,3,0.88)); animation: failedPulse 3.2s ease-in-out infinite; }
+    .failed-screen { position: fixed; inset: 0; z-index: 3000; pointer-events: auto; cursor: pointer; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 1rem; background: radial-gradient(circle, rgba(90,0,10,0.55), rgba(20,0,3,0.88)); animation: failedPulse 3.2s ease-in-out infinite; }
     .failed-screen h2 { font-size: 6rem; font-weight: 900; letter-spacing: 6px; color: #ff3838; text-shadow: 0 0 40px #ff0000; }
     .failed-screen p { font-size: 2.4rem; letter-spacing: 3px; color: #ffd0d0; }
     @keyframes failedPulse { 0%, 100% { opacity: 0.82; } 50% { opacity: 1; } }
@@ -286,6 +286,11 @@
     .sabotage-overlay p { font-size: clamp(24px, 3.4vw, 60px); font-weight: 800; letter-spacing: 0.1em; }
     .award-bar { position: fixed; left: 50%; bottom: 1rem; transform: translateX(-50%); z-index: 3100; display: none; }
     .award-bar .btn { font-size: 1.5rem; padding: 0.8rem 2.2rem; }
+    #settings-overlay { z-index: 300000; }
+    /* Decoy second screen: every line stays inside the screen */
+    .warning { overflow: hidden; }
+    .warning.level2 h2 { font-size: clamp(24px, 4vw, 64px); }
+    .warning.level2 .kill { white-space: nowrap; font-size: clamp(40px, 9.4vw, 280px); }
 </style>
 </head>
 <body>
@@ -300,7 +305,7 @@
 </div>
 
 <div class="takeoff-banner" id="takeoff-banner"><h2 id="takeoff-title"></h2><p id="takeoff-sub"></p></div>
-<div class="failed-screen" id="failed-screen"><h2>MISSION FAILED</h2><p>SABOTAGED BY THE IMPOSTOR</p></div>
+<div class="failed-screen" id="failed-screen"><h2>MISSION FAILED</h2><p>SABOTAGED BY THE IMPOSTOR</p><p style="font-size:1.2rem;">Tap anywhere to see the rocket</p></div>
 
 <div class="app">
     <div class="top-header">
@@ -311,7 +316,6 @@
         <div class="header-controls">
             <span class="danger-status" id="danger-status">DANGER: <span id="danger-count">0</span> / 4</span>
             <button class="btn btn-assign" id="btn-assign">🎲 Assign roles</button>
-            <button class="btn btn-test" id="btn-test">⚡ Test All Green</button>
             <button class="btn btn-rules" id="btn-rules">📜 Rules</button>
             <button class="btn" id="btn-video">🚀 Video</button>
             <button class="btn" id="btn-settings">⚙ Settings</button>
@@ -381,6 +385,8 @@
         <div class="settings-col">
             <div class="form-group checkbox-group"><input type="checkbox" id="setting-sabotage-enabled"><label for="setting-sabotage-enabled">Enable sabotage</label></div>
             <div class="form-group"><label for="setting-sabotage-delay">Sabotage delay after the floor is finished (seconds)</label><input type="number" id="setting-sabotage-delay" min="0"></div>
+            <div style="display:flex; gap:0.6rem;"><div class="form-group" style="flex:1"><label for="setting-meeting">Meeting (seconds)</label><input type="number" id="setting-meeting" min="5" max="600"></div>
+            <div class="form-group" style="flex:1"><label for="setting-repair">Repair game (seconds)</label><input type="number" id="setting-repair" min="10" max="600"></div></div>
             <div class="form-group"><label for="setting-delegates">Repair game delegates</label><select id="setting-delegates"><option value="nominate">The class nominates two students</option><option value="random">The game draws two students at random</option></select></div>
             <div class="form-group"><label for="setting-window">Repair game: both taps within (milliseconds)</label><input type="number" id="setting-window" min="200" max="2000" step="100"></div>
             <div class="form-group checkbox-group"><input type="checkbox" id="setting-twofingers"><label for="setting-twofingers">Require two fingers at once (a mouse cannot make a match)</label></div>
@@ -390,7 +396,7 @@
                 <button class="btn" id="btn-reveal" style="width:100%; justify-content:center;">👁 Hold to show</button>
                 <div class="reveal-box" id="reveal-box"></div></div>
             <div class="note-box"><b>Red button (bottom right):</b> the decoy. Any tap starts the alarm. The second and later taps also make the student whose turn it is a Killed ghost.</div>
-            <button class="btn" id="btn-undo" style="align-self:flex-start;">↩ Undo</button>
+            <div style="display:flex; gap:0.6rem;"><button class="btn" id="btn-undo">↩ Undo</button><button class="btn btn-test" id="btn-test">⚡ Test All Green</button></div>
         </div>
         <div class="settings-col">
             <div class="form-group"><label for="setting-lesson">Lesson (each lesson has its own exercises and repair words)</label><div class="filerow"><select id="setting-lesson"></select><button class="btn" id="lesson-new" type="button">New</button><button class="btn" id="lesson-rename" type="button">Rename</button><button class="btn" id="lesson-delete" type="button">Delete</button></div></div>
@@ -472,6 +478,8 @@
         popupSeconds: 2,
         delegateMode: 'nominate',
         matchWindowMs: 600,
+        meetingSeconds: 30,
+        repairSeconds: 60,
         twoFingers: true,
         repairPairs: DEFAULT_PAIRS,
         exercises: [
@@ -481,12 +489,11 @@
             { page: 12, exercise: 5, questions: 8, time: 240 }
         ]
     };
-    var MEETING_SECONDS = 120;
     var GHOST_HIDE_MS = 3000;
     var NIGHT_DELAY_MS = 3000;
     var WARNING_MS = 6000;
     var DECOY_DELAY_MS = 500;
-    var REPAIR_TARGET = 10, REPAIR_SECONDS = 120, REPAIR_PENALTY = 5, PRACTICE_TARGET = 5;
+    var REPAIR_TARGET = 10, REPAIR_PENALTY = 5, PRACTICE_TARGET = 5;
 
     /* ---------- Rules text ---------- */
     function rule(title, body) { return '<div class="rule"><h3>' + title + '</h3>' + body + '</div>'; }
@@ -500,7 +507,7 @@
             rule('6. ⏱️ Floor timers', '<p>Each floor has a timer. The timer starts when the first question on that floor is tapped. Finish the floor before the time is over!</p>'),
             rule('7. 🕵️ The impostors', '<p>Secret impostors are in the crew. They want the rocket to fail. They can sabotage a floor. A sabotaged floor is destroyed! To repair it, two students play the repair game and the whole class helps. If the repair fails, the impostor wins. The teacher always says an impostor\'s answer is correct, even when it is wrong. Impostors should try to answer correctly, because a wrong answer can give them away.</p>'),
             rule('8. 🌙 The night', '<p>After every floor except the last one, it is night. Everybody goes to sleep. The impostor wakes up and points to a crewmate. Everybody wakes up, and then the teacher says who has been killed. That student becomes a ghost.</p>'),
-            rule('9. 🚨 Emergency meeting', '<p>After the night, anyone can call one emergency meeting. Talk together for two minutes. Who do you think is the impostor? Say why you think so.</p>'),
+            rule('9. 🚨 Emergency meeting', '<p>After the night, anyone can call one emergency meeting. Talk together until the timer ends. Who do you think is the impostor? Say why you think so.</p>'),
             rule('10. 🗳️ Voting', '<p>After the talk, everyone votes for one student. Or you can pass. The student with the most votes is ejected. If you eject a crewmate by mistake, the crew gets smaller! If you find all the impostors, there is no more sabotage.</p>'),
             rule('11. 👻 Ghosts', '<p>A student who leaves the game becomes a ghost. There are three kinds:</p><ul><li><b>Ejected:</b> a student voted off the ship. The screen shows if the student was an impostor.</li><li><b>Killed:</b> a student killed by an impostor.</li><li><b>Casualty:</b> a student with two yellow cards.</li></ul><p>Ghosts can still be chosen and still answer questions. They cannot vote. Their questions do not count in the game, and then they disappear.</p>'),
             rule('12. 🏆 How to win', '<p>The crew wins when the rocket takes off! 🚀 With 0 danger points, the take-off is perfect. With 1 point, it is shaky. With 2 points, it is very risky. With 3 points, the crew barely makes it. The impostor wins if the crew becomes as small as the number of impostors, or if the repair fails. Then the mission fails and the rocket cannot take off.</p>'),
@@ -517,7 +524,7 @@
             rule('6. ⏱️ Floor timers', '<p>Every floor has its own timer. It starts as soon as someone taps the first question on that floor, so work quickly and finish before the time runs out.</p>'),
             rule('7. 🕵️ The impostors', '<p>Secretly, one or two students are impostors. They are trying to destroy the mission, and one way they do it is by sabotaging a floor. A sabotaged floor is destroyed, and two students must play the repair game, with the whole class helping, to save it. If the repair fails, the impostor wins. The teacher always says that an impostor\'s answer is correct, even when it is wrong. Impostors should try to answer correctly, because a wrong answer could give them away.</p>'),
             rule('8. 🌙 The night', '<p>After every floor except the last one, the game goes dark: it\'s night. Everybody goes to sleep, and only the impostor wakes up and points to a crewmate. Then everybody wakes up, and the teacher announces who has been killed. That student becomes a ghost.</p>'),
-            rule('9. 🚨 Emergency meeting', '<p>After the night, anyone can call one emergency meeting. You have two minutes to discuss who you suspect and to explain your reasons. Did anyone behave strangely?</p>'),
+            rule('9. 🚨 Emergency meeting', '<p>After the night, anyone can call one emergency meeting. You have a short time to discuss who you suspect and to explain your reasons. Did anyone behave strangely?</p>'),
             rule('10. 🗳️ Voting', '<p>After the discussion, each student votes for one person or chooses to pass. The student with the most votes is ejected from the ship. If you eject a crewmate by mistake, the crew gets smaller. If you find every impostor, the sabotage stops, but the mission is not over yet.</p>'),
             rule('11. 👻 Ghosts', '<p>A student who leaves the game becomes a ghost. There are three kinds:</p><ul><li><b>Ejected:</b> a student who has been voted off the ship. The screen shows whether that student was an impostor.</li><li><b>Killed:</b> a student who has been killed by an impostor.</li><li><b>Casualty:</b> a student who has received two yellow cards.</li></ul><p>Ghosts stay in the lesson and can still be chosen to answer questions, but they can\'t vote. Their questions don\'t count towards the mission, and they disappear after the answer has been marked.</p>'),
             rule('12. 🏆 Winning', '<p>The crew wins when the rocket takes off 🚀. With no danger points, the take-off is perfect. With one point it is shaky, with two points it is very risky, and with three points the crew only just makes it. The impostor wins if the crew becomes as small as the number of impostors, or if the repair of a sabotaged floor fails. Then the mission fails and the rocket can\'t take off.</p>'),
@@ -826,10 +833,12 @@
 
     /* ---------- Night, meeting, assign roles ---------- */
     $('night-morning').onclick = function () { state.phase = 'play'; state.meetingFlash = true; afterChange(); };
+    function meetingSecs() { return Math.max(5, Number(config.meetingSeconds) || 30); }
+    function repairSecs() { return Math.max(10, Number(config.repairSeconds) || 60); }
     function openMeeting() {
         if (!meetingAllowed()) return;
         act('emergency meeting', function () { state.meetingsUsed++; state.meetingFlash = false; });
-        ui.meetingEnd = Date.now() + MEETING_SECONDS * 1000;
+        ui.meetingEnd = Date.now() + meetingSecs() * 1000;
         $('meeting-sub').textContent = 'Talk together. Who do you think is the impostor? Say why you think so.';
         $('meeting-clock').classList.remove('done');
         $('meeting-overlay').style.display = 'flex';
@@ -928,6 +937,7 @@
             if (config.sabotageEnabled) { var ab = el('button', 'floor-sabotage-btn', '⚠️'); ab.title = 'Discreet sabotage'; ab.onclick = function () { armSabotage(fi); }; right.appendChild(ab); }
             foot.appendChild(left); foot.appendChild(right);
             card.appendChild(head); card.appendChild(grid); card.appendChild(foot);
+            if (f.sabotaged) { card.style.cursor = 'pointer'; card.onclick = function (e) { if (state.phase !== 'play' || state.ended || e.target.closest('.node, .timer-container, .floor-sabotage-btn')) return; act('reopen repair', function () { state.phase = 'repair'; state.repairFloor = fi; }); }; }
             track.appendChild(card);
         });
         updateTimers();
@@ -1175,13 +1185,13 @@
     function openRepairScreen() {
         if (R) return;
         var c = candidates();
-        R = { stage: 'nominate', sel: [], delegates: [], msg: '', msgBad: false, timeLeft: REPAIR_SECONDS * 1000, count: 0, B: null, practiceCount: 0, iv: null, result: null };
+        R = { stage: 'nominate', sel: [], delegates: [], msg: '', msgBad: false, timeLeft: repairSecs() * 1000, count: 0, B: null, practiceCount: 0, iv: null, result: null };
         if (config.delegateMode === 'random') { R.delegates = shuffle(c.slice()).slice(0, 2); }
     }
     function startRepairPlay() {
         var pd = parsePairs();
         R.B = { pairs: pd.pairs, decoys: pd.decoys }; boardFill(R.B, 5, 8);
-        R.stage = 'play'; R.timeLeft = REPAIR_SECONDS * 1000; R.count = 0; R.msg = ''; R.msgBad = false;
+        R.stage = 'play'; R.timeLeft = repairSecs() * 1000; R.count = 0; R.msg = ''; R.msgBad = false;
         if (R.iv) clearInterval(R.iv);
         R.iv = setInterval(function () {
             if (!R || R.stage !== 'play' || R.result) return;
@@ -1208,6 +1218,12 @@
             else { state.phase = 'play'; state.ended = 'impostorwin'; afterChange(true); }
         }, 2600);
     }
+    function leaveRepair() {
+        if (!R || R.result) return;
+        if (R.iv) { clearInterval(R.iv); R.iv = null; }
+        R = null; $('repair-overlay').style.display = 'none';
+        state.phase = 'play'; afterChange();
+    }
     function renderRepair() {
         var ov = $('repair-overlay');
         if (state.phase !== 'repair' || state.ended) { ov.style.display = 'none'; return; }
@@ -1233,7 +1249,7 @@
                 });
             }
             ov.appendChild(list);
-            ov.appendChild(el('div', 'repair-msg', 'Match 10 pairs in 2 minutes. A wrong match costs 5 seconds.'));
+            ov.appendChild(el('div', 'repair-msg', 'Match ' + REPAIR_TARGET + ' pairs in ' + repairSecs() + ' seconds. A wrong match costs ' + REPAIR_PENALTY + ' seconds.'));
             ov.appendChild(el('div', 'repair-board'));
         } else {
             ov.appendChild(el('div', 'repair-msg' + (R.msgBad ? ' bad' : ''), R.msg));
@@ -1254,6 +1270,7 @@
             board.appendChild(colL); board.appendChild(colR); ov.appendChild(board);
         }
         var bottom = el('div', 'repair-bottom');
+        if (!R.result) { var lv = el('button', 'btn', '↩ Leave repair'); lv.onclick = leaveRepair; bottom.appendChild(lv); }
         if (R.stage === 'nominate') {
             if (!state.practiceDone) { var pb = el('button', 'btn', '🎯 Practice'); pb.onclick = startPractice; bottom.appendChild(pb); }
             var go = el('button', 'btn btn-good', '▶ Start repair'); go.disabled = R.delegates.length < 2 && candidates().length >= 2;
@@ -1447,6 +1464,7 @@
         $('setting-takeoff-sound').value = config.takeoffSound || ''; $('setting-damage-sound').value = config.damageSound || ''; $('setting-video').value = config.videoUrl || '';
         $('setting-sabotage-enabled').checked = !!config.sabotageEnabled; $('setting-sabotage-delay').value = config.sabotageDelay;
         $('setting-delegates').value = config.delegateMode || 'nominate'; $('setting-window').value = config.matchWindowMs || 600; $('setting-twofingers').checked = config.twoFingers !== false;
+        $('setting-meeting').value = meetingSecs(); $('setting-repair').value = repairSecs();
         openLessons(); $('setting-popup').value = config.popupSeconds || 2;
         $('settings-error').textContent = ''; $('reveal-box').textContent = ''; refreshUndoBtn();
         $('settings-overlay').style.display = 'flex';
@@ -1489,6 +1507,8 @@
         }
         var chosen = lessonsOut.filter(function (x) { return x.id === ui.lessonSel; })[0] || lessonsOut[0];
         next.lessons = lessonsOut; next.activeLesson = chosen.id; next.exercises = chosen.exercises; next.repairPairs = chosen.repairPairs;
+        var ms = parseInt($('setting-meeting').value, 10); next.meetingSeconds = isNaN(ms) ? 30 : Math.max(5, Math.min(600, ms));
+        var rs = parseInt($('setting-repair').value, 10); next.repairSeconds = isNaN(rs) ? 60 : Math.max(10, Math.min(600, rs));
         var pu = parseInt($('setting-popup').value, 10); next.popupSeconds = isNaN(pu) ? 2 : Math.max(1, Math.min(10, pu));
         config = next; lsSet(LS_CONFIG, config);
         state = newState(); undoStack = []; R = null; $('repair-overlay').style.display = 'none';
@@ -1511,7 +1531,8 @@
         }
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { done(true); }, fallback); else fallback();
     };
-    $('btn-test').onclick = testAllGreen;
+    $('failed-screen').addEventListener('click', function () { this.style.display = 'none'; });
+    $('btn-test').onclick = function () { closeSettings(); testAllGreen(); };
     $('btn-meeting').onclick = openMeeting;
     $('meeting-close').onclick = function () { ui.meetingEnd = 0; $('meeting-overlay').style.display = 'none'; renderStatus(); };
     document.addEventListener('click', function () { if (ui.popup !== -1) { ui.popup = -1; renderStudents(); } });
