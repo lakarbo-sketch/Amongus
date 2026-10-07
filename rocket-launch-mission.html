@@ -5,107 +5,81 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Among Us ESL - Rocket Launch Mission</title>
 <style>
-    /* Layout: header, rocket with floor cards and fuel, student names, and an empty zone under the names where the role popup opens. Everything scales with the root font size so it fits a smart board without scrolling. */
+    /* Layout: header, rocket with floor cards and fuel, then the student names at the bottom of the screen with an empty zone under them where the role popup opens. Everything scales with the root font size so it fits a smart board without scrolling. */
     :root { font-size: clamp(12px, min(0.85vw + 8px, 1.55vh + 4px), 22px); }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
-    body {
-        background: #0b0f19; color: #ffffff; font-family: Arial, sans-serif;
-        width: 100vw; height: 100vh; overflow: hidden; position: relative;
-    }
+    body { background: #0b0f19; color: #ffffff; font-family: Arial, sans-serif; width: 100vw; height: 100vh; overflow: hidden; position: relative; }
     .app { height: 100%; display: flex; flex-direction: column; gap: 0.8rem; padding: 0.8rem; }
 
     body.meltdown-shake { animation: screenShake 0.15s infinite ease-in-out; }
     @keyframes screenShake {
-        0% { transform: translate(0, 0) rotate(0deg); }
-        20% { transform: translate(-14px, 12px) rotate(-2deg); }
-        40% { transform: translate(14px, -12px) rotate(2deg); }
-        60% { transform: translate(-12px, -14px) rotate(-1deg); }
-        80% { transform: translate(12px, 14px) rotate(2deg); }
-        100% { transform: translate(0, 0) rotate(0deg); }
+        0% { transform: translate(0, 0) rotate(0deg); } 20% { transform: translate(-14px, 12px) rotate(-2deg); } 40% { transform: translate(14px, -12px) rotate(2deg); }
+        60% { transform: translate(-12px, -14px) rotate(-1deg); } 80% { transform: translate(12px, 14px) rotate(2deg); } 100% { transform: translate(0, 0) rotate(0deg); }
     }
     .meltdown-flash { position: fixed; inset: 0; background: rgba(255,0,0,0); pointer-events: none; z-index: 9999; }
     body.meltdown-shake .meltdown-flash { animation: redFlash 0.3s infinite alternate; }
     @keyframes redFlash { 0% { background: rgba(255,0,0,0.2); } 100% { background: rgba(255,0,0,0.55); } }
 
-    .top-header {
-        background: #131b2e; border: 2px solid #22304f; border-radius: 12px; padding: 0.6rem 1rem;
-        display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-shrink: 0;
-    }
+    .top-header { background: #131b2e; border: 2px solid #22304f; border-radius: 12px; padding: 0.6rem 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-shrink: 0; }
     .header-title-area { display: flex; align-items: center; gap: 0.7rem; min-width: 0; }
     .esl-badge { background: #e74c3c; color: #fff; font-weight: bold; padding: 0.35rem 0.7rem; border-radius: 6px; font-size: 0.85rem; letter-spacing: 1px; white-space: nowrap; }
     h1 { font-size: 1.45rem; font-weight: bold; }
     .header-controls { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; justify-content: flex-end; }
     .danger-status { font-size: 1rem; font-weight: bold; color: #ffaa00; white-space: nowrap; }
-    .btn {
-        background: #1f293d; color: #fff; border: 2px solid #3b4d71; padding: 0.45rem 0.9rem; font-size: 0.9rem; font-weight: bold;
-        border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem;
-    }
+    .danger-status.bump { animation: dangerBump 0.8s ease-out 1; }
+    @keyframes dangerBump { 0% { transform: scale(1); color: #ffaa00; } 30% { transform: scale(1.5); color: #ff3838; } 100% { transform: scale(1); color: #ffaa00; } }
+    .btn { background: #1f293d; color: #fff; border: 2px solid #3b4d71; padding: 0.45rem 0.9rem; font-size: 0.9rem; font-weight: bold; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; }
     .btn:hover { background: #2c3a56; border-color: #00ffcc; }
     .btn:disabled { opacity: 0.35; cursor: not-allowed; border-color: #3b4d71; background: #1f293d; }
     .btn-emergency { background: #00838f; border-color: #00bcd4; }
     .btn-emergency:hover { background: #00acc1; }
     .btn-emergency:disabled:hover { background: #00838f; }
+    .btn-emergency.flash { animation: meetFlash 0.6s steps(1, end) infinite; opacity: 1; }
+    @keyframes meetFlash { 0% { background: #ff3838; border-color: #fff; } 50% { background: #00838f; border-color: #00bcd4; } }
     .btn-rules { background: #8e44ad; border-color: #9b59b6; }
     .btn-test { background: #d35400; border-color: #e67e22; }
+    .btn-assign { background: #f39c12; border-color: #f1c40f; color: #000; }
     .btn-good { background: #00b894; border-color: #55efc4; color: #000; }
 
-    .ribbon {
-        background: linear-gradient(90deg, #0a6b58, #00b894); color: #00150f; font-weight: bold; text-align: center;
-        padding: 0.45rem; border-radius: 10px; letter-spacing: 2px; flex-shrink: 0; font-size: 1rem;
-    }
+    .ribbon { background: linear-gradient(90deg, #0a6b58, #00b894); color: #00150f; font-weight: bold; text-align: center; padding: 0.45rem; border-radius: 10px; letter-spacing: 2px; flex-shrink: 0; font-size: 1rem; }
 
     /* Rocket */
-    .rocket-container {
-        background: #131b2e; border: 2px solid #22304f; border-radius: 20px 80px 80px 20px; padding: 0.9rem;
-        display: flex; align-items: stretch; gap: 0.9rem; position: relative; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-        border-left: 6px solid #e74c3c; z-index: 10; flex-shrink: 0;
-    }
+    .rocket-container { background: #131b2e; border: 2px solid #22304f; border-radius: 20px 80px 80px 20px; padding: 0.9rem; display: flex; align-items: stretch; gap: 0.9rem; position: relative; box-shadow: 0 8px 24px rgba(0,0,0,0.5); border-left: 6px solid #e74c3c; z-index: 10; flex-shrink: 0; }
     .rocket-container.shake-pre-takeoff { animation: rocketRumble 0.1s infinite ease-in-out; border-color: #00ffcc; box-shadow: 0 0 30px rgba(0,255,204,0.5); }
     .rocket-container.launch-shake-1 { animation: rocketRumble 0.1s infinite ease-in-out; border-color: #00ffcc; }
     .rocket-container.launch-shake-2 { animation: rocketRumbleHard 0.07s infinite ease-in-out; border-color: #ffaa00; box-shadow: 0 0 40px rgba(255,170,0,0.7); }
-    .rocket-container.launch-shake-3 { animation: rocketRumbleWild 0.05s infinite ease-in-out; border-color: #ff3838; box-shadow: 0 0 60px rgba(255,56,56,0.9); }
+    .rocket-container.launch-shake-3 { animation: rocketRumbleWild 0.05s infinite ease-in-out; border-color: #ff7a00; box-shadow: 0 0 50px rgba(255,122,0,0.8); }
+    .rocket-container.launch-shake-4 { animation: rocketRumbleWild 0.04s infinite ease-in-out; border-color: #ff3838; box-shadow: 0 0 60px rgba(255,56,56,0.9); }
     @keyframes rocketRumble { 0% { transform: translate(0,0) rotate(0); } 25% { transform: translate(-4px,3px) rotate(-0.5deg); } 50% { transform: translate(4px,-3px) rotate(0.5deg); } 75% { transform: translate(-3px,-3px) rotate(0.2deg); } 100% { transform: translate(3px,3px) rotate(-0.2deg); } }
     @keyframes rocketRumbleHard { 0% { transform: translate(0,0) rotate(0); } 25% { transform: translate(-9px,6px) rotate(-1.2deg); } 50% { transform: translate(9px,-6px) rotate(1.2deg); } 75% { transform: translate(-7px,-7px) rotate(0.6deg); } 100% { transform: translate(7px,7px) rotate(-0.6deg); } }
     @keyframes rocketRumbleWild { 0% { transform: translate(0,0) rotate(0); } 25% { transform: translate(-16px,11px) rotate(-2.5deg); } 50% { transform: translate(16px,-11px) rotate(2.5deg); } 75% { transform: translate(-13px,-13px) rotate(1.2deg); } 100% { transform: translate(13px,13px) rotate(-1.2deg); } }
-    .rocket-container.flying { transition: transform 2.6s cubic-bezier(0.6, 0, 1, 0.6), opacity 2.6s ease-in; transform: translateX(-130vw) scale(0.9); opacity: 0; animation: none; }
+    .rocket-container.flying { transition: transform 2.6s cubic-bezier(0.6, 0, 1, 0.6), opacity 2.6s ease-in; transform: translateX(-130vw) scale(0.9); opacity: 0; }
     .rocket-container.gone { display: none; }
+    .rocket-container.lights-off { filter: brightness(0.28) grayscale(0.6); border-color: #333; box-shadow: none; transition: filter 2s; }
+    .rocket-container.lights-off .plasma-core { display: none; }
 
-    .rocket-nose {
-        background: linear-gradient(135deg, #ff5252, #c62828); border-radius: 60px 16px 16px 60px; width: 5.5rem;
-        display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;
-        box-shadow: inset -5px 0 15px rgba(0,0,0,0.3); border: 2px solid #ff8a80; flex-shrink: 0;
-    }
+    .rocket-nose { background: linear-gradient(135deg, #ff5252, #c62828); border-radius: 60px 16px 16px 60px; width: 5.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; box-shadow: inset -5px 0 15px rgba(0,0,0,0.3); border: 2px solid #ff8a80; flex-shrink: 0; }
     .rocket-label { writing-mode: vertical-rl; transform: rotate(180deg); color: #fff; font-weight: bold; font-size: 1rem; letter-spacing: 2px; margin-bottom: 0.6rem; }
     .nose-indicator { width: 1rem; height: 1rem; background: #b2ebf2; border: 2px solid #00838f; border-radius: 50%; box-shadow: 0 0 8px #00bcd4; }
 
     .exercises-track { display: flex; gap: 0.9rem; flex-grow: 1; min-width: 0; }
-    .exercise-card {
-        background: #1b263b; border: 2px solid #2c3e5d; border-radius: 12px; padding: 0.8rem; flex: 1; min-width: 0;
-        display: flex; flex-direction: column; justify-content: space-between; gap: 0.6rem; position: relative;
-    }
+    .exercise-card { background: #1b263b; border: 2px solid #2c3e5d; border-radius: 12px; padding: 0.8rem; flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 0.6rem; position: relative; }
     .exercise-card.sabotaged { border-color: #ff3838; background: #2d1519; animation: glitchCard 0.4s infinite alternate; }
     @keyframes glitchCard { 0% { box-shadow: inset 0 0 10px #ff3838; } 100% { box-shadow: inset 0 0 20px #ff0000; } }
+    .timeup { position: absolute; inset: 0; background: rgba(120,0,10,0.92); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 900; letter-spacing: 2px; color: #fff; z-index: 3; animation: timeupFlash 0.4s steps(1, end) infinite; text-align: center; }
+    @keyframes timeupFlash { 0% { background: rgba(200,0,20,0.95); } 50% { background: rgba(60,0,8,0.95); } }
     .card-header { display: flex; justify-content: space-between; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
     .card-title { font-size: 0.95rem; font-weight: bold; }
     .timer-container { display: flex; align-items: center; gap: 0.35rem; }
-    .card-timer {
-        background: #fff8e1; color: #f57f17; font-size: 0.85rem; font-weight: bold; padding: 0.2rem 0.45rem; border-radius: 6px;
-        border: 1px solid #ffe082; cursor: pointer; font-variant-numeric: tabular-nums;
-    }
+    .card-timer { background: #fff8e1; color: #f57f17; font-size: 0.85rem; font-weight: bold; padding: 0.2rem 0.45rem; border-radius: 6px; border: 1px solid #ffe082; cursor: pointer; font-variant-numeric: tabular-nums; }
     .card-timer.urgent { background: #ff3838; color: #fff; border-color: #ffb3b3; animation: timerFlash 0.5s steps(1, end) infinite; }
     .card-timer.zero { background: #7a0b13; color: #fff; border-color: #ff3838; }
     @keyframes timerFlash { 0% { background: #ff3838; } 50% { background: #6e0710; } }
-    .timer-start-btn {
-        background: #00b894; color: #000; border: none; width: 1.5rem; height: 1.5rem; border-radius: 50%; font-size: 0.7rem;
-        font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center;
-    }
+    .timer-start-btn { background: #00b894; color: #000; border: none; width: 1.5rem; height: 1.5rem; border-radius: 50%; font-size: 0.7rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     .timer-start-btn:hover { background: #55efc4; }
     .nodes-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
-    .node {
-        background: #24344d; border: 2px solid #3b5278; color: #cfd8dc; height: 2.7rem; border-radius: 8px;
-        display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; cursor: pointer; user-select: none;
-    }
+    .node { background: #24344d; border: 2px solid #3b5278; color: #cfd8dc; height: 2.7rem; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; cursor: pointer; user-select: none; }
     .node:hover { border-color: #00ffcc; color: #fff; }
     .node.assigned { background: #f39c12; border-color: #f1c40f; color: #000; box-shadow: 0 0 10px #f39c12; }
     .node.correct { background: #00b894; border-color: #55efc4; color: #000; }
@@ -113,53 +87,28 @@
     .node.hidden-disappeared { visibility: hidden; }
     .card-footer { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: #90a4ae; border-top: 1px solid #2c3e5d; padding-top: 0.5rem; }
     .repair-warning { color: #ff7675; font-weight: bold; margin-right: 0.4rem; }
-    .floor-sabotage-btn {
-        background: transparent; color: #556270; border: 1px solid #2c3e5d; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.75rem;
-        font-weight: bold; cursor: pointer; transition: all 0.2s;
-    }
+    .floor-sabotage-btn { background: transparent; color: #556270; border: 1px solid #2c3e5d; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: all 0.2s; }
     .floor-sabotage-btn:hover { background: #ff3838; color: #fff; border-color: #ff3838; }
-    .floor-repair-btn { background: #00b894; color: #000; border: none; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; cursor: pointer; }
-    .floor-repair-btn:hover { background: #55efc4; }
 
     /* Fuel and plasma: steady glow, one pulse when fuel is added, flicker only during the launch */
-    .fuel-section {
-        background: #0b0f19; border: 2px solid #22304f; border-radius: 12px 40px 40px 12px; width: 10rem; flex-shrink: 0;
-        display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 0.7rem 0.5rem;
-        position: relative; overflow: hidden; border-right: 4px solid #00ffcc; box-shadow: inset 0 0 15px rgba(0,255,204,0.1);
-    }
+    .fuel-section { background: #0b0f19; border: 2px solid #22304f; border-radius: 12px 40px 40px 12px; width: 10rem; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 0.7rem 0.5rem; position: relative; overflow: hidden; border-right: 4px solid #00ffcc; box-shadow: inset 0 0 15px rgba(0,255,204,0.1); }
     .fuel-title { font-size: 0.75rem; font-weight: bold; color: #00ffcc; letter-spacing: 1px; text-align: center; text-shadow: 0 0 5px rgba(0,255,204,0.4); }
     .fuel-percentage { font-size: 1.3rem; font-weight: bold; }
     .exhaust-assembly { display: flex; align-items: center; gap: 0.4rem; width: 100%; justify-content: center; }
-    .fuel-meter-container {
-        width: 1.5rem; height: 4.8rem; background: #131b2e; border-radius: 12px; border: 1px solid #00ffcc; position: relative;
-        overflow: hidden; display: flex; align-items: flex-end; box-shadow: 0 0 10px rgba(0,255,204,0.3);
-    }
+    .fuel-meter-container { width: 1.5rem; height: 4.8rem; background: #131b2e; border-radius: 12px; border: 1px solid #00ffcc; position: relative; overflow: hidden; display: flex; align-items: flex-end; box-shadow: 0 0 10px rgba(0,255,204,0.3); }
     .fuel-fire-fill { width: 100%; height: 15%; background: linear-gradient(0deg, #0077b6, #00b4d8, #00ffcc); border-radius: 0 0 10px 10px; box-shadow: 0 0 10px #00ffcc; transition: height 0.3s ease; }
-    .rocket-exhaust-nozzle {
-        display: flex; align-items: center; position: relative; height: 4.8rem; width: 4rem; background: linear-gradient(135deg, #1f293d, #111827);
-        border-radius: 0 14px 14px 0; border: 1px solid #00ffcc; box-shadow: inset -3px 0 8px rgba(0,255,204,0.2);
-    }
-    .plasma-core {
-        position: absolute; right: -2.4rem; width: 3rem; height: 2.5rem;
-        background: radial-gradient(circle, #ffffff 10%, #00ffcc 40%, rgba(0,180,216,0.6) 70%, transparent 100%);
-        border-radius: 0 50% 50% 0; filter: drop-shadow(0 0 10px #00ffcc) drop-shadow(0 0 20px #00b4d8);
-    }
+    .rocket-exhaust-nozzle { display: flex; align-items: center; position: relative; height: 4.8rem; width: 4rem; background: linear-gradient(135deg, #1f293d, #111827); border-radius: 0 14px 14px 0; border: 1px solid #00ffcc; box-shadow: inset -3px 0 8px rgba(0,255,204,0.2); }
+    .plasma-core { position: absolute; right: -2.4rem; width: 3rem; height: 2.5rem; background: radial-gradient(circle, #ffffff 10%, #00ffcc 40%, rgba(0,180,216,0.6) 70%, transparent 100%); border-radius: 0 50% 50% 0; filter: drop-shadow(0 0 10px #00ffcc) drop-shadow(0 0 20px #00b4d8); }
     .plasma-core.pulse { animation: plasmaPulse 0.7s ease-out 1; }
     .plasma-core.flicker { animation: plasmaFlicker 0.12s infinite alternate ease-in-out; }
     @keyframes plasmaPulse { 0% { transform: scale(1); } 40% { transform: scale(1.35); filter: drop-shadow(0 0 18px #ffffff) drop-shadow(0 0 30px #00ffcc); } 100% { transform: scale(1); } }
     @keyframes plasmaFlicker { 0% { transform: scaleX(0.8) scaleY(0.9); opacity: 0.8; } 100% { transform: scaleX(1.4) scaleY(1.2); opacity: 1; } }
 
-    /* Students and role popup */
-    .students-footer-bar {
-        background: #131b2e; border: 2px solid #22304f; border-radius: 12px; padding: 0.7rem 1rem; display: flex; justify-content: center;
-        align-items: flex-start; gap: 0.9rem; flex-wrap: wrap; min-height: 4.5rem; flex-shrink: 0;
-    }
-    .popup-zone { flex: 1; min-height: 9rem; }
+    /* Students and role popup (names at the bottom, popup directly below the tapped name) */
+    .students-footer-bar { margin-top: auto; background: #131b2e; border: 2px solid #22304f; border-radius: 12px; padding: 0.7rem 1rem; display: flex; justify-content: center; align-items: flex-start; gap: 0.9rem; flex-wrap: wrap; min-height: 4.5rem; flex-shrink: 0; }
+    .popup-zone { flex: none; height: 9rem; }
     .student-pill-wrapper { position: relative; display: inline-block; }
-    .student-pill {
-        background: #1f293d; border: 2px solid #3b4d71; color: #cfd8dc; padding: 0.55rem 1.2rem; border-radius: 25px; font-size: 1.25rem;
-        font-weight: bold; letter-spacing: 0.5px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); cursor: pointer; transition: all 0.2s ease; text-align: center;
-    }
+    .student-pill { background: #1f293d; border: 2px solid #3b4d71; color: #cfd8dc; padding: 0.55rem 1.2rem; border-radius: 25px; font-size: 1.25rem; font-weight: bold; letter-spacing: 0.5px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); cursor: pointer; transition: all 0.2s ease; text-align: center; }
     .student-pill:hover { border-color: #00ffcc; transform: translateY(-2px); }
     .student-pill.cycling { background: #f39c12; border-color: #f1c40f; color: #000; transform: scale(1.08); box-shadow: 0 0 15px #f39c12; }
     .student-pill.selected-winner { background: #00b894; border-color: #55efc4; color: #000; transform: scale(1.12); box-shadow: 0 0 25px #00ffcc; }
@@ -167,10 +116,7 @@
     .student-pill.ghost.cycling { background: #f39c12; color: #000; border-style: solid; }
     .student-pill.ghost.selected-winner { background: #00b894; color: #000; border-style: solid; }
     .pill-tag { display: block; font-size: 0.6rem; font-weight: normal; letter-spacing: 1px; text-transform: uppercase; margin-top: 0.1rem; }
-    .student-popup-card {
-        position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: #131b2e; border: 2px solid #00ffcc;
-        border-radius: 8px; padding: 0.5rem 0.7rem; width: 15rem; text-align: center; box-shadow: 0 4px 15px rgba(0,255,204,0.3); z-index: 1000;
-    }
+    .student-popup-card { position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: #131b2e; border: 2px solid #00ffcc; border-radius: 8px; padding: 0.5rem 0.7rem; width: 15rem; text-align: center; box-shadow: 0 4px 15px rgba(0,255,204,0.3); z-index: 1000; }
     .student-popup-card h3 { font-size: 0.9rem; color: #00ffcc; margin-bottom: 0.15rem; }
     .student-popup-card .official { font-size: 0.95rem; font-weight: bold; margin-bottom: 0.15rem; }
     .student-popup-card .secret { font-size: 0.85rem; font-weight: bold; margin-bottom: 0.3rem; }
@@ -188,7 +134,6 @@
     .overlay-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; border-bottom: 2px solid #22304f; padding-bottom: 0.7rem; margin-bottom: 0.8rem; flex-shrink: 0; flex-wrap: wrap; }
     .overlay-header h2 { color: #00ffcc; font-size: 1.6rem; }
     .overlay-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
-
     .rules-tabs { display: flex; gap: 0.5rem; }
     .rules-tabs .btn.active { background: #00b894; color: #000; border-color: #55efc4; }
     .rules-body-wrap { flex: 1; min-height: 0; overflow: hidden; }
@@ -200,83 +145,98 @@
     .rules-text blockquote { border-left: 3px solid #00ffcc; margin: 0.25rem 0 0 0; padding: 0.1rem 0.6rem; background: #131b2e; font-size: 0.92em; }
     .rules-text[contenteditable="true"] { outline: 2px dashed #f1c40f; padding: 0.4rem; }
 
-    .settings-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 1.2rem; overflow: hidden; font-size: 0.95rem; }
+    .settings-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 1.2rem; overflow: hidden; font-size: 0.9rem; }
     @media (max-width: 900px) { .settings-body { grid-template-columns: 1fr; overflow: auto; } }
-    .settings-col { display: flex; flex-direction: column; gap: 0.7rem; min-height: 0; }
-    .form-group label { display: block; font-size: 0.9rem; margin-bottom: 0.25rem; color: #b0bec5; font-weight: bold; }
-    .form-group input[type="text"], .form-group textarea, .form-group input[type="number"] {
-        width: 100%; background: #131b2e; border: 2px solid #3b4d71; color: #fff; padding: 0.5rem; border-radius: 8px; font-size: 0.95rem;
-    }
+    .settings-col { display: flex; flex-direction: column; gap: 0.55rem; min-height: 0; }
+    .form-group label { display: block; font-size: 0.85rem; margin-bottom: 0.2rem; color: #b0bec5; font-weight: bold; }
+    .form-group input[type="text"], .form-group textarea, .form-group input[type="number"], .form-group select { width: 100%; background: #131b2e; border: 2px solid #3b4d71; color: #fff; padding: 0.4rem; border-radius: 8px; font-size: 0.9rem; }
     .form-group.grow { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-    .form-group.grow textarea { flex: 1; min-height: 6rem; resize: none; font-family: monospace; }
+    .form-group.grow textarea { flex: 1; min-height: 4rem; resize: none; font-family: monospace; }
     .checkbox-group { display: flex; align-items: center; gap: 0.6rem; }
-    .checkbox-group input { width: 1.3rem; height: 1.3rem; }
+    .checkbox-group input { width: 1.2rem; height: 1.2rem; }
     .checkbox-group label { margin: 0; color: #fff; }
-    .note-box { background: #131b2e; border: 1px solid #3b4d71; border-radius: 8px; padding: 0.6rem 0.8rem; font-size: 0.85rem; color: #cfd8dc; line-height: 1.4; }
+    .note-box { background: #131b2e; border: 1px solid #3b4d71; border-radius: 8px; padding: 0.5rem 0.7rem; font-size: 0.8rem; color: #cfd8dc; line-height: 1.35; }
     .note-box b { color: #00ffcc; }
+    .noimp-list { display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; background: #131b2e; border: 1px solid #3b4d71; border-radius: 8px; padding: 0.4rem 0.6rem; font-size: 0.85rem; }
+    .noimp-list label { display: flex; align-items: center; gap: 0.3rem; font-weight: normal; color: #fff; margin: 0; }
+    .reveal-box { background: #131b2e; border: 1px dashed #3b4d71; border-radius: 8px; padding: 0.5rem 0.7rem; min-height: 2.4rem; font-size: 1rem; font-weight: bold; color: #ff7675; }
     .settings-error { color: #ff7675; font-weight: bold; min-height: 1.2rem; font-size: 0.9rem; }
     .settings-footer { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 0.7rem; flex-shrink: 0; flex-wrap: wrap; }
 
-    .meeting-overlay { align-items: center; justify-content: center; text-align: center; gap: 1.2rem; }
+    .meeting-overlay, .night-overlay { align-items: center; justify-content: center; text-align: center; gap: 1.2rem; }
     .meeting-overlay h2 { font-size: 3.2rem; color: #ff7675; letter-spacing: 3px; }
     .meeting-overlay .meeting-sub { font-size: 1.6rem; color: #e0e0e0; max-width: 60rem; }
     .meeting-overlay .meeting-clock { font-size: 9rem; font-weight: bold; color: #00ffcc; font-variant-numeric: tabular-nums; line-height: 1; }
     .meeting-overlay .meeting-clock.done { color: #ff7675; }
+    .night-overlay { background: #02030a; z-index: 3500; }
+    .night-overlay h2 { font-size: 4.2rem; color: #b9c4ff; letter-spacing: 4px; text-shadow: 0 0 30px #4a5bd6; }
+    .night-overlay .night-moon { font-size: 6rem; }
+    .night-overlay .btn { font-size: 1.4rem; padding: 0.8rem 2.4rem; }
+    .assign-overlay { background: rgba(5,8,15,0.96); z-index: 3400; align-items: center; justify-content: center; text-align: center; gap: 1.2rem; }
+    .assign-overlay h2 { font-size: 3rem; color: #f1c40f; letter-spacing: 3px; }
+    .assign-overlay p { font-size: 2rem; color: #e0e0e0; }
+    .assign-overlay .assign-big { font-size: 3.4rem; font-weight: 900; color: #ff7675; letter-spacing: 3px; }
 
     /* Explosion */
     .explosion-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 99999; display: none; overflow: hidden; }
-    .explosion-flash-core {
-        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); width: 200px; height: 200px;
-        background: radial-gradient(circle, #ffffff 0%, #ffaa00 40%, #ff3838 70%, transparent 100%); border-radius: 50%;
-        box-shadow: 0 0 150px 80px #ff3838, 0 0 300px 150px #ffaa00; animation: coreExplosion 1.2s cubic-bezier(0.1, 1, 0.3, 1) forwards;
-    }
+    .explosion-flash-core { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); width: 200px; height: 200px; background: radial-gradient(circle, #ffffff 0%, #ffaa00 40%, #ff3838 70%, transparent 100%); border-radius: 50%; box-shadow: 0 0 150px 80px #ff3838, 0 0 300px 150px #ffaa00; animation: coreExplosion 1.2s cubic-bezier(0.1, 1, 0.3, 1) forwards; }
     @keyframes coreExplosion { 0% { transform: translate(-50%,-50%) scale(0); opacity: 1; } 40% { transform: translate(-50%,-50%) scale(12); opacity: 1; } 100% { transform: translate(-50%,-50%) scale(25); opacity: 0; } }
     .debris-piece { position: absolute; top: 50%; left: 50%; background: linear-gradient(135deg, #ff5252, #333); border: 2px solid #ffaa00; box-shadow: 0 0 12px #ff3838; animation: flyDebris 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
     @keyframes flyDebris { 0% { transform: translate(-50%,-50%) rotate(0deg) scale(1); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0.3); opacity: 0; } }
-    .destruction-banner {
-        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); background: rgba(15,5,5,0.92); border: 4px solid #ff3838;
-        color: #ff3838; padding: 1.5rem 3rem; font-size: 2.6rem; font-weight: bold; letter-spacing: 3px; text-align: center;
-        box-shadow: 0 0 50px #ff3838, inset 0 0 30px #ff3838; border-radius: 16px; animation: bannerZoom 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.6s forwards; z-index: 100000;
-    }
+    .destruction-banner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); background: rgba(15,5,5,0.92); border: 4px solid #ff3838; color: #ff3838; padding: 1.5rem 3rem; font-size: 2.6rem; font-weight: bold; letter-spacing: 3px; text-align: center; box-shadow: 0 0 50px #ff3838, inset 0 0 30px #ff3838; border-radius: 16px; animation: bannerZoom 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.6s forwards; z-index: 100000; }
     @keyframes bannerZoom { 0% { transform: translate(-50%,-50%) scale(0); opacity: 0; } 100% { transform: translate(-50%,-50%) scale(1); opacity: 1; } }
 
-    /* Take-off result banner */
-    .takeoff-banner {
-        position: fixed; top: 38%; left: 50%; transform: translate(-50%, -50%); z-index: 3000; pointer-events: none; display: none; text-align: center;
-        background: rgba(11,15,25,0.92); border: 4px solid #00ffcc; border-radius: 16px; padding: 1.5rem 3rem; box-shadow: 0 0 40px rgba(0,255,204,0.5);
-    }
+    .takeoff-banner { position: fixed; top: 38%; left: 50%; transform: translate(-50%, -50%); z-index: 3000; pointer-events: none; display: none; text-align: center; background: rgba(11,15,25,0.92); border: 4px solid #00ffcc; border-radius: 16px; padding: 1.5rem 3rem; box-shadow: 0 0 40px rgba(0,255,204,0.5); }
     .takeoff-banner.shaky { border-color: #ffaa00; box-shadow: 0 0 40px rgba(255,170,0,0.6); }
-    .takeoff-banner.risky { border-color: #ff3838; box-shadow: 0 0 40px rgba(255,56,56,0.7); }
+    .takeoff-banner.risky { border-color: #ff7a00; box-shadow: 0 0 40px rgba(255,122,0,0.7); }
+    .takeoff-banner.barely { border-color: #ff3838; box-shadow: 0 0 40px rgba(255,56,56,0.8); }
     .takeoff-banner h2 { font-size: 3rem; letter-spacing: 3px; }
     .takeoff-banner p { font-size: 1.4rem; margin-top: 0.4rem; color: #cfd8dc; }
+    .failed-screen { position: fixed; inset: 0; z-index: 3000; pointer-events: none; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 1rem; background: radial-gradient(circle, rgba(90,0,10,0.55), rgba(20,0,3,0.88)); animation: failedPulse 3.2s ease-in-out infinite; }
+    .failed-screen h2 { font-size: 6rem; font-weight: 900; letter-spacing: 6px; color: #ff3838; text-shadow: 0 0 40px #ff0000; }
+    .failed-screen p { font-size: 2.4rem; letter-spacing: 3px; color: #ffd0d0; }
+    @keyframes failedPulse { 0%, 100% { opacity: 0.82; } 50% { opacity: 1; } }
 
-    /* Secret area (invisible), names, decoy and warning */
-    .secret-area {
-        position: fixed; left: 0; bottom: 0; width: max(130px, 28vw); height: max(130px, 24vh); background: transparent; z-index: 4;
-        -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-    }
-    .secret-names {
-        position: fixed; left: 10px; bottom: calc(max(130px, 24vh) + 6px); font-size: 12px; color: #cfd8dc; background: #131b2e;
-        border: 1px solid #22304f; border-radius: 6px; padding: 4px 8px; z-index: 5; max-width: calc(100% - 32px);
-    }
+    /* Decoy and warning */
     .decoy-wrap { position: fixed; right: 1rem; bottom: 1rem; display: flex; flex-direction: column; align-items: center; gap: 0.4rem; z-index: 4; }
     .decoy-label { background: #c1121f; color: #fff; font-weight: 800; font-size: 0.8rem; letter-spacing: .12em; padding: 0.25rem 0.6rem; border-radius: 4px; border: 2px solid #fff; box-shadow: 0 0 0 2px #c1121f; }
-    .decoy {
-        width: 5.6rem; height: 5.6rem; border-radius: 50%; border: 6px solid #7a0b13; cursor: pointer; font-size: 2.6rem; line-height: 1; padding: 0;
-        background: radial-gradient(circle at 35% 30%, #ff5a5f 0%, #e01e26 55%, #a50d14 100%); display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 6px 0 #5a070d, 0 10px 18px rgba(0,0,0,.4); -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-    }
+    .decoy { width: 5.6rem; height: 5.6rem; border-radius: 50%; border: 6px solid #7a0b13; cursor: pointer; font-size: 2.6rem; line-height: 1; padding: 0; background: radial-gradient(circle at 35% 30%, #ff5a5f 0%, #e01e26 55%, #a50d14 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 0 #5a070d, 0 10px 18px rgba(0,0,0,.4); -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
     .decoy:active { transform: translateY(4px); box-shadow: 0 2px 0 #5a070d, 0 4px 10px rgba(0,0,0,.4); }
-    .warning {
-        position: fixed; inset: 0; z-index: 200000; display: none; flex-direction: column; align-items: center; justify-content: center;
-        gap: 1rem; padding: 1.5rem; text-align: center; color: #fff; animation: warnFlash .35s steps(1, end) infinite alternate;
-    }
+    .warning { position: fixed; inset: 0; z-index: 200000; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; padding: 1.5rem; text-align: center; color: #fff; animation: warnFlash .35s steps(1, end) infinite alternate; }
     .warning h2 { margin: 0; font-weight: 900; letter-spacing: .04em; text-wrap: balance; font-size: clamp(34px, 8vw, 96px); }
     .warning.level2 h2 { font-size: clamp(18px, 2.6vw, 38px); }
     .warning .kill { display: none; margin: 0; font-weight: 900; line-height: 0.95; letter-spacing: .04em; font-size: clamp(60px, 17vw, 300px); color: #ffe066; animation: killFlash .17s steps(1, end) infinite alternate; text-wrap: balance; }
     .warning.level2 .kill { display: block; }
     @keyframes warnFlash { 0% { background: #b00020; } 100% { background: #1a0003; } }
     @keyframes killFlash { 0% { color: #ffe066; } 100% { color: #ffffff; } }
+
+    /* Repair game (a small Touch Match) */
+    .repair-overlay { position: fixed; inset: 0; background: #20211f; z-index: 3600; display: none; flex-direction: column; padding: 1rem 1.4rem; gap: 0.7rem; }
+    .repair-top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .repair-title { font-size: 1.8rem; font-weight: 900; color: #f2b705; letter-spacing: 2px; }
+    .repair-clock { font-size: 3.2rem; font-weight: 900; font-variant-numeric: tabular-nums; color: #fff; }
+    .repair-clock.low { color: #ff3838; animation: timerFlash 0.5s steps(1, end) infinite; }
+    .repair-count { font-size: 2.2rem; font-weight: 900; color: #9fe1cb; }
+    .repair-delegates { text-align: center; font-size: 2rem; font-weight: 800; color: #f2b705; min-height: 2.6rem; }
+    .repair-msg { text-align: center; font-size: 1.3rem; font-weight: 700; min-height: 1.8rem; color: #f2b705; }
+    .repair-msg.bad { color: #ff7675; }
+    .repair-board { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-content: end; padding-bottom: 0.6rem; }
+    .repair-col { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; align-content: flex-end; }
+    .rpill { width: fit-content; min-width: 4.5rem; min-height: 3rem; padding: 0.5rem 1.2rem; border-radius: 999px; font-size: 1.7rem; font-weight: 700; cursor: pointer; border: 4px solid transparent; color: #fff; user-select: none; -webkit-user-select: none; touch-action: manipulation; text-align: center; }
+    .rpill.touched { border-color: #f2b705; }
+    .rpill.correct { background: #639922 !important; border-color: #a8d96a; }
+    .rpill.wrong { background: #e24b4a !important; border-color: #f7c1c1; }
+    .rpill.cA { background: #d85a30; } .rpill.cB { background: #7f77dd; } .rpill.cC { background: #1d9e75; } .rpill.cD { background: #d4537e; }
+    .rpill.cE { background: #639922; } .rpill.cF { background: #ba7517; } .rpill.cG { background: #378add; } .rpill.cH { background: #888780; }
+    .rpill.txtL { background: #d85a30; } .rpill.txtR0 { background: #7f77dd; } .rpill.txtR1 { background: #1d9e75; } .rpill.txtR2 { background: #d4537e; } .rpill.txtR3 { background: #378add; } .rpill.txtR4 { background: #ba7517; }
+    .repair-bottom { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; min-height: 3.4rem; }
+    .repair-bottom .btn { font-size: 1.3rem; padding: 0.7rem 2rem; }
+    .repair-names { display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center; }
+    .repair-names .nm { padding: 0.6rem 1.4rem; border-radius: 999px; background: #282a27; border: 3px solid #4a4842; font-size: 1.6rem; font-weight: 700; cursor: pointer; }
+    .repair-names .nm.sel { background: #f2b705; color: #000; border-color: #fff; }
+    .repair-result { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 5rem; font-weight: 900; letter-spacing: 4px; z-index: 5; }
+    .repair-result.good { background: rgba(10,60,30,0.94); color: #55efc4; }
+    .repair-result.bad { background: rgba(90,0,10,0.94); color: #ff7675; }
 </style>
 </head>
 <body>
@@ -291,6 +251,7 @@
 </div>
 
 <div class="takeoff-banner" id="takeoff-banner"><h2 id="takeoff-title"></h2><p id="takeoff-sub"></p></div>
+<div class="failed-screen" id="failed-screen"><h2>MISSION FAILED</h2><p>SABOTAGED BY THE IMPOSTOR</p></div>
 
 <div class="app">
     <div class="top-header">
@@ -299,7 +260,8 @@
             <h1>Rocket Launch Mission</h1>
         </div>
         <div class="header-controls">
-            <span class="danger-status" id="danger-status">DANGER: <span id="danger-count">0</span> / 3</span>
+            <span class="danger-status" id="danger-status">DANGER: <span id="danger-count">0</span> / 4</span>
+            <button class="btn btn-assign" id="btn-assign">🎲 Assign roles</button>
             <button class="btn btn-test" id="btn-test">⚡ Test All Green</button>
             <button class="btn btn-rules" id="btn-rules">📜 Rules</button>
             <button class="btn" id="btn-settings">⚙ Settings</button>
@@ -359,6 +321,7 @@
             <div class="form-group"><label for="setting-rocket-label">Rocket label</label><input type="text" id="setting-rocket-label"></div>
             <div class="form-group"><label for="setting-students">Student names (up to 9, comma-separated)</label><input type="text" id="setting-students"></div>
             <div class="form-group"><label for="setting-impostor-count">Number of impostors (1 or 2)</label><input type="number" id="setting-impostor-count" min="1" max="2"></div>
+            <div class="form-group"><label>Cannot be the impostor</label><div class="noimp-list" id="noimp-list"></div></div>
             <div class="form-group"><label for="setting-weight">Chance of a student who has not been picked yet (times)</label><input type="number" id="setting-weight" min="1" max="10"></div>
             <div class="form-group"><label for="setting-takeoff-sound">Take-off YouTube video URL</label><input type="text" id="setting-takeoff-sound"></div>
             <div class="form-group"><label for="setting-damage-sound">Meltdown sound URL (blank for the built-in sound)</label><input type="text" id="setting-damage-sound" placeholder="https://example.com/damage.mp3"></div>
@@ -366,13 +329,17 @@
         <div class="settings-col">
             <div class="form-group checkbox-group"><input type="checkbox" id="setting-sabotage-enabled"><label for="setting-sabotage-enabled">Enable sabotage</label></div>
             <div class="form-group"><label for="setting-sabotage-delay">Sabotage delay after the floor is finished (seconds)</label><input type="number" id="setting-sabotage-delay" min="0"></div>
-            <div class="note-box"><b>Secret area:</b> an invisible block in the bottom left corner of the screen. <b>Tap it twice</b> (within 1.5 seconds), then <b>press and hold</b> for 2 seconds. The impostor names show next to it for 3 seconds.</div>
+            <div class="form-group"><label for="setting-delegates">Repair game delegates</label><select id="setting-delegates"><option value="nominate">The class nominates two students</option><option value="random">The game draws two students at random</option></select></div>
+            <div class="form-group"><label for="setting-window">Repair game: both taps within (milliseconds)</label><input type="number" id="setting-window" min="200" max="2000" step="100"></div>
+            <div class="form-group"><label>Who is the impostor? (press and hold)</label>
+                <button class="btn" id="btn-reveal" style="width:100%; justify-content:center;">👁 Hold to show</button>
+                <div class="reveal-box" id="reveal-box"></div></div>
             <div class="note-box"><b>Red button (bottom right):</b> the decoy. Any tap starts the alarm. The second and later taps also make the student whose turn it is a Killed ghost.</div>
-            <div class="note-box"><b>Undo:</b> reverses the last action, one step at a time.</div>
             <button class="btn" id="btn-undo" style="align-self:flex-start;">↩ Undo</button>
         </div>
         <div class="settings-col">
-            <div class="form-group grow"><label for="setting-config">Exercises (JSON). Each floor has a page, an exercise, a number of questions and a time in seconds.</label><textarea id="setting-config"></textarea></div>
+            <div class="form-group grow"><label for="setting-config">Exercises (JSON): page, exercise, questions and time in seconds</label><textarea id="setting-config"></textarea></div>
+            <div class="form-group grow"><label for="setting-pairs">Repair game words, one pair per line like "cat = hat" (a word alone is an extra decoy)</label><textarea id="setting-pairs"></textarea></div>
         </div>
     </div>
     <div class="settings-footer">
@@ -392,9 +359,23 @@
     <button class="btn" id="meeting-close">Close the meeting</button>
 </div>
 
-<!-- Secret area, decoy and warning -->
-<div class="secret-area" id="secret-area"></div>
-<div class="secret-names" id="secret-names" hidden></div>
+<!-- Night -->
+<div class="fullscreen-overlay night-overlay" id="night-overlay">
+    <div class="night-moon">🌙</div>
+    <h2>It's night. Time to kill.</h2>
+    <button class="btn" id="night-morning">☀️ It's morning</button>
+</div>
+
+<!-- Assign roles animation -->
+<div class="fullscreen-overlay assign-overlay" id="assign-overlay">
+    <h2 id="assign-title">Assigning roles…</h2>
+    <p id="assign-sub"></p>
+    <div class="assign-big" id="assign-big"></div>
+</div>
+
+<!-- Repair game -->
+<div class="repair-overlay" id="repair-overlay"></div>
+
 <div class="decoy-wrap">
     <div class="decoy-label">DO NOT USE</div>
     <button class="decoy" id="decoy" type="button" aria-label="Do not use">🔒</button>
@@ -410,22 +391,28 @@
     'use strict';
 
     /* ---------- Constants and defaults ---------- */
-    var LS_CONFIG = 'rlm-config-v1', LS_STATE = 'rlm-state-v1', LS_RULES = 'rlm-rules-v1';
+    var LS_CONFIG = 'rlm-config-v2', LS_STATE = 'rlm-state-v2', LS_RULES = 'rlm-rules-v2';
+    var LIMIT = 4;
     var ROLES = [
         { icon: '👨‍✈️', name: 'Captain' }, { icon: '🧑‍🚀', name: 'Pilot' }, { icon: '🔧', name: 'Engineer' },
         { icon: '🩺', name: 'Doctor' }, { icon: '🧭', name: 'Navigator' }, { icon: '🔬', name: 'Scientist' },
         { icon: '📡', name: 'Radio operator' }, { icon: '🍳', name: 'Cook' }, { icon: '🛡️', name: 'Security officer' },
         { icon: '🌱', name: 'Gardener' }
     ];
+    var DEFAULT_PAIRS = 'cat = hat\nlight = night\ntree = bee\nshoe = blue\nstar = car\nbell = shell\ndoor = floor\nbook = look\nphone = bone\nchair = bear\nmoon = spoon\nfish = dish';
     var DEFAULT_CONFIG = {
         rocketLabel: 'P19',
         students: ['Alex', 'Maria', 'Liam', 'Sofia', 'Noah', 'Emma'],
         impostorCount: 1,
+        noImpostor: [],
         takeoffSoundUrl: 'https://www.youtube.com/watch?v=Vfn_u768UoQ',
         damageSoundUrl: '',
         sabotageEnabled: true,
-        sabotageDelay: 30,
+        sabotageDelay: 20,
         unpickedWeight: 3,
+        delegateMode: 'nominate',
+        matchWindowMs: 1000,
+        repairPairs: DEFAULT_PAIRS,
         exercises: [
             { page: 10, exercise: 4, questions: 4, time: 90 },
             { page: 10, exercise: 5, questions: 8, time: 180 },
@@ -435,45 +422,47 @@
     };
     var MEETING_SECONDS = 120;
     var GHOST_HIDE_MS = 3000;
+    var NIGHT_DELAY_MS = 3000;
     var WARNING_MS = 6000;
     var DECOY_DELAY_MS = 500;
-    var SECRET_GAP_MS = 1500;
-    var SECRET_HOLD_MS = 2000;
-    var SECRET_REVEAL_MS = 3000;
-    var TAP_MAX_MS = 400;
+    var REPAIR_TARGET = 10, REPAIR_SECONDS = 120, REPAIR_PENALTY = 5, PRACTICE_TARGET = 5;
 
     /* ---------- Rules text ---------- */
     function rule(title, body) { return '<div class="rule"><h3>' + title + '</h3>' + body + '</div>'; }
     var RULES_DEFAULT = {
         a2: [
             rule('1. 🎯 Your mission', '<p>You are a crew. Your rocket must take off. Each floor of the rocket is an exercise from your book. Answer all the questions on every floor to fill the fuel tank.</p>'),
-            rule('2. 🤫 Your secret role', '<p>Before the game, every student comes to the screen and taps their own name. A small box shows your official role on the ship and your secret role. Stand close to the screen, and do not let anyone see! You can tell everyone your official role, but never tell anyone your secret role.</p>'),
+            rule('2. 🤫 Your secret role', '<p>The teacher presses "Assign roles". The screen tells everyone how many impostors there are. Then every student comes to the screen and taps their own name. You can look only one time! A small box shows your official role on the ship and your secret role. Stand close to the screen, and do not let anyone see. You can tell everyone your official role, but never tell anyone your secret role.</p>'),
             rule('3. 🎲 The picker', '<p>The teacher taps a question number. The computer chooses a student. That student answers a question from the exercise and comes to the board. Everyone must pay attention, because you can be chosen again soon!</p>'),
-            rule('4. ✅ Right and wrong', '<p>The teacher says if the answer is right or wrong. Then the student taps the number once for a green ✅ correct answer. Tap again for a red ❌ wrong answer. A wrong answer gives the ship 1 danger point.</p>'),
-            rule('5. ⚠️ Danger points', '<p>Danger points are bad for the ship. A floor that runs out of time also gives 1 danger point, and this point never goes away. At 3 danger points, the rocket explodes 💥 and you lose.</p>'),
+            rule('4. ✅ Right and wrong', '<p>The teacher says if the answer is right or wrong. Then the student taps the number once for a green ✅ correct answer. Tap again for a red ❌ wrong answer. A wrong answer gives the ship 1 danger point. A red question is asked again until the answer is right.</p>'),
+            rule('5. ⚠️ Danger points', '<p>Danger points never go away. A wrong answer gives 1 danger point. A floor that runs out of time also gives 1 danger point. At 4 danger points, the rocket explodes 💥 and you lose.</p>'),
             rule('6. ⏱️ Floor timers', '<p>Each floor has a timer. The timer starts when the first question on that floor is tapped. Finish the floor before the time is over!</p>'),
-            rule('7. 🕵️ The impostors', '<p>Secret impostors are in the crew. They want the rocket to fail. They can sabotage a floor. A sabotaged floor is broken. To repair it, the whole class must win another game. The teacher always says an impostor\'s answer is correct, even when it is wrong. Impostors should try to answer correctly, because a wrong answer can give them away.</p>'),
-            rule('8. 🚨 Emergency meeting', '<p>When a floor is finished, anyone can call one emergency meeting for that floor. Talk together for two minutes. Who do you think is the impostor? Say why you think so.</p>'),
-            rule('9. 🗳️ Voting', '<p>After the talk, everyone votes for one student. Or you can pass. The student with the most votes leaves the ship. If you find all the impostors, there is no more sabotage.</p>'),
-            rule('10. 👻 Ghosts', '<p>A student who leaves the game becomes a ghost. There are three kinds:</p><ul><li><b>Ejected:</b> a student voted off the ship. The screen shows if the student was an impostor.</li><li><b>Killed:</b> a student killed by an impostor.</li><li><b>Casualty:</b> a student with two yellow cards.</li></ul><p>Ghosts can still be chosen and still answer questions. Their questions do not count in the game, and then they disappear.</p>'),
-            rule('11. 🏆 How to win', '<p>Answer all the questions. Keep the danger low. The rocket takes off! 🚀 With 0 danger points, the take-off is perfect. With 1 point, it is shaky. With 2 points, it is very risky.</p>'),
-            rule('12. 🔒 The DO NOT USE button', '<p>There is a red button at the bottom of the screen. Do not touch it! It shows who the impostors are. Only the teacher can use it.</p>'),
-            rule('13. 🟨🟨 Casualty', '<p>Sometimes a student gets two yellow cards from the teacher. This student is a casualty. A casualty has had a fatal accident and becomes a ghost 👻. Casualties still answer questions in the lesson, but their answers do not count in the game.</p><blockquote><b>casualty</b> (noun): a person who is badly hurt or killed in an accident.</blockquote>')
+            rule('7. 🕵️ The impostors', '<p>Secret impostors are in the crew. They want the rocket to fail. They can sabotage a floor. A sabotaged floor is destroyed! To repair it, two students play the repair game and the whole class helps. If the repair fails, the impostor wins. The teacher always says an impostor\'s answer is correct, even when it is wrong. Impostors should try to answer correctly, because a wrong answer can give them away.</p>'),
+            rule('8. 🌙 The night', '<p>After every floor except the last one, it is night. Everybody goes to sleep. The impostor wakes up and points to a crewmate. Everybody wakes up, and then the teacher says who has been killed. That student becomes a ghost.</p>'),
+            rule('9. 🚨 Emergency meeting', '<p>After the night, anyone can call one emergency meeting. Talk together for two minutes. Who do you think is the impostor? Say why you think so.</p>'),
+            rule('10. 🗳️ Voting', '<p>After the talk, everyone votes for one student. Or you can pass. The student with the most votes is ejected. If you eject a crewmate by mistake, the crew gets smaller! If you find all the impostors, there is no more sabotage.</p>'),
+            rule('11. 👻 Ghosts', '<p>A student who leaves the game becomes a ghost. There are three kinds:</p><ul><li><b>Ejected:</b> a student voted off the ship. The screen shows if the student was an impostor.</li><li><b>Killed:</b> a student killed by an impostor.</li><li><b>Casualty:</b> a student with two yellow cards.</li></ul><p>Ghosts can still be chosen and still answer questions. They cannot vote. Their questions do not count in the game, and then they disappear.</p>'),
+            rule('12. 🏆 How to win', '<p>The crew wins when the rocket takes off! 🚀 With 0 danger points, the take-off is perfect. With 1 point, it is shaky. With 2 points, it is very risky. With 3 points, the crew barely makes it. The impostor wins if the crew becomes as small as the number of impostors, or if the repair fails. Then the mission fails and the rocket cannot take off.</p>'),
+            rule('13. 🔒 The DO NOT USE button', '<p>There is a red button at the bottom of the screen. Do not touch it! It shows who the impostors are. Only the teacher can use it.</p>'),
+            rule('14. 🙈 No cheating', '<p>Do not cheat! If a student peeks when everybody is asleep, the game is over. There are no winners and no losers, and the class does classwork.</p>'),
+            rule('15. 🟨🟨 Casualty', '<p>Sometimes a student gets two yellow cards from the teacher. This student is a casualty. A casualty has had a fatal accident and becomes a ghost 👻. Casualties still answer questions in the lesson, but their answers do not count in the game.</p><blockquote><b>casualty</b> (noun): a person who is badly hurt or killed in an accident.</blockquote>')
         ].join(''),
         b1: [
             rule('1. 🎯 Your mission', '<p>Your crew has to launch a rocket. Each floor of the rocket is an exercise from your book. To fill the fuel tank, you must complete every question on every floor before the danger gets too high.</p>'),
-            rule('2. 🤫 Your secret role', '<p>Before the game starts, every student comes to the screen and taps their own name. A small box shows your official role on the ship, such as Captain or Engineer, and your secret role. Stand close to the screen and block the box with your body, so nobody else can see it. You may tell everyone your official role, but never reveal your secret role.</p>'),
+            rule('2. 🤫 Your secret role', '<p>After the teacher has pressed "Assign roles", the screen announces how many impostors there are. Then every student comes to the screen and taps their own name. You can look only once. A small box shows your official role on the ship, such as Captain or Engineer, and your secret role. Stand close to the screen and block the box with your body, so nobody else can see it. You may tell everyone your official role, but never reveal your secret role.</p>'),
             rule('3. 🎲 The random picker', '<p>When the teacher taps a question number, the computer chooses a student at random. That student answers a question from the exercise and then comes to the board. Stay alert, because you might be chosen again at any time!</p>'),
-            rule('4. ✅ Marking answers', '<p>The teacher tells the student whether the answer is correct. Then the student taps the question once to turn it green ✅ for a correct answer, and a second time to turn it red ❌ for a mistake. A mistake gives the ship 1 danger point.</p>'),
-            rule('5. ⚠️ Danger points', '<p>You get a danger point for every mistake, and for every floor that runs out of time. A point from a timer can never be removed. If the ship reaches 3 danger points, the reactor melts down 💥 and the mission fails.</p>'),
+            rule('4. ✅ Marking answers', '<p>The teacher tells the student whether the answer is correct. Then the student taps the question once to turn it green ✅ for a correct answer, and a second time to turn it red ❌ for a mistake. A mistake gives the ship 1 danger point. A red question is asked again until the answer is correct.</p>'),
+            rule('5. ⚠️ Danger points', '<p>Danger points never go away. You get a danger point for every mistake, and for every floor that runs out of time. If the ship reaches 4 danger points, the reactor melts down 💥 and the mission fails.</p>'),
             rule('6. ⏱️ Floor timers', '<p>Every floor has its own timer. It starts as soon as someone taps the first question on that floor, so work quickly and finish before the time runs out.</p>'),
-            rule('7. 🕵️ The impostors', '<p>Secretly, one or two students are impostors. They are trying to destroy the mission, and one way they do it is by sabotaging a floor. A sabotaged floor causes extra danger until the whole class has won another game to repair it. The teacher always says that an impostor\'s answer is correct, even when it is wrong. Impostors should try to answer correctly, because a wrong answer could give them away.</p>'),
-            rule('8. 🚨 Emergency meeting', '<p>Once a floor has been completed, anyone can call one emergency meeting for that floor. You have two minutes to discuss who you suspect and to explain your reasons. Did anyone behave strangely?</p>'),
-            rule('9. 🗳️ Voting', '<p>After the discussion, each student votes for one person or chooses to pass. The student with the most votes is removed from the ship. If you find every impostor, the sabotage stops, but the mission is not over yet.</p>'),
-            rule('10. 👻 Ghosts', '<p>A student who leaves the game becomes a ghost. There are three kinds:</p><ul><li><b>Ejected:</b> a student who has been voted off the ship. The screen shows whether that student was an impostor.</li><li><b>Killed:</b> a student who has been killed by an impostor.</li><li><b>Casualty:</b> a student who has received two yellow cards.</li></ul><p>Ghosts stay in the lesson and can still be chosen to answer questions. Their questions don\'t count towards the mission, and they disappear after the answer has been marked.</p>'),
-            rule('11. 🏆 Winning', '<p>You win by answering all the questions without reaching 3 danger points, and then the rocket takes off 🚀. With no danger points, the take-off is perfect. With one point it is shaky, and with two points it is very risky.</p>'),
-            rule('12. 🔒 The DO NOT USE button', '<p>At the bottom of the screen there is a button marked DO NOT USE. It would reveal who the impostors are, so only the teacher is allowed to use it.</p>'),
-            rule('13. 🟨🟨 Casualty', '<p>A student who gets two yellow cards from the teacher is a casualty. In the story, a casualty has suffered a fatal accident and becomes a ghost 👻. Casualties stay in the lesson and still answer questions, but their answers don\'t count towards the mission.</p><blockquote><b>casualty</b> (noun): a person who is killed or seriously injured in an accident, a war or a disaster. <i>There were no casualties in the fire.</i></blockquote>')
+            rule('7. 🕵️ The impostors', '<p>Secretly, one or two students are impostors. They are trying to destroy the mission, and one way they do it is by sabotaging a floor. A sabotaged floor is destroyed, and two students must play the repair game, with the whole class helping, to save it. If the repair fails, the impostor wins. The teacher always says that an impostor\'s answer is correct, even when it is wrong. Impostors should try to answer correctly, because a wrong answer could give them away.</p>'),
+            rule('8. 🌙 The night', '<p>After every floor except the last one, the game goes dark: it\'s night. Everybody goes to sleep, and only the impostor wakes up and points to a crewmate. Then everybody wakes up, and the teacher announces who has been killed. That student becomes a ghost.</p>'),
+            rule('9. 🚨 Emergency meeting', '<p>After the night, anyone can call one emergency meeting. You have two minutes to discuss who you suspect and to explain your reasons. Did anyone behave strangely?</p>'),
+            rule('10. 🗳️ Voting', '<p>After the discussion, each student votes for one person or chooses to pass. The student with the most votes is ejected from the ship. If you eject a crewmate by mistake, the crew gets smaller. If you find every impostor, the sabotage stops, but the mission is not over yet.</p>'),
+            rule('11. 👻 Ghosts', '<p>A student who leaves the game becomes a ghost. There are three kinds:</p><ul><li><b>Ejected:</b> a student who has been voted off the ship. The screen shows whether that student was an impostor.</li><li><b>Killed:</b> a student who has been killed by an impostor.</li><li><b>Casualty:</b> a student who has received two yellow cards.</li></ul><p>Ghosts stay in the lesson and can still be chosen to answer questions, but they can\'t vote. Their questions don\'t count towards the mission, and they disappear after the answer has been marked.</p>'),
+            rule('12. 🏆 Winning', '<p>The crew wins when the rocket takes off 🚀. With no danger points, the take-off is perfect. With one point it is shaky, with two points it is very risky, and with three points the crew only just makes it. The impostor wins if the crew becomes as small as the number of impostors, or if the repair of a sabotaged floor fails. Then the mission fails and the rocket can\'t take off.</p>'),
+            rule('13. 🔒 The DO NOT USE button', '<p>At the bottom of the screen there is a button marked DO NOT USE. It would reveal who the impostors are, so only the teacher is allowed to use it.</p>'),
+            rule('14. 🙈 No cheating', '<p>No cheating! If anyone peeks while everybody is asleep, the game ends immediately with no winners and no losers, and the class goes on to classwork.</p>'),
+            rule('15. 🟨🟨 Casualty', '<p>A student who gets two yellow cards from the teacher is a casualty. In the story, a casualty has suffered a fatal accident and becomes a ghost 👻. Casualties stay in the lesson and still answer questions, but their answers don\'t count towards the mission.</p><blockquote><b>casualty</b> (noun): a person who is killed or seriously injured in an accident, a war or a disaster. <i>There were no casualties in the fire.</i></blockquote>')
         ].join('')
     };
 
@@ -484,6 +473,7 @@
     function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
     function formatTime(sec) { var m = Math.floor(sec / 60), s = sec % 60; return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s; }
     function clone(o) { return JSON.parse(JSON.stringify(o)); }
+    function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
 
     /* ---------- Config and state ---------- */
     var config = (function () {
@@ -491,56 +481,47 @@
         if (saved && typeof saved === 'object') { Object.keys(c).forEach(function (k) { if (saved[k] !== undefined) c[k] = saved[k]; }); }
         return c;
     })();
-
-    function configSig() { return JSON.stringify([config.students, config.impostorCount, config.exercises]); }
+    function configSig() { return JSON.stringify([config.students, config.impostorCount, config.noImpostor, config.exercises]); }
 
     function newState() {
         var names = (config.students || []).slice(0, 9);
         var roles = shuffle(ROLES.slice());
-        var order = shuffle(names.map(function (_, i) { return i; }));
         var numImp = Math.max(0, Math.min(Math.max(1, Math.min(2, config.impostorCount || 1)), names.length));
+        var allowed = names.map(function (_, i) { return i; }).filter(function (i) { return (config.noImpostor || []).indexOf(names[i]) === -1; });
+        if (allowed.length < numImp) allowed = names.map(function (_, i) { return i; });
         var imp = {};
-        order.slice(0, numImp).forEach(function (i) { imp[i] = true; });
+        shuffle(allowed).slice(0, numImp).forEach(function (i) { imp[i] = true; });
         var students = names.map(function (n, i) {
-            return { name: n, official: roles[i % roles.length], impostor: !!imp[i], status: 'active', picked: false };
+            return { name: n, official: roles[i % roles.length], impostor: !!imp[i], status: 'active', picked: false, viewed: false };
         });
         var floors = (config.exercises || []).map(function (ex) {
-            var t = (ex.time > 0) ? ex.time : 180;
-            var qs = [];
-            for (var i = 0; i < ex.questions; i++) qs.push({ s: 'normal', ghost: false, red: false, corr: false, hideAt: 0 });
-            return { page: ex.page, exercise: ex.exercise, initialTime: t, timeLeft: t, running: false, started: false, timedOut: false, acc: 0, armed: false, fireAt: 0, sabotaged: false, questions: qs };
+            var t = (ex.time > 0) ? ex.time : 180, qs = [];
+            for (var i = 0; i < ex.questions; i++) qs.push({ s: 'normal', ghost: false, pen: false, hideAt: 0 });
+            return { page: ex.page, exercise: ex.exercise, timeLeft: t, running: false, started: false, timerStartedOnce: false, timedOut: false, acc: 0, fin: false, armed: false, fireAt: 0, sabotaged: false, questions: qs };
         });
-        return { v: 1, sig: configSig(), students: students, floors: floors, lastPicked: -1, sabotageUsed: 0, meetingsUsed: 0, decoyUses: 0, ended: null, grade: 0 };
+        return { v: 2, sig: configSig(), students: students, floors: floors, rolesAssigned: false, phase: 'play', nightQueue: 0, nightAt: 0, meetingFlash: false,
+            lastPicked: -1, sabotageUsed: 0, meetingsUsed: 0, decoyUses: 0, practiceDone: false, repairFloor: -1, ended: null, grade: 0, crewDirty: false };
     }
-
     var state = (function () {
         var saved = lsGet(LS_STATE);
-        if (saved && saved.v === 1 && saved.sig === configSig() && saved.floors && saved.students) return saved;
+        if (saved && saved.v === 2 && saved.sig === configSig() && saved.floors && saved.students) return saved;
         return newState();
     })();
 
     var undoStack = [];
-    var ui = { popup: -1, cycling: -1, picking: false, fx: null, lastPercent: -1, meetingEnd: 0, rulesTab: 'a2', warningActive: false, decoyPending: false };
+    var ui = { popup: -1, cycling: -1, picking: false, fx: null, lastPercent: -1, lastDanger: -1, meetingEnd: 0, rulesTab: 'a2', warningActive: false, decoyPending: false, timeUp: {}, assigning: false, firstView: false };
     var lastTick = Date.now();
     var saveDirty = false;
-
     function save() { lsSet(LS_STATE, state); saveDirty = false; }
 
     /* ---------- Audio ---------- */
-    var audioCtx = null;
-    var ytPlayer = null;
+    var audioCtx = null, ytPlayer = null;
     function ensureAudio() {
-        try {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-        } catch (e) { audioCtx = null; }
+        try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) { audioCtx = null; }
         return audioCtx;
     }
     window.onYouTubeIframeAPIReady = function () {
-        try {
-            var id = extractYouTubeId(config.takeoffSoundUrl) || 'Vfn_u768UoQ';
-            ytPlayer = new YT.Player('youtube-audio-container', { height: '0', width: '0', videoId: id, playerVars: { autoplay: 0, controls: 0 } });
-        } catch (e) { ytPlayer = null; }
+        try { ytPlayer = new YT.Player('youtube-audio-container', { height: '0', width: '0', videoId: extractYouTubeId(config.takeoffSoundUrl) || 'Vfn_u768UoQ', playerVars: { autoplay: 0, controls: 0 } }); } catch (e) { ytPlayer = null; }
     };
     function extractYouTubeId(url) {
         if (!url) return null;
@@ -570,9 +551,7 @@
         src.connect(filter); filter.connect(g); g.connect(ctx.destination); src.start(now); src.stop(now + seconds);
     }
     function playMeltdownSound() {
-        if (config.damageSoundUrl && config.damageSoundUrl.trim()) {
-            try { new Audio(config.damageSoundUrl).play().catch(function () {}); return; } catch (e) { /* fall through */ }
-        }
+        if (config.damageSoundUrl && config.damageSoundUrl.trim()) { try { new Audio(config.damageSoundUrl).play().catch(function () {}); return; } catch (e) { /* fall through */ } }
         noiseBurst(3.5, 500, 40, 0.7);
     }
     function playTakeoffAudio() {
@@ -594,93 +573,100 @@
             osc.start(now); lfo.start(now); osc.stop(now + ms / 1000 + 0.05); lfo.stop(now + ms / 1000 + 0.05);
         } catch (e) { /* no sound */ }
     }
+    function playSlowAlarm() {
+        var ctx = ensureAudio(); if (!ctx) return;
+        try {
+            var now = ctx.currentTime, osc = ctx.createOscillator(), lfo = ctx.createOscillator(), lfoGain = ctx.createGain(), g = ctx.createGain();
+            osc.type = 'sawtooth'; osc.frequency.value = 130; lfo.type = 'sine'; lfo.frequency.value = 0.35; lfoGain.gain.value = 45;
+            lfo.connect(lfoGain); lfoGain.connect(osc.frequency);
+            g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.3, now + 0.4); g.gain.setValueAtTime(0.3, now + 4.2); g.gain.exponentialRampToValueAtTime(0.0001, now + 5);
+            osc.connect(g); g.connect(ctx.destination); osc.start(now); lfo.start(now); osc.stop(now + 5.1); lfo.stop(now + 5.1);
+        } catch (e) { /* no sound */ }
+    }
 
     /* ---------- Game logic ---------- */
-    function qFinished(q) { return q.s === 'correct' || q.s === 'hidden' || (q.s === 'incorrect' && q.corr); }
+    function qFinished(q) { return q.s === 'correct' || q.s === 'hidden'; }
     function floorFinished(f) { return f.questions.every(qFinished); }
     function allFinished() { return state.floors.length > 0 && state.floors.every(floorFinished); }
     function unfinishedCount() { var n = 0; state.floors.forEach(function (f) { f.questions.forEach(function (q) { if (!qFinished(q)) n++; }); }); return n; }
     function dangerPoints() {
         var d = 0;
-        state.floors.forEach(function (f) { if (f.timedOut) d++; if (f.sabotaged) d++; f.questions.forEach(function (q) { if (q.red) d++; }); });
+        state.floors.forEach(function (f) { if (f.timedOut) d++; f.questions.forEach(function (q) { if (q.pen) d++; }); });
         return d;
     }
     function activeImpostors() { return state.students.filter(function (s) { return s.impostor && s.status === 'active'; }).length; }
     function totalImpostors() { return state.students.filter(function (s) { return s.impostor; }).length; }
-    function allImpostorsEjected() { var t = totalImpostors(); return t > 0 && state.students.filter(function (s) { return s.impostor && s.status === 'ejected'; }).length === t; }
+    function allImpostorsGone() { var t = totalImpostors(); return t > 0 && activeImpostors() === 0; }
+    function activeCrew() { return state.students.filter(function (s) { return !s.impostor && s.status === 'active'; }).length; }
     function sabotagesAllowed() { return Math.min(Math.max(0, totalImpostors() - state.sabotageUsed), activeImpostors()); }
     function floorInProgress(f) { return f.started && !floorFinished(f); }
-    function meetingsAvailable() { return state.floors.filter(floorFinished).length - state.meetingsUsed; }
-    function meetingAllowed() { return !state.ended && meetingsAvailable() > 0 && !state.floors.some(floorInProgress); }
-    function sabotageDelayMs() { var d = Number(config.sabotageDelay); return (isFinite(d) && d >= 0 ? d : 30) * 1000; }
+    function meetingsAvailable() { return state.floors.filter(function (f) { return f.fin; }).length - state.meetingsUsed; }
+    function meetingAllowed() { return !state.ended && state.phase === 'play' && meetingsAvailable() > 0 && !state.floors.some(floorInProgress); }
+    function sabotageDelayMs() { var d = Number(config.sabotageDelay); return (isFinite(d) && d >= 0 ? d : 20) * 1000; }
+    function pendingSabotage() { return state.floors.some(function (f) { return (f.armed && f.fireAt > 0) || f.sabotaged; }); }
+    function overlayOpen() { return state.phase !== 'play' || ui.assigning || ui.meetingEnd > 0 || ui.warningActive; }
 
-    function pushUndo(label) {
-        undoStack.push({ label: label, json: JSON.stringify(state) });
-        if (undoStack.length > 80) undoStack.shift();
-    }
+    function pushUndo(label) { undoStack.push({ label: label, json: JSON.stringify(state) }); if (undoStack.length > 80) undoStack.shift(); }
     function act(label, fn) {
-        if (ui.picking) return;
-        pushUndo(label);
-        fn();
-        afterChange();
+        if (ui.picking || state.phase !== 'play') return;
+        pushUndo(label); fn(); afterChange();
     }
     function undo() {
-        if (ui.picking || !undoStack.length) return;
+        if (ui.picking || overlayOpen() || !undoStack.length) return;
         var snap = undoStack.pop(), keepDecoy = state.decoyUses;
-        state = JSON.parse(snap.json);
-        state.decoyUses = keepDecoy;
-        ui.popup = -1;
+        state = JSON.parse(snap.json); state.decoyUses = keepDecoy; ui.popup = -1;
         afterChange(true);
     }
-
     function syncSabotage() {
-        if (activeImpostors() === 0) {
-            state.floors.forEach(function (f) { if (f.armed && !f.sabotaged) { f.armed = false; f.fireAt = 0; } });
-        }
+        if (activeImpostors() === 0) state.floors.forEach(function (f) { if (f.armed && !f.sabotaged) { f.armed = false; f.fireAt = 0; } });
     }
 
     function evaluate() {
         syncSabotage();
         if (state.ended) return;
+        if (state.crewDirty) {
+            state.crewDirty = false;
+            var imps = activeImpostors();
+            if (imps > 0 && activeCrew() <= imps) { state.ended = 'impostorwin'; return; }
+        }
         state.floors.forEach(function (f) {
             if (floorFinished(f)) {
                 if (f.running) f.running = false;
+                if (!f.fin) {
+                    f.fin = true;
+                    if (!allFinished()) state.nightQueue++;
+                }
                 if (f.armed && !f.fireAt && !f.sabotaged) f.fireAt = Date.now() + sabotageDelayMs();
             }
         });
-        if (dangerPoints() >= 3) { state.ended = 'meltdown'; return; }
-        if (allFinished()) { state.ended = 'launch'; state.grade = Math.min(2, dangerPoints()); }
+        if (dangerPoints() >= LIMIT) { state.ended = 'meltdown'; return; }
+        if (allFinished() && state.phase === 'play' && !pendingSabotage() && state.nightQueue === 0) {
+            state.ended = 'launch'; state.grade = Math.min(3, dangerPoints());
+        }
     }
-
     function afterChange(skipEval) {
         if (!skipEval) evaluate();
-        save();
-        render();
+        save(); render();
     }
 
     function tapQuestion(fi, qi) {
-        if (state.ended || ui.picking) return;
+        if (state.ended || ui.picking || state.phase !== 'play' || !state.rolesAssigned) return;
         var f = state.floors[fi], q = f.questions[qi];
         if (!q || q.s === 'hidden') return;
         if (q.s === 'normal') { startPicker(fi, qi); return; }
-        if (q.s === 'incorrect' && (q.ghost || q.corr)) return;
+        if (q.ghost && q.s === 'incorrect') return;
         act('marked a question', function () {
             if (q.ghost) {
                 if (q.s === 'assigned') { q.s = 'correct'; playSuccessSound(); q.hideAt = Date.now() + GHOST_HIDE_MS; }
                 else if (q.s === 'correct') { q.s = 'incorrect'; playFailureSound(); q.hideAt = Date.now() + GHOST_HIDE_MS; }
-            } else if (q.s === 'assigned') {
-                q.s = 'correct'; if (q.corr) q.red = false; playSuccessSound();
-            } else if (q.s === 'correct') {
-                q.s = 'incorrect'; q.red = true; playFailureSound();
-            } else if (q.s === 'incorrect' && !q.corr) {
-                q.s = 'normal'; q.corr = true;
-            }
+            } else if (q.s === 'assigned') { q.s = 'correct'; playSuccessSound(); }
+            else if (q.s === 'correct') { q.s = 'incorrect'; q.pen = true; playFailureSound(); }
+            else if (q.s === 'incorrect') { q.s = 'normal'; }
         });
     }
 
     function weightedPick() {
-        var n = state.students.length;
-        var unpicked = 0, normalLeft = 0;
+        var n = state.students.length, unpicked = 0, normalLeft = 0;
         state.students.forEach(function (s) { if (!s.picked) unpicked++; });
         state.floors.forEach(function (f) { f.questions.forEach(function (q) { if (q.s === 'normal') normalLeft++; }); });
         var w = Math.max(1, Number(config.unpickedWeight) || 3);
@@ -690,7 +676,6 @@
         for (var i = 0; i < n; i++) { r -= weights[i]; if (r <= 0 && weights[i] > 0) return i; }
         return n - 1;
     }
-
     function startPicker(fi, qi) {
         var f = state.floors[fi], q = f.questions[qi];
         pushUndo('picked a student');
@@ -701,20 +686,17 @@
         var chosen = weightedPick();
         ui.picking = true; ui.cycling = -1; state.lastPicked = -1;
         save(); render();
-        var steps = 12 + Math.floor(Math.random() * 6), step = 0, delay = 50;
+        var steps = 9 + Math.floor(Math.random() * 2), step = 0, delay = 90;
         (function roll() {
             step++;
             ui.cycling = step < steps ? Math.floor(Math.random() * n) : chosen;
-            playTickSound();
-            renderStudents();
+            playTickSound(); renderStudents();
             if (step < steps) { delay += 15; setTimeout(roll, delay); }
             else {
                 setTimeout(function () {
                     var s = state.students[chosen];
                     q.s = 'assigned'; q.ghost = s.status !== 'active'; s.picked = true; state.lastPicked = chosen;
-                    ui.picking = false; ui.cycling = -1;
-                    playSuccessSound();
-                    afterChange();
+                    ui.picking = false; ui.cycling = -1; playSuccessSound(); afterChange();
                 }, 100);
             }
         })();
@@ -722,15 +704,15 @@
 
     function setStatus(idx, status) {
         var s = state.students[idx]; if (!s || s.status !== 'active') return;
-        act(status + ' ' + s.name, function () { s.status = status; ui.popup = -1; });
+        if (status === 'killed' && s.impostor) return;      // the Killed button on the impostor's card is a decoy
+        act(status + ' ' + s.name, function () { s.status = status; ui.popup = -1; state.crewDirty = true; });
     }
     function restoreStudent(idx) {
         var s = state.students[idx]; if (!s || s.status === 'active') return;
         act('restored ' + s.name, function () { s.status = 'active'; ui.popup = -1; });
     }
-
     function armSabotage(fi) {
-        if (!config.sabotageEnabled || state.ended) return;
+        if (!config.sabotageEnabled || state.ended || state.phase !== 'play') return;
         var f = state.floors[fi];
         if (f.armed || f.sabotaged || sabotagesAllowed() <= 0) return;
         act('armed a floor', function () {
@@ -738,13 +720,9 @@
             if (floorFinished(f)) f.fireAt = Date.now() + sabotageDelayMs();
         });
     }
-    function repairFloor(fi) {
-        var f = state.floors[fi]; if (!f.sabotaged) return;
-        act('repaired a floor', function () { f.sabotaged = false; playSuccessSound(); });
-    }
     function toggleTimer(fi) {
         var f = state.floors[fi];
-        if (state.ended || f.timeLeft <= 0 || floorFinished(f)) return;
+        if (state.ended || state.phase !== 'play' || f.timeLeft <= 0 || floorFinished(f)) return;
         act('timer', function () { f.running = !f.running; f.started = true; f.timerStartedOnce = true; });
     }
     function editTimer(fi) {
@@ -753,26 +731,28 @@
         if (v === null) return;
         var sec = parseInt(v, 10);
         if (isNaN(sec) || sec < 0) { alert('Invalid time entered.'); return; }
-        act('edited a timer', function () { f.timeLeft = sec; f.initialTime = sec; f.acc = 0; });
+        act('edited a timer', function () { f.timeLeft = sec; f.acc = 0; });
     }
-
     function testAllGreen() {
-        if (state.ended) return;
+        if (state.ended || state.phase !== 'play') return;
         act('test all green', function () {
             state.floors.forEach(function (f) {
                 f.questions.forEach(function (q) {
                     if (q.s === 'hidden') return;
                     if (q.ghost && q.s !== 'normal') { q.s = 'hidden'; q.hideAt = 0; return; }
-                    q.s = 'correct'; q.red = false; q.hideAt = 0;
+                    q.s = 'correct'; q.hideAt = 0;
                 });
-                f.started = true; f.running = false;
+                f.started = true; f.running = false; f.fin = true; f.armed = false; f.fireAt = 0; f.sabotaged = false;
             });
+            state.nightQueue = 0;
         });
     }
 
+    /* ---------- Night, meeting, assign roles ---------- */
+    $('night-morning').onclick = function () { state.phase = 'play'; state.meetingFlash = true; afterChange(); };
     function openMeeting() {
         if (!meetingAllowed()) return;
-        act('emergency meeting', function () { state.meetingsUsed++; });
+        act('emergency meeting', function () { state.meetingsUsed++; state.meetingFlash = false; });
         ui.meetingEnd = Date.now() + MEETING_SECONDS * 1000;
         $('meeting-sub').textContent = 'Talk together. Who do you think is the impostor? Say why you think so.';
         $('meeting-clock').classList.remove('done');
@@ -785,23 +765,45 @@
         $('meeting-clock').textContent = Math.floor(left / 60) + ':' + (left % 60 < 10 ? '0' : '') + (left % 60);
         if (left === 0) { $('meeting-clock').classList.add('done'); $('meeting-sub').textContent = 'Time is up. Vote now!'; }
     }
+    $('btn-assign').onclick = function () {
+        if (state.rolesAssigned || ui.assigning) return;
+        ensureAudio();
+        ui.assigning = true;
+        var ov = $('assign-overlay'), n = totalImpostors();
+        $('assign-title').textContent = 'Assigning roles…'; $('assign-sub').textContent = ''; $('assign-big').textContent = '';
+        ov.style.display = 'flex';
+        var ticks = 0, iv = setInterval(function () { playTickSound(); if (++ticks > 12) clearInterval(iv); }, 200);
+        setTimeout(function () {
+            $('assign-title').textContent = 'Roles assigned';
+            $('assign-big').textContent = n + (n === 1 ? ' IMPOSTOR' : ' IMPOSTORS') + ' AMONG US';
+            $('assign-sub').textContent = 'Tap your name to see your role. You can look only once.';
+            playSuccessSound();
+        }, 2600);
+        setTimeout(function () { ov.style.display = 'none'; ui.assigning = false; state.rolesAssigned = true; save(); render(); }, 5600);
+    };
 
     /* ---------- Tick loop ---------- */
     function tick() {
         var now = Date.now(), dt = now - lastTick; lastTick = now;
         var changed = false;
         if (!state.ended) {
-            state.floors.forEach(function (f) {
-                if (f.running) {
+            state.floors.forEach(function (f, fi) {
+                if (f.running && state.phase === 'play') {
                     f.acc = (f.acc || 0) + dt;
                     while (f.acc >= 1000 && f.timeLeft > 0) { f.acc -= 1000; f.timeLeft--; }
-                    if (f.timeLeft === 0 && f.running) { f.running = false; f.timedOut = true; playFailureSound(); changed = true; }
+                    if (f.timeLeft === 0 && f.running) { f.running = false; f.timedOut = true; ui.timeUp[fi] = now + 3000; ui.lastDanger = -2; playFailureSound(); changed = true; }
                 }
-                if (f.fireAt && now >= f.fireAt) { f.fireAt = 0; f.armed = false; f.sabotaged = true; playFailureSound(); changed = true; }
+                if (f.fireAt && now >= f.fireAt && state.phase === 'play') { f.fireAt = 0; f.armed = false; f.sabotaged = true; state.phase = 'repair'; state.repairFloor = fi; playFailureSound(); changed = true; }
                 f.questions.forEach(function (q) { if (q.hideAt && now >= q.hideAt) { q.hideAt = 0; if (q.s === 'correct' || q.s === 'incorrect') { q.s = 'hidden'; changed = true; } } });
             });
+            if (state.phase === 'play' && state.nightQueue > 0 && !pendingSabotage()) {
+                if (!state.nightAt) { state.nightAt = now + NIGHT_DELAY_MS; }
+                else if (now >= state.nightAt) { state.nightAt = 0; state.nightQueue--; state.phase = 'night'; changed = true; }
+            } else if (state.nightAt) { state.nightAt = 0; }
         }
-        if (changed) afterChange(); else { updateTimers(); saveDirty = true; }
+        var expired = false;
+        Object.keys(ui.timeUp).forEach(function (k) { if (ui.timeUp[k] && now >= ui.timeUp[k]) { ui.timeUp[k] = 0; expired = true; } });
+        if (changed) afterChange(); else { if (expired) renderFloors(); updateTimers(); saveDirty = true; }
         if (ui.meetingEnd) updateMeetingClock();
     }
     setInterval(tick, 250);
@@ -810,46 +812,36 @@
     /* ---------- Rendering ---------- */
     function updateTimers() {
         state.floors.forEach(function (f, i) {
-            var el = $('floor-' + i + '-timer'); if (!el) return;
-            el.textContent = formatTime(f.timeLeft);
-            el.className = 'card-timer' + (f.running && f.timeLeft > 0 && f.timeLeft <= 10 ? ' urgent' : '') + (f.timeLeft === 0 ? ' zero' : '');
+            var t = $('floor-' + i + '-timer'); if (!t) return;
+            t.textContent = formatTime(f.timeLeft);
+            t.className = 'card-timer' + (f.running && f.timeLeft > 0 && f.timeLeft <= 10 ? ' urgent' : '') + (f.timeLeft === 0 ? ' zero' : '');
         });
     }
-
     function renderFloors() {
         var track = $('exercises-track'); track.innerHTML = '';
         state.floors.forEach(function (f, fi) {
-            var card = document.createElement('div');
-            card.className = 'exercise-card' + (f.sabotaged ? ' sabotaged' : '');
-            var head = document.createElement('div'); head.className = 'card-header';
-            var title = document.createElement('span'); title.className = 'card-title'; title.textContent = 'P.' + f.page + ' Ex.' + f.exercise;
-            var tc = document.createElement('div'); tc.className = 'timer-container';
-            var sb = document.createElement('button'); sb.className = 'timer-start-btn'; sb.textContent = f.running ? '⏸' : '▶'; sb.title = 'Start or pause the timer';
-            sb.onclick = function () { toggleTimer(fi); };
-            var tm = document.createElement('span'); tm.className = 'card-timer'; tm.id = 'floor-' + fi + '-timer'; tm.title = 'Click to edit the timer';
-            tm.onclick = function () { editTimer(fi); };
-            tc.appendChild(sb); tc.appendChild(tm); head.appendChild(title); head.appendChild(tc);
-
-            var grid = document.createElement('div'); grid.className = 'nodes-grid';
-            var green = 0, valid = 0;
+            var card = el('div', 'exercise-card' + (f.sabotaged ? ' sabotaged' : ''));
+            if (ui.timeUp[fi]) card.appendChild(el('div', 'timeup', "TIME'S UP"));
+            var head = el('div', 'card-header');
+            head.appendChild(el('span', 'card-title', 'P.' + f.page + ' Ex.' + f.exercise));
+            var tc = el('div', 'timer-container');
+            var sb = el('button', 'timer-start-btn', f.running ? '⏸' : '▶'); sb.title = 'Start or pause the timer'; sb.onclick = function () { toggleTimer(fi); };
+            var tm = el('span', 'card-timer'); tm.id = 'floor-' + fi + '-timer'; tm.title = 'Click to edit the timer'; tm.onclick = function () { editTimer(fi); };
+            tc.appendChild(sb); tc.appendChild(tm); head.appendChild(tc);
+            var grid = el('div', 'nodes-grid'), green = 0, valid = 0;
             f.questions.forEach(function (q, qi) {
-                var node = document.createElement('div'); var cls = 'node';
+                var cls = 'node';
                 if (q.s === 'hidden') cls += ' hidden-disappeared';
                 else { valid++; if (q.s === 'assigned') cls += ' assigned'; if (q.s === 'correct') { cls += ' correct'; green++; } if (q.s === 'incorrect') cls += ' incorrect'; }
-                node.className = cls; node.textContent = qi + 1;
-                node.onclick = function () { tapQuestion(fi, qi); };
+                var node = el('div', cls, String(qi + 1)); node.onclick = function () { tapQuestion(fi, qi); };
                 grid.appendChild(node);
             });
-
-            var foot = document.createElement('div'); foot.className = 'card-footer';
-            var left = document.createElement('div');
-            if (f.sabotaged) { var w = document.createElement('span'); w.className = 'repair-warning'; w.textContent = '🚨 SABOTAGED!'; left.appendChild(w); }
-            var prog = document.createElement('span'); prog.textContent = green + ' / ' + valid; left.appendChild(prog);
-            var right = document.createElement('div'); right.style.cssText = 'display:flex; gap:0.4rem; align-items:center;';
-            if (f.sabotaged) { var rb = document.createElement('button'); rb.className = 'floor-repair-btn'; rb.textContent = '🔧 Repair'; rb.onclick = function () { repairFloor(fi); }; right.appendChild(rb); }
-            if (config.sabotageEnabled) { var ab = document.createElement('button'); ab.className = 'floor-sabotage-btn'; ab.textContent = '⚠️'; ab.title = 'Discreet sabotage'; ab.onclick = function () { armSabotage(fi); }; right.appendChild(ab); }
+            var foot = el('div', 'card-footer'), left = el('div');
+            if (f.sabotaged) left.appendChild(el('span', 'repair-warning', '🚨 SABOTAGED!'));
+            left.appendChild(el('span', '', green + ' / ' + valid));
+            var right = el('div'); right.style.cssText = 'display:flex; gap:0.4rem; align-items:center;';
+            if (config.sabotageEnabled) { var ab = el('button', 'floor-sabotage-btn', '⚠️'); ab.title = 'Discreet sabotage'; ab.onclick = function () { armSabotage(fi); }; right.appendChild(ab); }
             foot.appendChild(left); foot.appendChild(right);
-
             card.appendChild(head); card.appendChild(grid); card.appendChild(foot);
             track.appendChild(card);
         });
@@ -858,58 +850,58 @@
 
     var STATUS_LABEL = { ejected: 'Ejected', killed: 'Killed', casualty: 'Casualty' };
     var STATUS_ICON = { ejected: '🚪', killed: '💀', casualty: '🟨' };
-
     function renderStudents() {
         var bar = $('students-bar'); bar.innerHTML = '';
         state.students.forEach(function (s, i) {
-            var wrap = document.createElement('div'); wrap.className = 'student-pill-wrapper';
-            var pill = document.createElement('div');
+            var wrap = el('div', 'student-pill-wrapper');
             var cls = 'student-pill';
             if (s.status !== 'active') cls += ' ghost';
-            if (ui.cycling === i) cls += ' cycling';
-            else if (!ui.picking && state.lastPicked === i) cls += ' selected-winner';
-            pill.className = cls;
-            pill.appendChild(document.createTextNode(s.name));
+            if (ui.cycling === i) cls += ' cycling'; else if (!ui.picking && state.lastPicked === i) cls += ' selected-winner';
+            var pill = el('div', cls); pill.appendChild(document.createTextNode(s.name));
             if (s.status !== 'active') {
-                var tag = document.createElement('span'); tag.className = 'pill-tag';
-                tag.textContent = STATUS_ICON[s.status] + ' ' + STATUS_LABEL[s.status] + (s.status === 'ejected' ? ' · ' + (s.impostor ? 'Impostor' : 'Crewmate') : '');
-                pill.appendChild(tag);
+                pill.appendChild(el('span', 'pill-tag', STATUS_ICON[s.status] + ' ' + STATUS_LABEL[s.status] + (s.status === 'ejected' ? ' · ' + (s.impostor ? 'Impostor' : 'Crewmate') : '')));
             }
-            pill.onclick = function (e) { e.stopPropagation(); ui.popup = (ui.popup === i) ? -1 : i; renderStudents(); };
+            pill.onclick = function (e) { e.stopPropagation(); togglePopup(i); };
             wrap.appendChild(pill);
-
-            if (ui.popup === i) {
-                var pop = document.createElement('div'); pop.className = 'student-popup-card';
-                pop.onclick = function (e) { e.stopPropagation(); };
-                var h = document.createElement('h3'); h.textContent = s.name;
-                var off = document.createElement('div'); off.className = 'official'; off.textContent = s.official.icon + ' ' + s.official.name;
-                var sec = document.createElement('div'); sec.className = 'secret ' + (s.impostor ? 'impostor' : 'crew'); sec.textContent = s.impostor ? '⚠ IMPOSTOR' : '🛡 Crewmate';
-                pop.appendChild(h); pop.appendChild(off); pop.appendChild(sec);
-                if (s.status !== 'active') {
-                    var st = document.createElement('div'); st.className = 'status-line';
-                    st.textContent = STATUS_LABEL[s.status] + (s.status === 'ejected' ? ' (was ' + (s.impostor ? 'an impostor' : 'a crewmate') + ')' : '');
-                    pop.appendChild(st);
-                }
-                var btns = document.createElement('div'); btns.className = 'popup-buttons';
-                function addBtn(text, cls2, fn) { var b = document.createElement('button'); b.textContent = text; if (cls2) b.className = cls2; b.onclick = fn; btns.appendChild(b); }
-                addBtn('Close', 'neutral', function () { ui.popup = -1; renderStudents(); });
-                if (s.status === 'active') {
-                    addBtn('Ejected', 'danger', function () { setStatus(i, 'ejected'); });
-                    addBtn('Killed', 'danger', function () { setStatus(i, 'killed'); });
-                    addBtn('Casualty', 'yellow', function () { setStatus(i, 'casualty'); });
-                } else {
-                    addBtn('Undo', '', function () { restoreStudent(i); });
-                }
-                pop.appendChild(btns);
-                wrap.appendChild(pop);
-            }
+            if (ui.popup === i) wrap.appendChild(buildPopup(s, i));
             bar.appendChild(wrap);
         });
+    }
+    function togglePopup(i) {
+        if (!state.rolesAssigned || ui.picking) return;
+        if (ui.popup === i) { ui.popup = -1; renderStudents(); return; }
+        ui.popup = i;
+        var s = state.students[i];
+        ui.firstView = !s.viewed;       // the first look shows the secret role and no buttons
+        if (!s.viewed) { s.viewed = true; save(); }
+        renderStudents();
+    }
+    function buildPopup(s, i) {
+        var pop = el('div', 'student-popup-card'); pop.onclick = function (e) { e.stopPropagation(); };
+        pop.appendChild(el('h3', '', s.name));
+        pop.appendChild(el('div', 'official', s.official.icon + ' ' + s.official.name));
+        if (ui.firstView) {
+            pop.appendChild(el('div', 'secret ' + (s.impostor ? 'impostor' : 'crew'), s.impostor ? 'IMPOSTOR' : 'CREWMATE'));
+            return pop;
+        }
+        if (s.status !== 'active') pop.appendChild(el('div', 'status-line', STATUS_LABEL[s.status] + (s.status === 'ejected' ? ' (was ' + (s.impostor ? 'an impostor' : 'a crewmate') + ')' : '')));
+        var btns = el('div', 'popup-buttons');
+        function add(text, c, fn) { var b = el('button', c, text); b.onclick = fn; btns.appendChild(b); }
+        add('Close', 'neutral', function () { ui.popup = -1; renderStudents(); });
+        if (s.status === 'active') {
+            add('Ejected', 'danger', function () { setStatus(i, 'ejected'); });
+            add('Killed', 'danger', function () { setStatus(i, 'killed'); });
+            add('Casualty', 'yellow', function () { setStatus(i, 'casualty'); });
+        } else add('Undo', '', function () { restoreStudent(i); });
+        pop.appendChild(btns);
+        return pop;
     }
 
     function renderStatus() {
         var d = dangerPoints();
         $('danger-count').textContent = d;
+        if ((ui.lastDanger >= 0 && d > ui.lastDanger) || ui.lastDanger === -2) { var ds = $('danger-status'); ds.classList.remove('bump'); void ds.offsetWidth; ds.classList.add('bump'); }
+        ui.lastDanger = d;
         var valid = 0, green = 0;
         state.floors.forEach(function (f) { f.questions.forEach(function (q) { if (q.s !== 'hidden') { valid++; if (q.s === 'correct') green++; } }); });
         var pct = valid > 0 ? Math.round(green / valid * 100) : 0;
@@ -918,17 +910,16 @@
         var core = $('plasma-core');
         if (ui.lastPercent >= 0 && pct > ui.lastPercent && !state.ended) { core.classList.remove('pulse'); void core.offsetWidth; core.classList.add('pulse'); }
         ui.lastPercent = pct;
-        var avail = meetingsAvailable();
-        $('meeting-count').textContent = Math.max(0, avail);
-        $('btn-meeting').disabled = !meetingAllowed();
-        $('ribbon').hidden = !allImpostorsEjected();
-        var rocket = $('rocket');
-        rocket.classList.toggle('shake-pre-takeoff', !state.ended && unfinishedCount() <= 2);
+        $('meeting-count').textContent = Math.max(0, meetingsAvailable());
+        var mb = $('btn-meeting'); mb.disabled = !meetingAllowed(); mb.classList.toggle('flash', !!state.meetingFlash && meetingAllowed());
+        $('ribbon').hidden = !allImpostorsGone();
+        $('btn-assign').style.display = state.rolesAssigned ? 'none' : '';
+        $('rocket').classList.toggle('shake-pre-takeoff', !state.ended && unfinishedCount() <= 2 && !ui.fx);
+        $('night-overlay').style.display = state.phase === 'night' && !state.ended ? 'flex' : 'none';
     }
-
     function render() {
         $('rocket-name-display').textContent = config.rocketLabel;
-        renderFloors(); renderStudents(); renderStatus(); applyEndEffects();
+        renderFloors(); renderStudents(); renderStatus(); applyEndEffects(); renderRepair();
     }
 
     /* ---------- End effects ---------- */
@@ -940,7 +931,7 @@
             $('rocket').classList.add('gone');
             var field = $('debris-field'); field.innerHTML = '';
             for (var i = 0; i < 36; i++) {
-                var p = document.createElement('div'); p.className = 'debris-piece';
+                var p = el('div', 'debris-piece');
                 p.style.width = (12 + Math.random() * 35) + 'px'; p.style.height = (8 + Math.random() * 25) + 'px';
                 p.style.borderRadius = Math.random() > 0.5 ? '50%' : '4px';
                 var a = Math.random() * Math.PI * 2, dist = 400 + Math.random() * 800;
@@ -953,7 +944,8 @@
     var GRADES = [
         { cls: '', title: '🚀 PERFECT TAKE-OFF', sub: '0 danger points', shake: 'launch-shake-1', ms: 1200 },
         { cls: 'shaky', title: '🚀 SHAKY TAKE-OFF', sub: '1 danger point', shake: 'launch-shake-2', ms: 2600 },
-        { cls: 'risky', title: '🚀 VERY RISKY TAKE-OFF', sub: '2 danger points', shake: 'launch-shake-3', ms: 4000 }
+        { cls: 'risky', title: '🚀 VERY RISKY TAKE-OFF', sub: '2 danger points', shake: 'launch-shake-3', ms: 3800 },
+        { cls: 'barely', title: '🚀 BARELY MADE IT', sub: '3 danger points', shake: 'launch-shake-4', ms: 5000 }
     ];
     function showTakeoffBanner() {
         var g = GRADES[state.grade] || GRADES[0], b = $('takeoff-banner');
@@ -965,177 +957,356 @@
         playTakeoffAudio();
         rocket.classList.remove('shake-pre-takeoff'); rocket.classList.add(g.shake); core.classList.add('flicker');
         setTimeout(function () {
-            rocket.classList.remove(g.shake); rocket.classList.add('flying');
-            setTimeout(function () { rocket.classList.add('gone'); core.classList.remove('flicker'); showTakeoffBanner(); }, 2700);
+            rocket.classList.remove(g.shake);
+            void rocket.offsetWidth;                                   // let the browser draw the resting rocket before it flies
+            requestAnimationFrame(function () { requestAnimationFrame(function () {
+                rocket.classList.add('flying');
+                setTimeout(function () { rocket.classList.add('gone'); core.classList.remove('flicker'); showTakeoffBanner(); }, 2700);
+            }); });
         }, g.ms);
     }
+    function runImpostorWin(instant) {
+        $('rocket').classList.add('lights-off');
+        if (!instant) playSlowAlarm();
+        $('failed-screen').style.display = 'flex';
+    }
     function resetEffects() {
-        var rocket = $('rocket');
-        rocket.className = 'rocket-container';
+        $('rocket').className = 'rocket-container';
         document.body.classList.remove('meltdown-shake');
         $('explosion-overlay').style.display = 'none';
         $('takeoff-banner').style.display = 'none';
+        $('failed-screen').style.display = 'none';
         $('plasma-core').classList.remove('flicker');
     }
     function applyEndEffects() {
-        if (state.ended === 'meltdown') { if (ui.fx !== 'meltdown') { var inst = ui.fx === 'restored'; ui.fx = 'meltdown'; resetEffects(); runMeltdown(inst); } }
-        else if (state.ended === 'launch') { if (ui.fx !== 'launch') { var inst2 = ui.fx === 'restored'; ui.fx = 'launch'; runLaunch(inst2); } }
-        else if (ui.fx) { ui.fx = null; resetEffects(); }
+        var kind = state.ended;
+        if (kind && ui.fx !== kind) {
+            var inst = ui.fx === 'restored'; ui.fx = kind; resetEffects();
+            if (kind === 'meltdown') runMeltdown(inst); else if (kind === 'launch') runLaunch(inst); else if (kind === 'impostorwin') runImpostorWin(inst);
+        } else if (!kind && ui.fx) { ui.fx = null; resetEffects(); }
     }
 
-    /* ---------- Secret area ---------- */
-    (function () {
-        var area = $('secret-area'), namesEl = $('secret-names');
-        var step = 0, downAt = 0, lastUp = 0, pressing = false, holdTimer = null, resetTimer = null, revealTimer = null;
-        function clearT() { if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; } if (resetTimer) { clearTimeout(resetTimer); resetTimer = null; } }
-        function reset() { clearT(); step = 0; pressing = false; }
-        function arm() { if (resetTimer) clearTimeout(resetTimer); resetTimer = setTimeout(reset, SECRET_GAP_MS); }
-        function show() {
-            var names = state.students.filter(function (s) { return s.impostor; }).map(function (s) { return s.name; });
-            namesEl.textContent = names.join(', '); namesEl.hidden = false;
-            if (revealTimer) clearTimeout(revealTimer);
-            revealTimer = setTimeout(function () { namesEl.hidden = true; }, SECRET_REVEAL_MS);
-        }
-        area.addEventListener('pointerdown', function (e) {
-            e.preventDefault();
-            if (ui.warningActive) return;
-            var now = Date.now(); pressing = true; downAt = now;
-            if (step > 0 && now - lastUp > SECRET_GAP_MS) { reset(); pressing = true; }
-            if (resetTimer) { clearTimeout(resetTimer); resetTimer = null; }
-            if (step === 2) {
-                holdTimer = setTimeout(function () { holdTimer = null; if (pressing) { show(); step = 0; pressing = false; } }, SECRET_HOLD_MS);
-            }
+    /* ---------- Repair game (a small Touch Match) ---------- */
+    var R = null;       // runtime state of the repair screen (not saved)
+    var COLOUR_CLASSES = ['cA', 'cB', 'cC', 'cD', 'cE', 'cF', 'cG', 'cH'];
+    function parsePairs() {
+        var pairs = [], decoys = [];
+        String(config.repairPairs || '').split('\n').forEach(function (line, i) {
+            line = line.trim(); if (!line) return;
+            if (line.indexOf('=') > -1) { var p = line.split('='); var a = p[0].trim(), b = p.slice(1).join('=').trim(); if (a && b) pairs.push({ id: 'p' + i, left: a, right: b }); }
+            else decoys.push(line);
         });
-        function release() {
-            if (!pressing) return;
-            var now = Date.now(), held = now - downAt; pressing = false;
-            if (step === 2) { if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; reset(); } return; }
-            if (held > TAP_MAX_MS) { reset(); return; }
-            if (step === 0) { step = 1; lastUp = now; arm(); }
-            else if (step === 1) { step = 2; lastUp = now; arm(); }
+        if (pairs.length < 6) { DEFAULT_PAIRS.split('\n').forEach(function (line, i) { var p = line.split('='); pairs.push({ id: 'd' + i, left: p[0].trim(), right: p[1].trim() }); }); }
+        return { pairs: pairs, decoys: decoys };
+    }
+    function boardFill(B, leftN, rightN) {
+        B.used = {}; var pool = shuffle(B.pairs.slice());
+        var pick = pool.slice(0, Math.min(leftN, pool.length));
+        pick.forEach(function (p) { B.used[p.id] = true; });
+        B.left = pick.map(function (p) { return { id: p.id, text: p.left, cls: p.cls || 'txtL' }; });
+        var right = pick.map(function (p) { return { id: p.id, text: p.right, cls: p.rcls || '' }; });
+        var extra = Math.max(0, rightN - right.length);
+        var others = pool.slice(pick.length).slice(0, extra);
+        others.forEach(function (p) { right.push({ id: 'x_' + p.id, text: p.right, cls: p.rcls || '' }); });
+        (B.decoys || []).slice(0, Math.max(0, extra - others.length)).forEach(function (w, i) { right.push({ id: 'dc_' + i, text: w, cls: '' }); });
+        B.right = shuffle(right);
+        B.right.forEach(function (r, i) { if (!r.cls) r.cls = 'txtR' + (i % 5); });
+        B.pend = { left: null, right: null }; B.lock = false; B.flash = null;
+    }
+    function boardRefill(B, li, ri) {
+        function ok(p) { return !B.used[p.id] && !B.right.some(function (r) { return r && r.id === 'x_' + p.id; }); }
+        var cand = B.pairs.filter(ok);
+        if (!cand.length) { B.used = {}; B.left.forEach(function (l) { if (l) B.used[l.id] = true; }); cand = B.pairs.filter(ok); }
+        if (!cand.length) { B.left[li] = null; B.right[ri] = null; return; }
+        var p = cand[Math.floor(Math.random() * cand.length)]; B.used[p.id] = true;
+        var keepCls = B.right[ri] ? B.right[ri].cls : 'txtR0';
+        B.left[li] = { id: p.id, text: p.left, cls: p.cls || 'txtL' };
+        B.right[ri] = { id: p.id, text: p.right, cls: p.rcls || keepCls };
+    }
+    function boardTap(B, side, idx, onMatch, onWrong) {
+        if (B.lock) return;
+        var now = Date.now(), win = Math.max(200, Number(config.matchWindowMs) || 1000), other = side === 'left' ? 'right' : 'left';
+        B.pend[side] = { idx: idx, ts: now };
+        var o = B.pend[other];
+        if (o && now - o.ts > win) { B.pend[other] = null; o = null; }
+        if (o) {
+            var li = side === 'left' ? idx : o.idx, ri = side === 'left' ? o.idx : idx, a = B.left[li], b = B.right[ri], gap = now - o.ts;
+            B.pend = { left: null, right: null };
+            if (!a || !b) return;
+            B.lock = true;
+            if (a.id === b.id) onMatch(li, ri, gap); else onWrong(li, ri, gap);
+        } else { setTimeout(function () { if (R && R.B === B) renderRepair(); }, win + 30); }
+    }
+    function candidates() {
+        var act2 = state.students.map(function (s, i) { return i; }).filter(function (i) { return state.students[i].status === 'active'; });
+        if (act2.length >= 2) return act2;
+        return state.students.map(function (s, i) { return i; });     // fewer than two active students: ghosts may play
+    }
+    function openRepairScreen() {
+        if (R) return;
+        var c = candidates();
+        R = { stage: 'nominate', sel: [], delegates: [], msg: '', msgBad: false, timeLeft: REPAIR_SECONDS * 1000, count: 0, B: null, practiceCount: 0, iv: null, result: null };
+        if (config.delegateMode === 'random') { R.delegates = shuffle(c.slice()).slice(0, 2); }
+    }
+    function startRepairPlay() {
+        var pd = parsePairs();
+        R.B = { pairs: pd.pairs, decoys: pd.decoys }; boardFill(R.B, 5, 8);
+        R.stage = 'play'; R.timeLeft = REPAIR_SECONDS * 1000; R.count = 0; R.msg = ''; R.msgBad = false;
+        if (R.iv) clearInterval(R.iv);
+        R.iv = setInterval(function () {
+            if (!R || R.stage !== 'play' || R.result) return;
+            R.timeLeft -= 100;
+            if (R.timeLeft <= 0) { R.timeLeft = 0; finishRepair(false); }
+            renderRepair();
+        }, 100);
+        renderRepair();
+    }
+    function startPractice() {
+        var cols = shuffle(COLOUR_CLASSES.slice()), pairs = cols.map(function (c, i) { return { id: 'c' + i, left: '', right: '', cls: c, rcls: c }; });
+        R.B = { pairs: pairs, decoys: [] }; boardFill(R.B, 5, 8); R.stage = 'practice'; R.practiceCount = 0; R.msg = 'Practice: tap the same colour on both sides together'; R.msgBad = false;
+        renderRepair();
+    }
+    function finishRepair(won) {
+        if (!R || R.result) return;
+        R.result = won ? 'good' : 'bad'; if (R.iv) { clearInterval(R.iv); R.iv = null; }
+        if (won) playSuccessSound(); else playFailureSound();
+        renderRepair();
+        setTimeout(function () {
+            var fi = state.repairFloor, f = state.floors[fi];
+            R = null; $('repair-overlay').style.display = 'none';
+            if (won) { if (f) { f.sabotaged = false; f.armed = false; } state.phase = 'play'; state.repairFloor = -1; afterChange(); }
+            else { state.phase = 'play'; state.ended = 'impostorwin'; afterChange(true); }
+        }, 2600);
+    }
+    function renderRepair() {
+        var ov = $('repair-overlay');
+        if (state.phase !== 'repair' || state.ended) { ov.style.display = 'none'; return; }
+        if (!R) openRepairScreen();
+        ov.style.display = 'flex'; ov.innerHTML = '';
+        var top = el('div', 'repair-top');
+        top.appendChild(el('div', 'repair-title', '🛠 REPAIR THE FLOOR'));
+        if (R.stage === 'play') {
+            top.appendChild(el('div', 'repair-count', R.count + ' / ' + REPAIR_TARGET));
+            var secs = Math.ceil(R.timeLeft / 1000);
+            top.appendChild(el('div', 'repair-clock' + (secs <= 20 ? ' low' : ''), Math.floor(secs / 60) + ':' + (secs % 60 < 10 ? '0' : '') + (secs % 60)));
+        } else if (R.stage === 'practice') top.appendChild(el('div', 'repair-count', 'Practice ' + R.practiceCount + ' / ' + PRACTICE_TARGET));
+        ov.appendChild(top);
+        var names = R.delegates.map(function (i) { return state.students[i].name; });
+        ov.appendChild(el('div', 'repair-delegates', R.stage === 'nominate' ? (config.delegateMode === 'random' ? 'Delegates: ' + names.join(' & ') : 'The class nominates two delegates:') : (names.length ? '👆 ' + names.join(' & ') : '')));
+        if (R.stage === 'nominate') {
+            var list = el('div', 'repair-names');
+            if (config.delegateMode !== 'random') {
+                candidates().forEach(function (i) {
+                    var b = el('div', 'nm' + (R.sel.indexOf(i) > -1 ? ' sel' : ''), state.students[i].name);
+                    b.onclick = function () { var k = R.sel.indexOf(i); if (k > -1) R.sel.splice(k, 1); else { if (R.sel.length >= 2) R.sel.shift(); R.sel.push(i); } R.delegates = R.sel.slice(); renderRepair(); };
+                    list.appendChild(b);
+                });
+            }
+            ov.appendChild(list);
+            ov.appendChild(el('div', 'repair-msg', 'Match 10 pairs in 2 minutes. A wrong match costs 5 seconds.'));
+            ov.appendChild(el('div', 'repair-board'));
+        } else {
+            ov.appendChild(el('div', 'repair-msg' + (R.msgBad ? ' bad' : ''), R.msg));
+            var board = el('div', 'repair-board'), colL = el('div', 'repair-col'), colR = el('div', 'repair-col');
+            var win = Math.max(200, Number(config.matchWindowMs) || 1000);
+            var addPills = function (col, arr, side) {
+                arr.forEach(function (p, i) {
+                    if (!p) return;
+                    var pend = R.B.pend && R.B.pend[side];
+                    var touched = pend && pend.idx === i && Date.now() - pend.ts <= win;
+                    var fl = R.B.flash && R.B.flash[side] === i ? ' ' + R.B.flash.type : '';
+                    var pill = el('div', 'rpill ' + (p.cls || '') + (touched ? ' touched' : '') + fl, p.text);
+                    pill.addEventListener('pointerdown', function (e) { e.preventDefault(); onRepairTap(side, i); });
+                    col.appendChild(pill);
+                });
+            };
+            addPills(colL, R.B.left, 'left'); addPills(colR, R.B.right, 'right');
+            board.appendChild(colL); board.appendChild(colR); ov.appendChild(board);
         }
-        area.addEventListener('pointerup', release);
-        area.addEventListener('pointercancel', function () { if (pressing) { pressing = false; reset(); } });
-        area.addEventListener('contextmenu', function (e) { e.preventDefault(); });
-        window.__rlmSecretReset = reset;
-    })();
+        var bottom = el('div', 'repair-bottom');
+        if (R.stage === 'nominate') {
+            if (!state.practiceDone) { var pb = el('button', 'btn', '🎯 Practice'); pb.onclick = startPractice; bottom.appendChild(pb); }
+            var go = el('button', 'btn btn-good', '▶ Start repair'); go.disabled = R.delegates.length < 2 && candidates().length >= 2;
+            go.onclick = function () { if (R.delegates.length >= 2 || candidates().length < 2) startRepairPlay(); };
+            bottom.appendChild(go);
+        }
+        ov.appendChild(bottom);
+        if (R.result) ov.appendChild(el('div', 'repair-result ' + R.result, R.result === 'good' ? 'FLOOR REPAIRED!' : 'REPAIR FAILED'));
+    }
+    function onRepairTap(side, i) {
+        if (!R || R.result || (R.stage !== 'play' && R.stage !== 'practice')) return;
+        ensureAudio();
+        boardTap(R.B, side, i, function (li, ri, gap) {
+            R.B.flash = { left: li, right: ri, type: 'correct' }; playSuccessSound();
+            if (R.stage === 'practice') { R.practiceCount++; R.msg = '✓ Match! Your taps were ' + (gap / 1000).toFixed(2) + ' s apart'; R.msgBad = false; }
+            else { R.count++; R.msg = '✓ ' + R.B.left[li].text + ' + ' + R.B.right[ri].text; R.msgBad = false; }
+            renderRepair();
+            setTimeout(function () {
+                if (!R) return;
+                R.B.flash = null; boardRefill(R.B, li, ri); R.B.lock = false;
+                if (R.stage === 'play' && R.count >= REPAIR_TARGET) { finishRepair(true); return; }
+                if (R.stage === 'practice' && R.practiceCount >= PRACTICE_TARGET) { state.practiceDone = true; save(); R.stage = 'nominate'; R.B = null; R.msg = ''; }
+                renderRepair();
+            }, 450);
+        }, function (li, ri, gap) {
+            R.B.flash = { left: li, right: ri, type: 'wrong' }; playFailureSound(); R.msgBad = true;
+            if (R.stage === 'play') { R.timeLeft = Math.max(0, R.timeLeft - REPAIR_PENALTY * 1000); R.msg = '✗ No match: −' + REPAIR_PENALTY + ' seconds'; }
+            else R.msg = '✗ Not the same colour. Taps were ' + (gap / 1000).toFixed(2) + ' s apart';
+            renderRepair();
+            setTimeout(function () { if (!R) return; R.B.flash = null; R.B.lock = false; renderRepair(); }, 600);
+        });
+        renderRepair();
+    }
 
     /* ---------- Decoy and warning ---------- */
     function showWarning(level) {
-        var w = $('warning');
-        ui.warningActive = true;
-        if (window.__rlmSecretReset) window.__rlmSecretReset();
+        var w = $('warning'); ui.warningActive = true;
         $('warning-title').textContent = level === 1 ? 'UNAUTHORISED ACCESS ATTEMPTED' : 'SECURITY ALERT: REPEATED ATTEMPT';
-        w.className = 'warning' + (level >= 2 ? ' level2' : '');
-        w.style.display = 'flex';
+        w.className = 'warning' + (level >= 2 ? ' level2' : ''); w.style.display = 'flex';
         startSiren(WARNING_MS);
         setTimeout(function () {
             w.style.display = 'none'; ui.warningActive = false;
             if (level >= 2) {
                 var s = state.students[state.lastPicked];
-                if (s && s.status === 'active') act('decoy kill', function () { s.status = 'killed'; });
+                if (s && s.status === 'active') act('decoy kill', function () { s.status = 'killed'; state.crewDirty = true; });
             }
         }, WARNING_MS);
     }
     $('decoy').addEventListener('click', function () {
         ensureAudio();
         if (ui.warningActive || ui.decoyPending) return;
-        ui.decoyPending = true;
-        state.decoyUses = (state.decoyUses || 0) + 1;
-        var level = state.decoyUses === 1 ? 1 : 2;
-        save();
+        ui.decoyPending = true; state.decoyUses = (state.decoyUses || 0) + 1;
+        var level = state.decoyUses === 1 ? 1 : 2; save();
         setTimeout(function () { ui.decoyPending = false; showWarning(level); }, DECOY_DELAY_MS);
     });
     $('warning').addEventListener('pointerdown', function (e) { e.preventDefault(); e.stopPropagation(); });
 
     /* ---------- Rules ---------- */
-    var rulesEdits = lsGet(LS_RULES) || {};
-    var rulesEditing = false;
+    var rulesEdits = lsGet(LS_RULES) || {}, rulesEditing = false;
     function rulesHtml(tab) { return rulesEdits[tab] || RULES_DEFAULT[tab]; }
     function fitRules() {
-        var el = $('rules-text'), wrap = $('rules-wrap');
-        var avail = wrap.clientHeight;
+        var t = $('rules-text'), wrap = $('rules-wrap'), avail = wrap.clientHeight;
         var px = Math.min(parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.5, 30);
-        el.style.fontSize = px + 'px';
-        while (el.offsetHeight > avail && px > 11) { px -= 0.5; el.style.fontSize = px + 'px'; }
+        t.style.fontSize = px + 'px';
+        while (t.offsetHeight > avail && px > 10) { px -= 0.5; t.style.fontSize = px + 'px'; }
     }
     function showRules() {
         $('rules-text').innerHTML = rulesHtml(ui.rulesTab);
-        $('tab-a2').classList.toggle('active', ui.rulesTab === 'a2');
-        $('tab-b1').classList.toggle('active', ui.rulesTab === 'b1');
+        $('tab-a2').classList.toggle('active', ui.rulesTab === 'a2'); $('tab-b1').classList.toggle('active', ui.rulesTab === 'b1');
         fitRules();
     }
     function setRulesTab(tab) { if (rulesEditing) return; ui.rulesTab = tab; showRules(); }
     $('tab-a2').onclick = function () { setRulesTab('a2'); };
     $('tab-b1').onclick = function () { setRulesTab('b1'); };
     $('btn-rules').onclick = function () { $('rules-overlay').style.display = 'flex'; showRules(); };
-    $('rules-close').onclick = function () {
-        if (rulesEditing) stopEditing(false);
-        $('rules-overlay').style.display = 'none';
-    };
+    $('rules-close').onclick = function () { if (rulesEditing) stopEditing(false); $('rules-overlay').style.display = 'none'; };
     function stopEditing(saveIt) {
-        var el = $('rules-text');
-        if (saveIt) { rulesEdits[ui.rulesTab] = el.innerHTML; lsSet(LS_RULES, rulesEdits); }
-        rulesEditing = false; el.removeAttribute('contenteditable');
+        var t = $('rules-text');
+        if (saveIt) { rulesEdits[ui.rulesTab] = t.innerHTML; lsSet(LS_RULES, rulesEdits); }
+        rulesEditing = false; t.removeAttribute('contenteditable');
         $('rules-save').style.display = 'none'; $('rules-reset').style.display = 'none'; $('rules-edit').style.display = '';
         showRules();
     }
-    $('rules-edit').onclick = function () {
-        rulesEditing = true; $('rules-text').setAttribute('contenteditable', 'true');
-        $('rules-save').style.display = ''; $('rules-reset').style.display = ''; $('rules-edit').style.display = 'none';
-        $('rules-text').focus();
-    };
+    $('rules-edit').onclick = function () { rulesEditing = true; $('rules-text').setAttribute('contenteditable', 'true'); $('rules-save').style.display = ''; $('rules-reset').style.display = ''; $('rules-edit').style.display = 'none'; $('rules-text').focus(); };
     $('rules-save').onclick = function () { stopEditing(true); };
     $('rules-reset').onclick = function () { delete rulesEdits[ui.rulesTab]; lsSet(LS_RULES, rulesEdits); stopEditing(false); };
+
+    /* Copying the rules: always black text on white, without the dark screen colours */
+    function cleanCopyHtml(holder) {
+        var out = '<div style="font-family:Calibri,Arial,sans-serif;color:#000000;background:#ffffff;">';
+        Array.prototype.forEach.call(holder.childNodes, function (n) {
+            if (n.nodeType === 3) { out += n.textContent.replace(/&/g, '&amp;').replace(/</g, '&lt;'); return; }
+            if (n.nodeType !== 1) return;
+            if (n.className === 'rule') {
+                var h = n.querySelector('h3'); if (h) out += '<h3 style="color:#000000;margin:10pt 0 2pt 0;">' + h.innerHTML + '</h3>';
+                Array.prototype.forEach.call(n.children, function (c) {
+                    if (c === h) return;
+                    var tag = c.tagName.toLowerCase();
+                    if (tag === 'blockquote') out += '<p style="margin:2pt 0 2pt 18pt;color:#000000;">' + c.innerHTML + '</p>';
+                    else out += '<' + tag + ' style="color:#000000;margin:0 0 4pt 0;">' + c.innerHTML + '</' + tag + '>';
+                });
+            } else out += '<p style="color:#000000;">' + n.innerHTML + '</p>';
+        });
+        return out + '</div>';
+    }
+    function copyPayload(sel) {
+        var holder = document.createElement('div'), partial = !!(sel && !sel.isCollapsed && $('rules-text').contains(sel.anchorNode));
+        if (partial) holder.appendChild(sel.getRangeAt(0).cloneContents()); else holder.innerHTML = $('rules-text').innerHTML;
+        var plain = partial ? sel.toString() : $('rules-text').innerText, rich;
+        if (holder.querySelector('.rule')) rich = cleanCopyHtml(holder);
+        else rich = '<div style="font-family:Calibri,Arial,sans-serif;color:#000000;background:#ffffff;">' + holder.innerHTML.replace(/ style="[^"]*"/g, '').replace(/ class="[^"]*"/g, '') + '</div>';
+        return { plain: plain, html: rich };
+    }
+    document.addEventListener('copy', function (e) {
+        if ($('rules-overlay').style.display !== 'flex') return;
+        var p = copyPayload(window.getSelection());
+        e.clipboardData.setData('text/plain', p.plain); e.clipboardData.setData('text/html', p.html); e.preventDefault();
+    });
     $('rules-copy').onclick = function () {
-        var el = $('rules-text'), text = el.innerText, btn = $('rules-copy');
+        var btn = $('rules-copy');
         function done(ok) { btn.textContent = ok ? '✔ Copied' : 'Select the text and press Ctrl+C'; setTimeout(function () { btn.textContent = '📋 Copy'; }, 2000); }
-        function fallback() {
-            try { var r = document.createRange(); r.selectNodeContents(el); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); done(document.execCommand('copy')); } catch (e) { done(false); }
-        }
-        if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(function () { done(true); }, fallback); } else { fallback(); }
+        try {
+            var r = document.createRange(); r.selectNodeContents($('rules-text')); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+            var ok = document.execCommand('copy'); s.removeAllRanges(); done(ok);
+        } catch (e) { done(false); }
     };
     window.addEventListener('resize', function () { if ($('rules-overlay').style.display === 'flex') fitRules(); });
 
     /* ---------- Settings ---------- */
-    function undoLabel() { return undoStack.length ? '↩ Undo: ' + undoStack[undoStack.length - 1].label : '↩ Undo (nothing to undo)'; }
-    function refreshUndoBtn() { var b = $('btn-undo'); b.textContent = undoLabel(); b.disabled = !undoStack.length || ui.picking; }
+    function refreshUndoBtn() { var b = $('btn-undo'); b.textContent = undoStack.length ? '↩ Undo: ' + undoStack[undoStack.length - 1].label : '↩ Undo (nothing to undo)'; b.disabled = !undoStack.length || ui.picking || overlayOpen(); }
+    function buildNoImp() {
+        var names = $('setting-students').value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+        var wrap = $('noimp-list'), keep = {};
+        Array.prototype.forEach.call(wrap.querySelectorAll('input'), function (c) { keep[c.value] = c.checked; });
+        wrap.innerHTML = '';
+        names.forEach(function (n) {
+            var l = el('label'), c = document.createElement('input'); c.type = 'checkbox'; c.value = n;
+            c.checked = (n in keep) ? keep[n] : (config.noImpostor || []).indexOf(n) > -1;
+            l.appendChild(c); l.appendChild(document.createTextNode(n)); wrap.appendChild(l);
+        });
+    }
+    $('setting-students').addEventListener('input', buildNoImp);
     $('btn-settings').onclick = function () {
         $('setting-rocket-label').value = config.rocketLabel;
         $('setting-students').value = (config.students || []).join(', ');
         $('setting-impostor-count').value = config.impostorCount || 1;
+        $('noimp-list').innerHTML = ''; buildNoImp();
         $('setting-weight').value = config.unpickedWeight || 3;
-        $('setting-takeoff-sound').value = config.takeoffSoundUrl;
-        $('setting-damage-sound').value = config.damageSoundUrl;
-        $('setting-sabotage-enabled').checked = !!config.sabotageEnabled;
-        $('setting-sabotage-delay').value = config.sabotageDelay;
-        $('setting-config').value = JSON.stringify(config.exercises, null, 2);
-        $('settings-error').textContent = '';
-        refreshUndoBtn();
+        $('setting-takeoff-sound').value = config.takeoffSoundUrl; $('setting-damage-sound').value = config.damageSoundUrl;
+        $('setting-sabotage-enabled').checked = !!config.sabotageEnabled; $('setting-sabotage-delay').value = config.sabotageDelay;
+        $('setting-delegates').value = config.delegateMode || 'nominate'; $('setting-window').value = config.matchWindowMs || 1000;
+        $('setting-config').value = JSON.stringify(config.exercises, null, 2); $('setting-pairs').value = config.repairPairs || '';
+        $('settings-error').textContent = ''; $('reveal-box').textContent = ''; refreshUndoBtn();
         $('settings-overlay').style.display = 'flex';
     };
-    function closeSettings() { $('settings-overlay').style.display = 'none'; }
-    $('settings-close-top').onclick = closeSettings;
-    $('settings-cancel').onclick = closeSettings;
+    (function () {
+        var b = $('btn-reveal');
+        function show() { $('reveal-box').textContent = state.students.filter(function (s) { return s.impostor; }).map(function (s) { return s.name; }).join(', ') || '(none)'; }
+        function hide() { $('reveal-box').textContent = ''; }
+        b.addEventListener('pointerdown', function (e) { e.preventDefault(); show(); });
+        ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { b.addEventListener(ev, hide); });
+        b.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+    })();
+    function closeSettings() { $('settings-overlay').style.display = 'none'; $('reveal-box').textContent = ''; }
+    $('settings-close-top').onclick = closeSettings; $('settings-cancel').onclick = closeSettings;
     $('btn-undo').onclick = function () { undo(); refreshUndoBtn(); };
     $('settings-save').onclick = function () {
-        var err = $('settings-error'); err.textContent = '';
-        var next = {};
+        var err = $('settings-error'); err.textContent = ''; var next = {};
         next.rocketLabel = $('setting-rocket-label').value.trim() || 'P19';
         next.students = $('setting-students').value.split(',').map(function (s) { return s.trim(); }).filter(function (s) { return s.length > 0; });
         if (next.students.length < 1) { err.textContent = 'Enter at least one student name.'; return; }
         if (next.students.length > 9) { err.textContent = 'Use 9 names at most.'; return; }
-        var seen = {}; for (var i = 0; i < next.students.length; i++) { if (seen[next.students[i].toLowerCase()]) { err.textContent = 'Each student name must be different: ' + next.students[i]; return; } seen[next.students[i].toLowerCase()] = true; }
-        var imp = parseInt($('setting-impostor-count').value, 10);
-        if (isNaN(imp)) imp = 1;
-        next.impostorCount = Math.max(1, Math.min(2, imp));
-        var wt = parseInt($('setting-weight').value, 10);
-        next.unpickedWeight = isNaN(wt) ? 3 : Math.max(1, Math.min(10, wt));
-        next.takeoffSoundUrl = $('setting-takeoff-sound').value.trim();
-        next.damageSoundUrl = $('setting-damage-sound').value.trim();
+        var seen = {}; for (var i = 0; i < next.students.length; i++) { var key = next.students[i].toLowerCase(); if (seen[key]) { err.textContent = 'Each student name must be different: ' + next.students[i]; return; } seen[key] = true; }
+        var imp = parseInt($('setting-impostor-count').value, 10); if (isNaN(imp)) imp = 1;
+        next.impostorCount = Math.max(1, Math.min(2, imp)); if (next.students.length < 2) next.impostorCount = 1;
+        next.noImpostor = Array.prototype.filter.call($('noimp-list').querySelectorAll('input'), function (c) { return c.checked; }).map(function (c) { return c.value; }).filter(function (n) { return next.students.indexOf(n) > -1; });
+        var wt = parseInt($('setting-weight').value, 10); next.unpickedWeight = isNaN(wt) ? 3 : Math.max(1, Math.min(10, wt));
+        next.takeoffSoundUrl = $('setting-takeoff-sound').value.trim(); next.damageSoundUrl = $('setting-damage-sound').value.trim();
         next.sabotageEnabled = $('setting-sabotage-enabled').checked;
-        var sd = parseInt($('setting-sabotage-delay').value, 10);
-        next.sabotageDelay = isNaN(sd) || sd < 0 ? 30 : sd;
+        var sd = parseInt($('setting-sabotage-delay').value, 10); next.sabotageDelay = isNaN(sd) || sd < 0 ? 20 : sd;
+        next.delegateMode = $('setting-delegates').value === 'random' ? 'random' : 'nominate';
+        var mw = parseInt($('setting-window').value, 10); next.matchWindowMs = isNaN(mw) ? 1000 : Math.max(200, Math.min(2000, mw));
+        next.repairPairs = $('setting-pairs').value;
         var ex;
         try { ex = JSON.parse($('setting-config').value); } catch (e) { err.textContent = 'The exercises text is not valid JSON. Check the commas and brackets.'; return; }
         if (!Array.isArray(ex) || ex.length < 1) { err.textContent = 'The exercises must be a list with at least one floor.'; return; }
@@ -1145,16 +1316,15 @@
             if (e1.time !== undefined && isNaN(Number(e1.time))) { err.textContent = 'Floor ' + (k + 1) + ': the time must be a number of seconds.'; return; }
         }
         next.exercises = ex.map(function (e2) { return { page: e2.page, exercise: e2.exercise, questions: Math.floor(Number(e2.questions)), time: Number(e2.time) || 180 }; });
-        if (next.students.length < 2) next.impostorCount = 1;
-        config = next;
-        lsSet(LS_CONFIG, config);
-        state = newState(); undoStack = []; ui.popup = -1; ui.cycling = -1; ui.picking = false; ui.fx = null; ui.lastPercent = -1;
+        config = next; lsSet(LS_CONFIG, config);
+        state = newState(); undoStack = []; R = null; $('repair-overlay').style.display = 'none';
+        ui.popup = -1; ui.cycling = -1; ui.picking = false; ui.fx = null; ui.lastPercent = -1; ui.lastDanger = -1; ui.timeUp = {};
         resetEffects(); save(); closeSettings(); render();
     };
 
     $('btn-test').onclick = testAllGreen;
     $('btn-meeting').onclick = openMeeting;
-    $('meeting-close').onclick = function () { ui.meetingEnd = 0; $('meeting-overlay').style.display = 'none'; };
+    $('meeting-close').onclick = function () { ui.meetingEnd = 0; $('meeting-overlay').style.display = 'none'; renderStatus(); };
     document.addEventListener('click', function () { if (ui.popup !== -1) { ui.popup = -1; renderStudents(); } });
 
     /* ---------- Start ---------- */
