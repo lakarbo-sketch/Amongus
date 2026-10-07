@@ -211,7 +211,7 @@
     @keyframes killFlash { 0% { color: #ffe066; } 100% { color: #ffffff; } }
 
     /* Repair game (a small Touch Match) */
-    .repair-overlay { position: fixed; inset: 0; background: #20211f; z-index: 3600; display: none; flex-direction: column; padding: 1rem 1.4rem; gap: 0.7rem; }
+    .repair-overlay { touch-action: none; position: fixed; inset: 0; background: #20211f; z-index: 3600; display: none; flex-direction: column; padding: 1rem 1.4rem; gap: 0.7rem; }
     .repair-top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
     .repair-title { font-size: 1.8rem; font-weight: 900; color: #f2b705; letter-spacing: 2px; }
     .repair-clock { font-size: 3.2rem; font-weight: 900; font-variant-numeric: tabular-nums; color: #fff; }
@@ -222,7 +222,7 @@
     .repair-msg.bad { color: #ff7675; }
     .repair-board { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-content: end; padding-bottom: 0.6rem; }
     .repair-col { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; align-content: flex-end; }
-    .rpill { width: fit-content; min-width: 4.5rem; min-height: 3rem; padding: 0.5rem 1.2rem; border-radius: 999px; font-size: 1.7rem; font-weight: 700; cursor: pointer; border: 4px solid transparent; color: #fff; user-select: none; -webkit-user-select: none; touch-action: manipulation; text-align: center; }
+    .rpill { width: fit-content; min-width: 4.5rem; min-height: 3rem; padding: 0.5rem 1.2rem; border-radius: 999px; font-size: 1.7rem; font-weight: 700; cursor: pointer; border: 4px solid transparent; color: #fff; user-select: none; -webkit-user-select: none; touch-action: none; text-align: center; }
     .rpill.touched { border-color: #f2b705; }
     .rpill.correct { background: #639922 !important; border-color: #a8d96a; }
     .rpill.wrong { background: #e24b4a !important; border-color: #f7c1c1; }
@@ -383,6 +383,7 @@
             <div class="form-group"><label for="setting-sabotage-delay">Sabotage delay after the floor is finished (seconds)</label><input type="number" id="setting-sabotage-delay" min="0"></div>
             <div class="form-group"><label for="setting-delegates">Repair game delegates</label><select id="setting-delegates"><option value="nominate">The class nominates two students</option><option value="random">The game draws two students at random</option></select></div>
             <div class="form-group"><label for="setting-window">Repair game: both taps within (milliseconds)</label><input type="number" id="setting-window" min="200" max="2000" step="100"></div>
+            <div class="form-group checkbox-group"><input type="checkbox" id="setting-twofingers"><label for="setting-twofingers">Require two fingers at once (a mouse cannot make a match)</label></div>
             <div class="form-group"><label for="setting-popup">First-look popup stays open (seconds)</label><input type="number" id="setting-popup" min="1" max="10"></div>
             <div class="form-group"><label for="setting-video">Rocket video address (the 🚀 Video button opens it)</label><input type="text" id="setting-video"></div>
             <div class="form-group"><label>Who is the impostor? (press and hold)</label>
@@ -470,7 +471,8 @@
         unpickedWeight: 3,
         popupSeconds: 2,
         delegateMode: 'nominate',
-        matchWindowMs: 1000,
+        matchWindowMs: 600,
+        twoFingers: true,
         repairPairs: DEFAULT_PAIRS,
         exercises: [
             { page: 10, exercise: 4, questions: 4, time: 90 },
@@ -537,7 +539,7 @@
     /* ---------- Config and state ---------- */
     var config = (function () {
         var saved = lsGet(LS_CONFIG), c = clone(DEFAULT_CONFIG);
-        if (saved && typeof saved === 'object') { Object.keys(c).forEach(function (k) { if (saved[k] !== undefined) c[k] = saved[k]; }); }
+        if (saved && typeof saved === 'object') { Object.keys(c).forEach(function (k) { if (saved[k] !== undefined) c[k] = saved[k]; }); if (saved.matchWindowMs === 1000) c.matchWindowMs = 600; }
         return c;
     })();
     function syncActiveLesson() {
@@ -1144,12 +1146,19 @@
         B.left[li] = { id: p.id, text: p.left, cls: p.cls || 'txtL' };
         B.right[ri] = { id: p.id, text: p.right, cls: p.rcls || keepCls };
     }
-    function boardTap(B, side, idx, onMatch, onWrong) {
+    var heldTouches = {};      // pointer ids of fingers currently down
+    function boardRelease(id) {
+        delete heldTouches[id];
+        if (R && R.B && R.B.pend) ['left', 'right'].forEach(function (sd) { if (R.B.pend[sd] && R.B.pend[sd].pid === id) { R.B.pend[sd] = null; renderRepair(); } });
+    }
+    window.addEventListener('pointerup', function (e) { boardRelease(e.pointerId); });
+    window.addEventListener('pointercancel', function (e) { boardRelease(e.pointerId); });
+    function boardTap(B, side, idx, onMatch, onWrong, pid) {
         if (B.lock) return;
-        var now = Date.now(), win = Math.max(200, Number(config.matchWindowMs) || 1000), other = side === 'left' ? 'right' : 'left';
-        B.pend[side] = { idx: idx, ts: now };
+        var now = Date.now(), win = Math.max(200, Number(config.matchWindowMs) || 600), other = side === 'left' ? 'right' : 'left';
+        B.pend[side] = { idx: idx, ts: now, pid: pid };
         var o = B.pend[other];
-        if (o && now - o.ts > win) { B.pend[other] = null; o = null; }
+        if (o && (now - o.ts > win || (config.twoFingers !== false && !heldTouches[o.pid]))) { B.pend[other] = null; o = null; }
         if (o) {
             var li = side === 'left' ? idx : o.idx, ri = side === 'left' ? o.idx : idx, a = B.left[li], b = B.right[ri], gap = now - o.ts;
             B.pend = { left: null, right: null };
@@ -1229,7 +1238,7 @@
         } else {
             ov.appendChild(el('div', 'repair-msg' + (R.msgBad ? ' bad' : ''), R.msg));
             var board = el('div', 'repair-board'), colL = el('div', 'repair-col'), colR = el('div', 'repair-col');
-            var win = Math.max(200, Number(config.matchWindowMs) || 1000);
+            var win = Math.max(200, Number(config.matchWindowMs) || 600);
             var addPills = function (col, arr, side) {
                 arr.forEach(function (p, i) {
                     if (!p) return;
@@ -1237,7 +1246,7 @@
                     var touched = pend && pend.idx === i && Date.now() - pend.ts <= win;
                     var fl = R.B.flash && R.B.flash[side] === i ? ' ' + R.B.flash.type : '';
                     var pill = el('div', 'rpill ' + (p.cls || '') + (touched ? ' touched' : '') + fl, p.text);
-                    pill.addEventListener('pointerdown', function (e) { e.preventDefault(); onRepairTap(side, i); });
+                    pill.addEventListener('pointerdown', function (e) { e.preventDefault(); onRepairTap(side, i, e); });
                     col.appendChild(pill);
                 });
             };
@@ -1254,8 +1263,11 @@
         ov.appendChild(bottom);
         if (R.result) ov.appendChild(el('div', 'repair-result ' + R.result, R.result === 'good' ? 'FLOOR REPAIRED!' : 'REPAIR FAILED'));
     }
-    function onRepairTap(side, i) {
+    function onRepairTap(side, i, e) {
         if (!R || R.result || (R.stage !== 'play' && R.stage !== 'practice')) return;
+        var need = config.twoFingers !== false;
+        if (need && (!e || e.pointerType !== 'touch')) { R.msg = '👆 Use two fingers on the screen'; R.msgBad = true; renderRepair(); return; }
+        var pid = e ? e.pointerId : 0; if (need) heldTouches[pid] = true;
         ensureAudio();
         boardTap(R.B, side, i, function (li, ri, gap) {
             R.B.flash = { left: li, right: ri, type: 'correct' }; playSuccessSound();
@@ -1275,7 +1287,7 @@
             else R.msg = '✗ Not the same colour. Taps were ' + (gap / 1000).toFixed(2) + ' s apart';
             renderRepair();
             setTimeout(function () { if (!R) return; R.B.flash = null; R.B.lock = false; renderRepair(); }, 600);
-        });
+        }, pid);
         renderRepair();
     }
 
@@ -1434,7 +1446,7 @@
         $('setting-weight').value = config.unpickedWeight || 3;
         $('setting-takeoff-sound').value = config.takeoffSound || ''; $('setting-damage-sound').value = config.damageSound || ''; $('setting-video').value = config.videoUrl || '';
         $('setting-sabotage-enabled').checked = !!config.sabotageEnabled; $('setting-sabotage-delay').value = config.sabotageDelay;
-        $('setting-delegates').value = config.delegateMode || 'nominate'; $('setting-window').value = config.matchWindowMs || 1000;
+        $('setting-delegates').value = config.delegateMode || 'nominate'; $('setting-window').value = config.matchWindowMs || 600; $('setting-twofingers').checked = config.twoFingers !== false;
         openLessons(); $('setting-popup').value = config.popupSeconds || 2;
         $('settings-error').textContent = ''; $('reveal-box').textContent = ''; refreshUndoBtn();
         $('settings-overlay').style.display = 'flex';
@@ -1467,7 +1479,7 @@
         next.sabotageEnabled = $('setting-sabotage-enabled').checked;
         var sd = parseInt($('setting-sabotage-delay').value, 10); next.sabotageDelay = isNaN(sd) || sd < 0 ? 20 : sd;
         next.delegateMode = $('setting-delegates').value === 'random' ? 'random' : 'nominate';
-        var mw = parseInt($('setting-window').value, 10); next.matchWindowMs = isNaN(mw) ? 1000 : Math.max(200, Math.min(2000, mw));
+        var mw = parseInt($('setting-window').value, 10); next.twoFingers = $('setting-twofingers').checked; next.matchWindowMs = isNaN(mw) ? 600 : Math.max(200, Math.min(2000, mw));
         saveLessonDraft();
         var lessonsOut = [];
         for (var li = 0; li < ui.lessons.length; li++) {
