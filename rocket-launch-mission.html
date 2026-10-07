@@ -1327,6 +1327,29 @@
     $('meeting-close').onclick = function () { ui.meetingEnd = 0; $('meeting-overlay').style.display = 'none'; renderStatus(); };
     document.addEventListener('click', function () { if (ui.popup !== -1) { ui.popup = -1; renderStudents(); } });
 
+    /* ---------- Student names from the Funhouse page ---------- */
+    window.addEventListener('message', function (e) {
+        if (!e.data || typeof e.data !== 'object' || e.source !== window.parent) return;
+        if (e.data.type !== 'fh-student-names') return;      // fh-team-split is ignored: this game has no teams
+        var seen = {}, names = [];
+        (Array.isArray(e.data.names) ? e.data.names : []).forEach(function (n) {
+            if (typeof n !== 'string') return;
+            n = n.trim(); var k = n.toLowerCase();
+            if (n && !seen[k]) { seen[k] = true; names.push(n); }
+        });
+        names = names.slice(0, 9);
+        if (!names.length) return;
+        var same = names.length === config.students.length && names.every(function (n) { return config.students.indexOf(n) > -1; });
+        if (same) return;                                     // same class: keep the game that is running
+        config.students = names;
+        config.noImpostor = (config.noImpostor || []).filter(function (n) { return names.indexOf(n) > -1; });
+        if (names.length < 2) config.impostorCount = 1;
+        lsSet(LS_CONFIG, config);
+        state = newState(); undoStack = []; R = null; $('repair-overlay').style.display = 'none';
+        ui.popup = -1; ui.cycling = -1; ui.picking = false; ui.fx = null; ui.lastPercent = -1; ui.lastDanger = -1; ui.timeUp = {};
+        resetEffects(); save(); render();
+    });
+
     /* ---------- Start ---------- */
     if (state.ended) ui.fx = 'restored';
     lastTick = Date.now();
