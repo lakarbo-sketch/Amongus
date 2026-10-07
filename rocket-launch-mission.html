@@ -64,13 +64,13 @@
     .nose-indicator { width: 1rem; height: 1rem; background: #b2ebf2; border: 2px solid #00838f; border-radius: 50%; box-shadow: 0 0 8px #00bcd4; }
 
     .exercises-track { display: flex; gap: 0.9rem; flex-grow: 1; min-width: 0; }
-    .exercise-card { background: #1b263b; border: 2px solid #2c3e5d; border-radius: 12px; padding: 0.8rem; flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 0.6rem; position: relative; }
+    .exercise-card { container-type: inline-size; background: #1b263b; border: 2px solid #2c3e5d; border-radius: 12px; padding: 0.8rem; flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 0.6rem; position: relative; }
     .exercise-card.sabotaged { border-color: #ff3838; background: #2d1519; animation: glitchCard 0.4s infinite alternate; }
     @keyframes glitchCard { 0% { box-shadow: inset 0 0 10px #ff3838; } 100% { box-shadow: inset 0 0 20px #ff0000; } }
     .timeup { position: absolute; inset: 0; background: rgba(120,0,10,0.92); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 900; letter-spacing: 2px; color: #fff; z-index: 3; animation: timeupFlash 0.4s steps(1, end) infinite; text-align: center; }
     @keyframes timeupFlash { 0% { background: rgba(200,0,20,0.95); } 50% { background: rgba(60,0,8,0.95); } }
     .card-header { display: flex; justify-content: space-between; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
-    .card-title { font-size: 0.95rem; font-weight: bold; }
+    .card-title { font-size: clamp(0.95rem, 8cqw, 1.9rem); font-weight: bold; }
     .timer-container { display: flex; align-items: center; gap: 0.35rem; }
     .card-timer { background: #fff8e1; color: #f57f17; font-size: 0.85rem; font-weight: bold; padding: 0.2rem 0.45rem; border-radius: 6px; border: 1px solid #ffe082; cursor: pointer; font-variant-numeric: tabular-nums; }
     .card-timer.urgent { background: #ff3838; color: #fff; border-color: #ffb3b3; animation: timerFlash 0.5s steps(1, end) infinite; }
@@ -79,7 +79,7 @@
     .timer-start-btn { background: #00b894; color: #000; border: none; width: 1.5rem; height: 1.5rem; border-radius: 50%; font-size: 0.7rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     .timer-start-btn:hover { background: #55efc4; }
     .nodes-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
-    .node { background: #24344d; border: 2px solid #3b5278; color: #cfd8dc; height: 2.7rem; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; cursor: pointer; user-select: none; }
+    .node { background: #24344d; border: 2px solid #3b5278; color: #cfd8dc; height: clamp(2.7rem, 17cqw, 4.6rem); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: clamp(1.1rem, 13cqw, 2.4rem); font-weight: bold; cursor: pointer; user-select: none; }
     .node:hover { border-color: #00ffcc; color: #fff; }
     .node.assigned { background: #f39c12; border-color: #f1c40f; color: #000; box-shadow: 0 0 10px #f39c12; }
     .node.correct { background: #00b894; border-color: #55efc4; color: #000; }
@@ -105,7 +105,7 @@
     @keyframes plasmaFlicker { 0% { transform: scaleX(0.8) scaleY(0.9); opacity: 0.8; } 100% { transform: scaleX(1.4) scaleY(1.2); opacity: 1; } }
 
     /* Students and role popup (names at the bottom, popup directly below the tapped name) */
-    .students-footer-bar { margin-top: auto; background: #131b2e; border: 2px solid #22304f; border-radius: 12px; padding: 0.7rem 1rem; display: flex; justify-content: center; align-items: flex-start; gap: 0.9rem; flex-wrap: wrap; min-height: 4.5rem; flex-shrink: 0; }
+    .students-footer-bar { margin-top: auto; background: #131b2e; border: 2px solid #22304f; border-radius: 12px; padding: 0.7rem 1rem; display: flex; justify-content: space-evenly; align-items: flex-start; gap: 0.9rem; flex-wrap: wrap; min-height: 4.5rem; flex-shrink: 0; }
     .popup-zone { flex: none; height: 10rem; }
     .student-pill-wrapper { position: relative; display: inline-block; }
     .student-pill { background: #1f293d; border: 2px solid #3b4d71; color: #cfd8dc; padding: 0.55rem 1.2rem; border-radius: 25px; font-size: 1.25rem; font-weight: bold; letter-spacing: 0.5px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); cursor: pointer; transition: all 0.2s ease; text-align: center; }
@@ -249,8 +249,8 @@
     @keyframes popupBar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 
     /* Crew scan (Assign roles) */
-    .scan-list { display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center; max-width: 70rem; }
-    .scan-chip { position: relative; padding: 0.6rem 1.4rem; border: 3px solid #3b4d71; border-radius: 12px; font-size: 1.6rem; font-weight: 700; color: #8a90a0; min-width: 9rem; overflow: hidden; text-align: center; }
+    .scan-list { display: flex; flex-wrap: wrap; gap: 1.2rem; justify-content: center; max-width: 100rem; }
+    .scan-chip { position: relative; padding: 0.8rem 2rem; border: 3px solid #3b4d71; border-radius: 12px; font-size: min(3.2rem, 6vh); font-weight: 700; color: #8a90a0; min-width: 16rem; overflow: hidden; text-align: center; }
     .scan-chip.scanning { border-color: #00ffcc; color: #fff; }
     .scan-chip.scanning::after { content: ''; position: absolute; left: -30%; top: 0; bottom: 0; width: 30%; background: linear-gradient(90deg, transparent, rgba(0,255,204,0.6), transparent); animation: scanSweep 0.45s linear; }
     @keyframes scanSweep { to { left: 110%; } }
@@ -298,6 +298,21 @@
     details.sec[open] > summary { margin-bottom: 0.2rem; }
     details.sec.grow[open] { flex: 1; min-height: 0; }
     .version-tag { color: #6c7a99; font-size: 0.8rem; margin-left: 0.8rem; font-weight: normal; }
+    @container (max-width: 200px) { .nodes-grid { grid-template-columns: repeat(3, 1fr); } }
+    .lesson-tools { flex-wrap: wrap; }
+    .lesson-msg { font-size: 0.85rem; color: #55efc4; min-height: 1.1rem; }
+    .lesson-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+    .lesson-chip { background: #1f293d; color: #fff; border: 2px solid #3b4d71; border-radius: 8px; padding: 0.25rem 0.6rem; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
+    .lesson-chip.sel { background: #00b894; color: #000; border-color: #55efc4; }
+    .lesson-panel { flex: 1; min-height: 9rem; overflow-y: auto; }
+    .lesson-head { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.4rem; flex-wrap: wrap; }
+    .lesson-head b { color: #00ffcc; font-size: 1rem; }
+    .ex-row { display: flex; gap: 0.4rem; align-items: center; margin-bottom: 0.3rem; font-size: 0.85rem; color: #b0bec5; font-weight: bold; }
+    .ex-row input { width: 3.4rem; background: #131b2e; border: 2px solid #3b4d71; color: #fff; padding: 0.2rem 0.3rem; border-radius: 6px; font-size: 0.9rem; text-align: center; }
+    .ex-row input.bad { border-color: #ff3838; background: #3a1519; }
+    .ex-row .ex-n { width: 1.4rem; color: #6c7a99; text-align: right; }
+    .ex-x { background: #3a1519; color: #ff7675; border: 2px solid #ff3838; border-radius: 6px; padding: 0.1rem 0.5rem; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
+    .ex-add { background: #00b894; color: #000; border: none; border-radius: 8px; padding: 0.35rem 0.8rem; font-weight: bold; cursor: pointer; margin-top: 0.2rem; font-size: 0.9rem; }
 </style>
 </head>
 <body>
@@ -407,20 +422,23 @@
                 <div class="form-group checkbox-group"><input type="checkbox" id="setting-twofingers"><label for="setting-twofingers">Require two fingers at once (a mouse cannot make a match)</label></div>
                 <div class="form-group"><label for="setting-popup">First-look popup stays open (seconds)</label><input type="number" id="setting-popup" min="1" max="10"></div>
             </details>
+            <details class="sec grow" id="sec-lessons"><summary>Lessons and exercises</summary>
+                <div class="filerow lesson-tools"><button class="btn" id="lesson-new" type="button">+ New session</button><button class="btn" id="lesson-import" type="button">📥 Import file</button><button class="btn" id="btn-copy-format" type="button">📋 Copy format</button><input type="file" id="file-lessons" accept=".txt,.json,text/plain,application/json" hidden></div>
+                <div id="lesson-msg" class="lesson-msg"></div>
+                <div id="lesson-chips" class="lesson-chips"></div>
+                <div id="lesson-panel" class="lesson-panel"></div>
+            </details>
         </div>
         <div class="settings-col">
             <details class="sec"><summary>Sounds, take-off and video</summary>
                 <div class="form-group"><label for="setting-takeoff-sound">Take-off sound file (plays when the last floor is finished; blank for the built-in sound)</label><div class="filerow"><input type="text" id="setting-takeoff-sound" placeholder="takeoff.mp3"><button class="btn" id="pick-takeoff" type="button">Choose file</button></div><input type="file" accept="audio/*" id="file-takeoff" hidden></div>
                 <div class="form-group"><label for="setting-takeoff-delay">Take-off delay after the sound starts (seconds)</label><input type="number" id="setting-takeoff-delay" min="0" max="120"></div>
+                <div class="form-group"><label for="setting-shake-delay">Rocket starts shaking this many seconds after the sound starts</label><input type="number" id="setting-shake-delay" min="0" max="120"></div>
                 <div class="form-group"><label for="setting-damage-sound">Meltdown sound file (blank for the built-in sound)</label><div class="filerow"><input type="text" id="setting-damage-sound" placeholder="meltdown.mp3"><button class="btn" id="pick-damage" type="button">Choose file</button></div><input type="file" accept="audio/*" id="file-damage" hidden></div>
                 <div class="form-group"><label for="setting-video">Rocket video address (the 🚀 Video button opens it)</label><input type="text" id="setting-video"></div>
             </details>
-            <details class="sec grow"><summary>Lessons and exercises</summary>
-                <div class="form-group"><label for="setting-lesson">Lesson (each lesson has its own exercises and repair words)</label><div class="filerow"><select id="setting-lesson"></select><button class="btn" id="lesson-new" type="button">New</button><button class="btn" id="lesson-rename" type="button">Rename</button><button class="btn" id="lesson-delete" type="button">Delete</button></div></div>
-                <div class="form-group grow"><label for="setting-config">Exercises (JSON): page, exercise, questions and time in seconds</label><div style="display:flex; gap:0.6rem; align-items:center; margin-bottom:0.3rem;"><button class="btn" id="btn-copy-format" type="button">📋 Copy format</button><span id="copy-format-msg" style="font-size:0.8rem; color:#55efc4;"></span></div><textarea id="setting-config"></textarea></div>
-            </details>
             <details class="sec grow"><summary>Repair game words</summary>
-                <div class="form-group grow"><label for="setting-pairs">Repair game words, one pair per line like "cat = hat" (a word alone is an extra decoy)</label><textarea id="setting-pairs"></textarea></div>
+                <div class="form-group grow"><label for="setting-pairs">Repair game words for the selected session, one pair per line like "cat = hat" (a word alone is an extra decoy)</label><textarea id="setting-pairs"></textarea></div>
             </details>
         </div>
     </div>
@@ -477,7 +495,7 @@
     /* ---------- Constants and defaults ---------- */
     var LS_CONFIG = 'rlm-config-v2', LS_STATE = 'rlm-state-v2', LS_RULES = 'rlm-rules-v2';
     var LIMIT = 4;
-    var VERSION = 'Version 3 · 7 Oct 2026';
+    var VERSION = 'Version 4 · 7 Oct 2026';
     var ROLES = [
         { icon: '👨‍✈️', name: 'Captain' }, { icon: '🧑‍🚀', name: 'Pilot' }, { icon: '🔧', name: 'Engineer' },
         { icon: '🩺', name: 'Doctor' }, { icon: '🧭', name: 'Navigator' }, { icon: '🔬', name: 'Scientist' },
@@ -501,6 +519,7 @@
         matchWindowMs: 600,
         meetingSeconds: 30,
         takeoffDelay: 12,
+        shakeDelay: 5,
         repairSeconds: 60,
         twoFingers: true,
         repairPairs: DEFAULT_PAIRS,
@@ -728,7 +747,7 @@
         if (allFinished() && state.phase === 'play' && !pendingSabotage() && state.nightQueue === 0) {
             state.grade = Math.min(3, dangerPoints());
             var dl = launchDelaySecs();
-            if (dl > 0) { state.phase = 'countdown'; state.launchAt = Date.now() + dl * 1000; state.countdownPlayed = true; playTakeoffAudio(); }
+            if (dl > 0) { state.phase = 'countdown'; state.countdownStart = Date.now(); state.launchAt = state.countdownStart + dl * 1000; state.countdownPlayed = true; playTakeoffAudio(); }
             else state.ended = 'launch';
         }
     }
@@ -931,7 +950,16 @@
         if (ui.meetingEnd) updateMeetingClock();
         updateCountdownRibbon();
     }
+    function updateRocketShake() {
+        var on;
+        if (state.phase === 'countdown' && !state.ended) {
+            var d = Number(config.shakeDelay); d = isFinite(d) && d >= 0 ? d : 5;
+            on = Date.now() >= (state.countdownStart || (state.launchAt - launchDelaySecs() * 1000)) + d * 1000;
+        } else on = !state.ended && unfinishedCount() <= 2 && !ui.fx;
+        $('rocket').classList.toggle('shake-pre-takeoff', !!on);
+    }
     function updateCountdownRibbon() {
+        updateRocketShake();
         var rb = $('ribbon');
         if (state.phase === 'countdown' && !state.ended) { rb.hidden = false; rb.textContent = '🚀 LIFT-OFF IN ' + Math.max(0, Math.ceil((state.launchAt - Date.now()) / 1000)); }
         else if (rb.textContent !== 'ALL IMPOSTORS DISCOVERED') { rb.textContent = 'ALL IMPOSTORS DISCOVERED'; rb.hidden = !allImpostorsGone(); }
@@ -1052,7 +1080,7 @@
         if (state.phase === 'countdown') updateCountdownRibbon(); else $('ribbon').hidden = !allImpostorsGone();
         $('btn-assign').style.display = state.rolesAssigned ? 'none' : '';
         $('btn-video').style.display = /^https?:\/\//i.test(config.videoUrl || '') ? '' : 'none';
-        $('rocket').classList.toggle('shake-pre-takeoff', !state.ended && unfinishedCount() <= 2 && !ui.fx);
+        updateRocketShake();
         $('night-overlay').style.display = state.phase === 'night' && !state.ended ? 'flex' : 'none';
         var sab = state.phase === 'sabotage' && !state.ended;
         $('sabotage-overlay').style.display = sab ? 'flex' : 'none'; document.body.classList.toggle('sab-shake', sab);
@@ -1452,45 +1480,129 @@
         });
     }
     $('setting-students').addEventListener('input', buildNoImp);
-    function parseExercisesText(text) {
-        var ex; try { ex = JSON.parse(text); } catch (e) { return { error: 'the exercises text is not valid JSON. Check the commas and brackets.' }; }
-        var bad = checkExercises(ex); if (bad) return { error: bad };
-        return { list: normaliseExercises(ex) };
+    function parseTimeText(v) {
+        v = String(v).trim(); var m = v.match(/^(\d+):(\d{1,2})$/);
+        if (m) return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+        var n = parseInt(v, 10); return isNaN(n) ? NaN : n;
+    }
+    function defaultTime(q) { return Math.max(10, Math.round(q * 22 / 10) * 10); }
+    function parseLessonsText(text) {
+        var lessons = [], cur = null, bad = 0;
+        function lesson(name) { cur = { name: name, exercises: [] }; lessons.push(cur); return cur; }
+        String(text || '').split(/\r?\n/).forEach(function (raw) {
+            var line = raw.trim(); if (!line || /^skipped\b/i.test(line)) return;
+            if (/^(session|lesson)\b/i.test(line)) {
+                var nm = line.replace(/[:\s]+$/, '').replace(/\s+/g, ' ');
+                if (nm === nm.toUpperCase()) nm = nm.charAt(0) + nm.slice(1).toLowerCase();
+                lesson(nm); return;
+            }
+            var ex = null;
+            if (/"page"\s*:/.test(line)) {
+                var om = line.match(/\{[^}]*\}/);
+                if (om) { try { var o = JSON.parse(om[0]); ex = { page: Number(o.page), exercise: Number(o.exercise), questions: Math.floor(Number(o.questions)), time: o.time === undefined ? NaN : parseTimeText(o.time) }; } catch (e) { ex = null; } }
+            } else {
+                var nums = line.match(/\d+(?::\d{2})?/g);
+                if (nums && nums.length >= 3) ex = { page: parseInt(nums[0], 10), exercise: parseInt(nums[1], 10), questions: parseInt(nums[2], 10), time: nums.length >= 4 ? parseTimeText(nums[3]) : NaN };
+            }
+            if (!ex) return;
+            if (isNaN(ex.page) || isNaN(ex.exercise) || !(ex.questions >= 1 && ex.questions <= 12)) { bad++; return; }
+            if (isNaN(ex.time) || ex.time <= 0) ex.time = defaultTime(ex.questions);
+            (cur || lesson('Imported')).exercises.push(ex);
+        });
+        return { lessons: lessons.filter(function (l) { return l.exercises.length; }), bad: bad };
     }
     function checkExercises(ex) {
-        if (!Array.isArray(ex) || ex.length < 1) return 'the exercises must be a list with at least one floor.';
+        if (!Array.isArray(ex) || ex.length < 1) return 'it needs at least one exercise.';
         for (var k = 0; k < ex.length; k++) {
             var e1 = ex[k];
-            if (!e1 || typeof e1 !== 'object' || !(e1.questions >= 1 && e1.questions <= 12) || isNaN(Number(e1.page)) || isNaN(Number(e1.exercise))) return 'floor ' + (k + 1) + ' needs a page, an exercise and 1 to 12 questions.';
-            if (e1.time !== undefined && isNaN(Number(e1.time))) return 'floor ' + (k + 1) + ': the time must be a number of seconds.';
+            if (!e1 || !(Number(e1.questions) >= 1 && Number(e1.questions) <= 12) || isNaN(Number(e1.page)) || isNaN(Number(e1.exercise))) return 'exercise ' + (k + 1) + ' needs a page, an exercise and 1 to 12 questions.';
+            if (e1.time !== undefined && !(Number(e1.time) > 0)) return 'exercise ' + (k + 1) + ': the time must be more than 0 seconds.';
         }
         return '';
     }
-    function normaliseExercises(ex) { return ex.map(function (e2) { return { page: e2.page, exercise: e2.exercise, questions: Math.floor(Number(e2.questions)), time: Number(e2.time) || 180 }; }); }
-    function saveLessonDraft() { var L = ui.lessons.filter(function (x) { return x.id === ui.lessonSel; })[0]; if (L) { L.exercisesText = $('setting-config').value; L.pairsText = $('setting-pairs').value; } }
-    function fillLessonSelect() { var sel = $('setting-lesson'); sel.innerHTML = ''; ui.lessons.forEach(function (L) { var o = document.createElement('option'); o.value = L.id; o.textContent = L.name; sel.appendChild(o); }); sel.value = ui.lessonSel; }
-    function loadLessonFields() { var L = ui.lessons.filter(function (x) { return x.id === ui.lessonSel; })[0]; if (L) { $('setting-config').value = L.exercisesText; $('setting-pairs').value = L.pairsText; } }
-    function openLessons() {
-        ui.lessons = config.lessons.map(function (l) { return { id: l.id, name: l.name, exercisesText: JSON.stringify(l.exercises, null, 2), pairsText: l.repairPairs || '' }; });
-        ui.lessonSel = config.activeLesson; fillLessonSelect(); loadLessonFields();
+    function normaliseExercises(ex) { return ex.map(function (e2) { return { page: Number(e2.page), exercise: Number(e2.exercise), questions: Math.floor(Number(e2.questions)), time: Number(e2.time) || defaultTime(Math.floor(Number(e2.questions))) }; }); }
+    function selLesson() { return ui.lessons.filter(function (x) { return x.id === ui.lessonSel; })[0]; }
+    function saveLessonDraft() { var L = selLesson(); if (L) L.pairsText = $('setting-pairs').value; }
+    function loadLessonFields() { var L = selLesson(); $('setting-pairs').value = L ? L.pairsText : ''; }
+    function renderLessons() {
+        var chips = $('lesson-chips'); chips.innerHTML = '';
+        ui.lessons.forEach(function (L) {
+            var b = el('button', 'lesson-chip' + (L.id === ui.lessonSel ? ' sel' : ''), L.name); b.type = 'button';
+            b.title = L.exercises.length + ' exercises'; b.onclick = function () { saveLessonDraft(); ui.lessonSel = L.id; loadLessonFields(); renderLessons(); };
+            chips.appendChild(b);
+        });
+        var panel = $('lesson-panel'); panel.innerHTML = ''; var L = selLesson(); if (!L) { fitSettings(); return; }
+        var head = el('div', 'lesson-head'); head.appendChild(el('b', '', L.name + ' · plays in the game'));
+        var rn = el('button', 'btn', 'Rename'); rn.type = 'button'; rn.onclick = function () { var n = prompt('New name for this session:', L.name); if (n === null) return; n = n.trim(); if (!n) return; L.name = n; renderLessons(); };
+        var dl = el('button', 'btn', 'Delete session'); dl.type = 'button'; dl.onclick = function () {
+            if (ui.lessons.length < 2) { $('settings-error').textContent = 'You need at least one session.'; return; }
+            if (!confirm('Delete "' + L.name + '"?')) return;
+            ui.lessons = ui.lessons.filter(function (x) { return x.id !== L.id; }); ui.lessonSel = ui.lessons[0].id; loadLessonFields(); renderLessons();
+        };
+        head.appendChild(rn); head.appendChild(dl); panel.appendChild(head);
+        function field(e, key, row, isTime) {
+            var inp = document.createElement('input'); inp.type = 'text'; inp.inputMode = 'numeric';
+            inp.value = isTime ? e.time : e[key];
+            inp.oninput = function () {
+                var v = isTime ? parseTimeText(inp.value) : parseInt(inp.value, 10);
+                var ok = !isNaN(v) && (key === 'questions' ? (v >= 1 && v <= 12) : v >= (isTime ? 1 : 0));
+                inp.classList.toggle('bad', !ok); if (ok) e[key] = v;
+            };
+            return inp;
+        }
+        L.exercises.forEach(function (e, k) {
+            var row = el('div', 'ex-row'); row.appendChild(el('span', 'ex-n', String(k + 1)));
+            row.appendChild(document.createTextNode('P.')); row.appendChild(field(e, 'page'));
+            row.appendChild(document.createTextNode('Ex.')); row.appendChild(field(e, 'exercise'));
+            row.appendChild(document.createTextNode('Q')); row.appendChild(field(e, 'questions'));
+            row.appendChild(document.createTextNode('sec')); var ti = field(e, 'time', row, true); ti.style.width = '4rem'; row.appendChild(ti);
+            var x = el('button', 'ex-x', '✕'); x.type = 'button'; x.title = 'Delete this exercise'; x.onclick = function () { L.exercises.splice(k, 1); renderLessons(); };
+            row.appendChild(x); panel.appendChild(row);
+        });
+        var add = el('button', 'ex-add', '+ Add exercise'); add.type = 'button';
+        add.onclick = function () { var last = L.exercises[L.exercises.length - 1]; L.exercises.push({ page: last ? last.page : 1, exercise: last ? last.exercise + 1 : 1, questions: 5, time: defaultTime(5) }); renderLessons(); panel.scrollTop = panel.scrollHeight; };
+        panel.appendChild(add);
+        fitSettings();
     }
-    $('setting-lesson').onchange = function () { saveLessonDraft(); ui.lessonSel = this.value; loadLessonFields(); };
+    function openLessons() {
+        ui.lessons = config.lessons.map(function (l) { return { id: l.id, name: l.name, exercises: clone(l.exercises), pairsText: l.repairPairs || '' }; });
+        ui.lessonSel = config.activeLesson; loadLessonFields(); renderLessons(); $('lesson-msg').textContent = '';
+    }
     $('lesson-new').onclick = function () {
-        var n = prompt('Name of the new lesson:', 'Lesson ' + (ui.lessons.length + 1)); if (n === null) return; n = n.trim(); if (!n) return;
+        var n = prompt('Name of the new session:', 'Session ' + (ui.lessons.length + 1)); if (n === null) return; n = n.trim(); if (!n) return;
         saveLessonDraft(); var id = 'l' + Date.now();
-        ui.lessons.push({ id: id, name: n, exercisesText: JSON.stringify(DEFAULT_CONFIG.exercises, null, 2), pairsText: DEFAULT_PAIRS });
-        ui.lessonSel = id; fillLessonSelect(); loadLessonFields();
+        ui.lessons.push({ id: id, name: n, exercises: [{ page: 1, exercise: 1, questions: 5, time: defaultTime(5) }], pairsText: DEFAULT_PAIRS });
+        ui.lessonSel = id; loadLessonFields(); renderLessons();
     };
-    $('lesson-rename').onclick = function () {
-        var L = ui.lessons.filter(function (x) { return x.id === ui.lessonSel; })[0]; if (!L) return;
-        var n = prompt('New name for this lesson:', L.name); if (n === null) return; n = n.trim(); if (!n) return;
-        L.name = n; fillLessonSelect();
+    $('lesson-import').onclick = function () { $('file-lessons').click(); };
+    $('file-lessons').onchange = function () {
+        var f = this.files && this.files[0]; this.value = ''; if (!f) return;
+        var rd = new FileReader();
+        rd.onload = function () {
+            var res = parseLessonsText(String(rd.result || '')), msg = $('lesson-msg');
+            if (!res.lessons.length) { msg.style.color = '#ff7675'; msg.textContent = 'No exercises found in that file.'; return; }
+            saveLessonDraft();
+            res.lessons.forEach(function (n) {
+                var old = ui.lessons.filter(function (x) { return x.name.toLowerCase() === n.name.toLowerCase(); })[0];
+                if (old) old.exercises = n.exercises;
+                else ui.lessons.push({ id: 'l' + Date.now() + '_' + ui.lessons.length, name: n.name, exercises: n.exercises, pairsText: DEFAULT_PAIRS });
+            });
+            var first = ui.lessons.filter(function (x) { return x.name.toLowerCase() === res.lessons[0].name.toLowerCase(); })[0];
+            ui.lessonSel = first.id; loadLessonFields(); renderLessons();
+            msg.style.color = '#55efc4'; msg.textContent = '✔ Imported ' + res.lessons.length + (res.lessons.length === 1 ? ' session' : ' sessions') + (res.bad ? ' (' + res.bad + ' lines skipped)' : '') + '. Press Save & Restart to keep them.';
+        };
+        rd.readAsText(f);
     };
-    $('lesson-delete').onclick = function () {
-        if (ui.lessons.length < 2) { $('settings-error').textContent = 'You need at least one lesson.'; return; }
-        var L = ui.lessons.filter(function (x) { return x.id === ui.lessonSel; })[0]; if (!L || !confirm('Delete the lesson "' + L.name + '"?')) return;
-        ui.lessons = ui.lessons.filter(function (x) { return x.id !== L.id; }); ui.lessonSel = ui.lessons[0].id; fillLessonSelect(); loadLessonFields();
-    };
+    function fitSettings() {
+        var ov = $('settings-overlay'); if (ov.style.display !== 'flex') return;
+        var root = document.documentElement, body = document.querySelector('.settings-body'), lo = 9, hi = 22;
+        var pn = $('lesson-panel');
+        function fits(px) { root.style.fontSize = px + 'px'; if (pn.offsetParent && pn.scrollHeight > pn.clientHeight + 1) return false; return body.scrollHeight <= body.clientHeight + 1 && body.scrollWidth <= body.clientWidth + 1 && ov.scrollHeight <= ov.clientHeight + 1; }
+        for (var q = 0; q < 9; q++) { var mid = (lo + hi) / 2; if (fits(mid)) lo = mid; else hi = mid; }
+        root.style.fontSize = lo + 'px';
+    }
+    $('settings-overlay').addEventListener('toggle', function () { fitSettings(); }, true);
+    window.addEventListener('resize', function () { fitSettings(); });
     $('btn-settings').onclick = function () {
         $('setting-rocket-label').value = config.rocketLabel;
         $('setting-students').value = (config.students || []).join(', ');
@@ -1503,7 +1615,8 @@
         $('version-tag').textContent = VERSION; $('setting-takeoff-delay').value = (config.takeoffDelay === undefined ? 12 : config.takeoffDelay); $('setting-meeting').value = meetingSecs(); $('setting-repair').value = repairSecs();
         openLessons(); $('setting-popup').value = config.popupSeconds || 2;
         $('settings-error').textContent = ''; $('reveal-box').textContent = ''; refreshUndoBtn();
-        $('settings-overlay').style.display = 'flex';
+        $('setting-shake-delay').value = (config.shakeDelay === undefined ? 5 : config.shakeDelay);
+        $('settings-overlay').style.display = 'flex'; fitSettings();
     };
     (function () {
         var b = $('btn-reveal');
@@ -1513,7 +1626,7 @@
         ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { b.addEventListener(ev, hide); });
         b.addEventListener('contextmenu', function (e) { e.preventDefault(); });
     })();
-    function closeSettings() { $('settings-overlay').style.display = 'none'; $('reveal-box').textContent = ''; }
+    function closeSettings() { $('settings-overlay').style.display = 'none'; document.documentElement.style.fontSize = ''; $('reveal-box').textContent = ''; }
     $('settings-close-top').onclick = closeSettings; $('settings-cancel').onclick = closeSettings;
     $('btn-undo').onclick = function () { undo(); refreshUndoBtn(); };
     $('settings-save').onclick = function () {
@@ -1534,15 +1647,17 @@
         var sd = parseInt($('setting-sabotage-delay').value, 10); next.sabotageDelay = isNaN(sd) || sd < 0 ? 20 : sd;
         next.delegateMode = $('setting-delegates').value === 'random' ? 'random' : 'nominate';
         var mw = parseInt($('setting-window').value, 10); next.twoFingers = $('setting-twofingers').checked; next.matchWindowMs = isNaN(mw) ? 600 : Math.max(200, Math.min(2000, mw));
+        if ($('lesson-panel').querySelector('.bad')) { err.textContent = 'Fix the red boxes first: 1 to 12 questions and a time in seconds.'; return; }
         saveLessonDraft();
         var lessonsOut = [];
         for (var li = 0; li < ui.lessons.length; li++) {
-            var L = ui.lessons[li], parsed = parseExercisesText(L.exercisesText);
-            if (parsed.error) { err.textContent = 'Lesson "' + L.name + '": ' + parsed.error; return; }
-            lessonsOut.push({ id: L.id, name: L.name, exercises: parsed.list, repairPairs: L.pairsText });
+            var L = ui.lessons[li], bad = checkExercises(L.exercises);
+            if (bad) { err.textContent = 'Session "' + L.name + '": ' + bad; return; }
+            lessonsOut.push({ id: L.id, name: L.name, exercises: normaliseExercises(L.exercises), repairPairs: L.pairsText });
         }
         var chosen = lessonsOut.filter(function (x) { return x.id === ui.lessonSel; })[0] || lessonsOut[0];
         next.lessons = lessonsOut; next.activeLesson = chosen.id; next.exercises = chosen.exercises; next.repairPairs = chosen.repairPairs;
+        var sh = parseInt($('setting-shake-delay').value, 10); next.shakeDelay = isNaN(sh) ? 5 : Math.max(0, Math.min(120, sh));
         var td = parseInt($('setting-takeoff-delay').value, 10); next.takeoffDelay = isNaN(td) ? 12 : Math.max(0, Math.min(120, td));
         var ms = parseInt($('setting-meeting').value, 10); next.meetingSeconds = isNaN(ms) ? 30 : Math.max(5, Math.min(600, ms));
         var rs = parseInt($('setting-repair').value, 10); next.repairSeconds = isNaN(rs) ? 60 : Math.max(10, Math.min(600, rs));
@@ -1559,9 +1674,9 @@
     });
     $('btn-video').onclick = function () { var u = (config.videoUrl || '').trim(); if (/^https?:\/\//i.test(u)) window.open(u, '_blank', 'noopener'); };
     $('btn-copy-format').onclick = function () {
-        var text = 'Exercises format (JSON). One line for each floor of the rocket:\n[\n  { "page": 10, "exercise": 4, "questions": 4, "time": 90 },\n  { "page": 10, "exercise": 5, "questions": 8, "time": 180 },\n  { "page": 12, "exercise": 3, "questions": 5, "time": 120 }\n]\n\npage = page number in the book, shown on the floor as "P.10"\nexercise = exercise number, shown as "Ex.4"\nquestions = number of questions in the exercise (1 to 12)\ntime = time for the floor in seconds (90 means 1:30)\nPut a comma after every line except the last one.';
-        var msg = $('copy-format-msg');
-        function done(ok) { msg.textContent = ok ? '✔ Copied' : 'Select the box and press Ctrl+C'; setTimeout(function () { msg.textContent = ''; }, 2500); }
+        var text = 'Exercises format. Start each session with its name, then one line for each floor of the rocket. Each line has four numbers in this order: page, exercise, number of questions, time.\n\nSESSION 3\np. 10 ex. 4 - 10 questions - 220 seconds\np. 10 ex. 5 - 8 questions - 180 seconds\n\nSESSION 4\np. 15 ex. 1 - 6 questions - 130 seconds\n\nWords and signs between the numbers do not matter. The time can also be written as 2:10. Give about 22 seconds for each question. Use 12 questions at most.';
+        var msg = $('lesson-msg');
+        function done(ok) { msg.style.color = ok ? '#55efc4' : '#ff7675'; msg.textContent = ok ? '✔ Copied' : 'Could not copy'; setTimeout(function () { msg.textContent = ''; }, 2500); }
         function fallback() {
             var ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;'; document.body.appendChild(ta); ta.select();
             var ok = false; try { ok = document.execCommand('copy'); } catch (e) { ok = false; } document.body.removeChild(ta); done(ok);
