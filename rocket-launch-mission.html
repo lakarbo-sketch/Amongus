@@ -291,6 +291,13 @@
     .warning { overflow: hidden; }
     .warning.level2 h2 { font-size: clamp(24px, 4vw, 64px); }
     .warning.level2 .kill { white-space: nowrap; font-size: clamp(40px, 9.4vw, 280px); }
+    .settings-body { align-content: start; }
+    details.sec { background: #0f1626; border: 1px solid #22304f; border-radius: 10px; padding: 0.45rem 0.8rem; }
+    details.sec > summary { cursor: pointer; font-weight: bold; color: #00ffcc; font-size: 1rem; padding: 0.2rem 0; user-select: none; }
+    details.sec[open] { display: flex; flex-direction: column; gap: 0.5rem; }
+    details.sec[open] > summary { margin-bottom: 0.2rem; }
+    details.sec.grow[open] { flex: 1; min-height: 0; }
+    .version-tag { color: #6c7a99; font-size: 0.8rem; margin-left: 0.8rem; font-weight: normal; }
 </style>
 </head>
 <body>
@@ -369,39 +376,52 @@
 <!-- Settings -->
 <div class="fullscreen-overlay" id="settings-overlay">
     <div class="overlay-header">
-        <h2>⚙ Game Settings</h2>
+        <h2>⚙ Game Settings<span class="version-tag" id="version-tag"></span></h2>
         <button class="btn" id="settings-close-top">✕ Close</button>
     </div>
     <div class="settings-body">
         <div class="settings-col">
-            <div class="form-group"><label for="setting-rocket-label">Rocket label</label><input type="text" id="setting-rocket-label"></div>
-            <div class="form-group"><label for="setting-students">Student names (up to 9, comma-separated)</label><input type="text" id="setting-students"></div>
-            <div class="form-group"><label for="setting-impostor-count">Number of impostors (1 or 2)</label><input type="number" id="setting-impostor-count" min="1" max="2"></div>
-            <div class="form-group"><label>Cannot be the impostor</label><div class="noimp-list" id="noimp-list"></div></div>
-            <div class="form-group"><label for="setting-weight">Chance of a student who has not been picked yet (times)</label><input type="number" id="setting-weight" min="1" max="10"></div>
-            <div class="form-group"><label for="setting-takeoff-sound">Take-off sound file (in the same folder as this game; blank for the built-in sound)</label><div class="filerow"><input type="text" id="setting-takeoff-sound" placeholder="takeoff.mp3"><button class="btn" id="pick-takeoff" type="button">Choose file</button></div><input type="file" accept="audio/*" id="file-takeoff" hidden></div>
-            <div class="form-group"><label for="setting-damage-sound">Meltdown sound file (in the same folder as this game; blank for the built-in sound)</label><div class="filerow"><input type="text" id="setting-damage-sound" placeholder="meltdown.mp3"><button class="btn" id="pick-damage" type="button">Choose file</button></div><input type="file" accept="audio/*" id="file-damage" hidden></div>
+            <details class="sec" open><summary>Class</summary>
+                <div class="form-group"><label for="setting-rocket-label">Rocket label</label><input type="text" id="setting-rocket-label"></div>
+                <input type="hidden" id="setting-students">
+                <div class="form-group"><label for="setting-impostor-count">Number of impostors (1 or 2)</label><input type="number" id="setting-impostor-count" min="1" max="2"></div>
+                <div class="form-group"><label>Cannot be the impostor</label><div class="noimp-list" id="noimp-list"></div></div>
+                <div class="form-group"><label for="setting-weight">Chance of a student who has not been picked yet (times)</label><input type="number" id="setting-weight" min="1" max="10"></div>
+            </details>
+            <details class="sec" open><summary>Tools</summary>
+                <div class="form-group"><label>Who is the impostor? (press and hold)</label>
+                    <button class="btn" id="btn-reveal" style="width:100%; justify-content:center;">👁 Hold to show</button>
+                    <div class="reveal-box" id="reveal-box"></div></div>
+                <div class="note-box"><b>Red button (bottom right):</b> the decoy. Any tap starts the alarm. The second and later taps also make the student whose turn it is a Killed ghost.</div>
+                <div style="display:flex; gap:0.6rem;"><button class="btn" id="btn-undo">↩ Undo</button><button class="btn btn-test" id="btn-test">⚡ Test All Green</button></div>
+            </details>
         </div>
         <div class="settings-col">
-            <div class="form-group checkbox-group"><input type="checkbox" id="setting-sabotage-enabled"><label for="setting-sabotage-enabled">Enable sabotage</label></div>
-            <div class="form-group"><label for="setting-sabotage-delay">Sabotage delay after the floor is finished (seconds)</label><input type="number" id="setting-sabotage-delay" min="0"></div>
-            <div style="display:flex; gap:0.6rem;"><div class="form-group" style="flex:1"><label for="setting-meeting">Meeting (seconds)</label><input type="number" id="setting-meeting" min="5" max="600"></div>
-            <div class="form-group" style="flex:1"><label for="setting-repair">Repair game (seconds)</label><input type="number" id="setting-repair" min="10" max="600"></div></div>
-            <div class="form-group"><label for="setting-delegates">Repair game delegates</label><select id="setting-delegates"><option value="nominate">The class nominates two students</option><option value="random">The game draws two students at random</option></select></div>
-            <div class="form-group"><label for="setting-window">Repair game: both taps within (milliseconds)</label><input type="number" id="setting-window" min="200" max="2000" step="100"></div>
-            <div class="form-group checkbox-group"><input type="checkbox" id="setting-twofingers"><label for="setting-twofingers">Require two fingers at once (a mouse cannot make a match)</label></div>
-            <div class="form-group"><label for="setting-popup">First-look popup stays open (seconds)</label><input type="number" id="setting-popup" min="1" max="10"></div>
-            <div class="form-group"><label for="setting-video">Rocket video address (the 🚀 Video button opens it)</label><input type="text" id="setting-video"></div>
-            <div class="form-group"><label>Who is the impostor? (press and hold)</label>
-                <button class="btn" id="btn-reveal" style="width:100%; justify-content:center;">👁 Hold to show</button>
-                <div class="reveal-box" id="reveal-box"></div></div>
-            <div class="note-box"><b>Red button (bottom right):</b> the decoy. Any tap starts the alarm. The second and later taps also make the student whose turn it is a Killed ghost.</div>
-            <div style="display:flex; gap:0.6rem;"><button class="btn" id="btn-undo">↩ Undo</button><button class="btn btn-test" id="btn-test">⚡ Test All Green</button></div>
+            <details class="sec" open><summary>Sabotage and repair game</summary>
+                <div class="form-group checkbox-group"><input type="checkbox" id="setting-sabotage-enabled"><label for="setting-sabotage-enabled">Enable sabotage</label></div>
+                <div class="form-group"><label for="setting-sabotage-delay">Sabotage delay after the floor is finished (seconds)</label><input type="number" id="setting-sabotage-delay" min="0"></div>
+                <div style="display:flex; gap:0.6rem;"><div class="form-group" style="flex:1"><label for="setting-meeting">Meeting (seconds)</label><input type="number" id="setting-meeting" min="5" max="600"></div>
+                <div class="form-group" style="flex:1"><label for="setting-repair">Repair game (seconds)</label><input type="number" id="setting-repair" min="10" max="600"></div></div>
+                <div class="form-group"><label for="setting-delegates">Repair game delegates</label><select id="setting-delegates"><option value="nominate">The class nominates two students</option><option value="random">The game draws two students at random</option></select></div>
+                <div class="form-group"><label for="setting-window">Repair game: both taps within (milliseconds)</label><input type="number" id="setting-window" min="200" max="2000" step="100"></div>
+                <div class="form-group checkbox-group"><input type="checkbox" id="setting-twofingers"><label for="setting-twofingers">Require two fingers at once (a mouse cannot make a match)</label></div>
+                <div class="form-group"><label for="setting-popup">First-look popup stays open (seconds)</label><input type="number" id="setting-popup" min="1" max="10"></div>
+            </details>
         </div>
         <div class="settings-col">
-            <div class="form-group"><label for="setting-lesson">Lesson (each lesson has its own exercises and repair words)</label><div class="filerow"><select id="setting-lesson"></select><button class="btn" id="lesson-new" type="button">New</button><button class="btn" id="lesson-rename" type="button">Rename</button><button class="btn" id="lesson-delete" type="button">Delete</button></div></div>
-            <div class="form-group grow"><label for="setting-config">Exercises (JSON): page, exercise, questions and time in seconds</label><div style="display:flex; gap:0.6rem; align-items:center; margin-bottom:0.3rem;"><button class="btn" id="btn-copy-format" type="button">📋 Copy format</button><span id="copy-format-msg" style="font-size:0.8rem; color:#55efc4;"></span></div><textarea id="setting-config"></textarea></div>
-            <div class="form-group grow"><label for="setting-pairs">Repair game words, one pair per line like "cat = hat" (a word alone is an extra decoy)</label><textarea id="setting-pairs"></textarea></div>
+            <details class="sec"><summary>Sounds, take-off and video</summary>
+                <div class="form-group"><label for="setting-takeoff-sound">Take-off sound file (plays when the last floor is finished; blank for the built-in sound)</label><div class="filerow"><input type="text" id="setting-takeoff-sound" placeholder="takeoff.mp3"><button class="btn" id="pick-takeoff" type="button">Choose file</button></div><input type="file" accept="audio/*" id="file-takeoff" hidden></div>
+                <div class="form-group"><label for="setting-takeoff-delay">Take-off delay after the sound starts (seconds)</label><input type="number" id="setting-takeoff-delay" min="0" max="120"></div>
+                <div class="form-group"><label for="setting-damage-sound">Meltdown sound file (blank for the built-in sound)</label><div class="filerow"><input type="text" id="setting-damage-sound" placeholder="meltdown.mp3"><button class="btn" id="pick-damage" type="button">Choose file</button></div><input type="file" accept="audio/*" id="file-damage" hidden></div>
+                <div class="form-group"><label for="setting-video">Rocket video address (the 🚀 Video button opens it)</label><input type="text" id="setting-video"></div>
+            </details>
+            <details class="sec grow"><summary>Lessons and exercises</summary>
+                <div class="form-group"><label for="setting-lesson">Lesson (each lesson has its own exercises and repair words)</label><div class="filerow"><select id="setting-lesson"></select><button class="btn" id="lesson-new" type="button">New</button><button class="btn" id="lesson-rename" type="button">Rename</button><button class="btn" id="lesson-delete" type="button">Delete</button></div></div>
+                <div class="form-group grow"><label for="setting-config">Exercises (JSON): page, exercise, questions and time in seconds</label><div style="display:flex; gap:0.6rem; align-items:center; margin-bottom:0.3rem;"><button class="btn" id="btn-copy-format" type="button">📋 Copy format</button><span id="copy-format-msg" style="font-size:0.8rem; color:#55efc4;"></span></div><textarea id="setting-config"></textarea></div>
+            </details>
+            <details class="sec grow"><summary>Repair game words</summary>
+                <div class="form-group grow"><label for="setting-pairs">Repair game words, one pair per line like "cat = hat" (a word alone is an extra decoy)</label><textarea id="setting-pairs"></textarea></div>
+            </details>
         </div>
     </div>
     <div class="settings-footer">
@@ -457,6 +477,7 @@
     /* ---------- Constants and defaults ---------- */
     var LS_CONFIG = 'rlm-config-v2', LS_STATE = 'rlm-state-v2', LS_RULES = 'rlm-rules-v2';
     var LIMIT = 4;
+    var VERSION = 'Version 3 · 7 Oct 2026';
     var ROLES = [
         { icon: '👨‍✈️', name: 'Captain' }, { icon: '🧑‍🚀', name: 'Pilot' }, { icon: '🔧', name: 'Engineer' },
         { icon: '🩺', name: 'Doctor' }, { icon: '🧭', name: 'Navigator' }, { icon: '🔬', name: 'Scientist' },
@@ -479,6 +500,7 @@
         delegateMode: 'nominate',
         matchWindowMs: 600,
         meetingSeconds: 30,
+        takeoffDelay: 12,
         repairSeconds: 60,
         twoFingers: true,
         repairPairs: DEFAULT_PAIRS,
@@ -704,8 +726,15 @@
         });
         if (dangerPoints() >= LIMIT) { state.ended = 'meltdown'; return; }
         if (allFinished() && state.phase === 'play' && !pendingSabotage() && state.nightQueue === 0) {
-            state.ended = 'launch'; state.grade = Math.min(3, dangerPoints());
+            state.grade = Math.min(3, dangerPoints());
+            var dl = launchDelaySecs();
+            if (dl > 0) { state.phase = 'countdown'; state.launchAt = Date.now() + dl * 1000; state.countdownPlayed = true; playTakeoffAudio(); }
+            else state.ended = 'launch';
         }
+    }
+    function launchDelaySecs() {
+        if (!String(config.takeoffSound || '').trim()) return 0;
+        var d = Number(config.takeoffDelay); return isFinite(d) && d >= 0 ? d : 12;
     }
     function afterChange(skipEval) {
         if (!skipEval) evaluate();
@@ -890,6 +919,7 @@
                 f.questions.forEach(function (q) { if (q.hideAt && now >= q.hideAt) { q.hideAt = 0; if (q.s === 'correct' || q.s === 'incorrect') { q.s = 'hidden'; changed = true; } } });
             });
             if (state.phase === 'sabotage' && now >= state.sabotageEndAt) { state.phase = 'repair'; changed = true; }
+            if (state.phase === 'countdown' && now >= state.launchAt) { state.phase = 'play'; state.ended = 'launch'; changed = true; }
             if (state.phase === 'play' && state.nightQueue > 0 && !pendingSabotage()) {
                 if (!state.nightAt) { state.nightAt = now + NIGHT_DELAY_MS; }
                 else if (now >= state.nightAt) { state.nightAt = 0; state.nightQueue--; state.phase = 'night'; changed = true; }
@@ -899,6 +929,12 @@
         Object.keys(ui.timeUp).forEach(function (k) { if (ui.timeUp[k] && now >= ui.timeUp[k]) { ui.timeUp[k] = 0; expired = true; } });
         if (changed) afterChange(); else { if (expired) renderFloors(); updateTimers(); saveDirty = true; }
         if (ui.meetingEnd) updateMeetingClock();
+        updateCountdownRibbon();
+    }
+    function updateCountdownRibbon() {
+        var rb = $('ribbon');
+        if (state.phase === 'countdown' && !state.ended) { rb.hidden = false; rb.textContent = '🚀 LIFT-OFF IN ' + Math.max(0, Math.ceil((state.launchAt - Date.now()) / 1000)); }
+        else if (rb.textContent !== 'ALL IMPOSTORS DISCOVERED') { rb.textContent = 'ALL IMPOSTORS DISCOVERED'; rb.hidden = !allImpostorsGone(); }
     }
     setInterval(tick, 250);
     setInterval(function () { if (saveDirty) save(); }, 2000);
@@ -1013,7 +1049,7 @@
         ui.lastPercent = pct;
         $('meeting-count').textContent = Math.max(0, meetingsAvailable());
         var mb = $('btn-meeting'); mb.disabled = !meetingAllowed(); mb.classList.toggle('flash', !!state.meetingFlash && meetingAllowed());
-        $('ribbon').hidden = !allImpostorsGone();
+        if (state.phase === 'countdown') updateCountdownRibbon(); else $('ribbon').hidden = !allImpostorsGone();
         $('btn-assign').style.display = state.rolesAssigned ? 'none' : '';
         $('btn-video').style.display = /^https?:\/\//i.test(config.videoUrl || '') ? '' : 'none';
         $('rocket').classList.toggle('shake-pre-takeoff', !state.ended && unfinishedCount() <= 2 && !ui.fx);
@@ -1063,7 +1099,7 @@
     function runLaunch(instant) {
         var rocket = $('rocket'), g = GRADES[state.grade] || GRADES[0], core = $('plasma-core');
         if (instant) { rocket.classList.add('gone'); showTakeoffBanner(); return; }
-        playTakeoffAudio();
+        if (!state.countdownPlayed) playTakeoffAudio();
         rocket.style.setProperty('--grow', g.ms + 'ms');
         rocket.classList.remove('shake-pre-takeoff'); rocket.classList.add(g.shake, 'firing', 'fire-g' + state.grade); core.classList.add('flicker');
         startFire(state.grade);
@@ -1464,7 +1500,7 @@
         $('setting-takeoff-sound').value = config.takeoffSound || ''; $('setting-damage-sound').value = config.damageSound || ''; $('setting-video').value = config.videoUrl || '';
         $('setting-sabotage-enabled').checked = !!config.sabotageEnabled; $('setting-sabotage-delay').value = config.sabotageDelay;
         $('setting-delegates').value = config.delegateMode || 'nominate'; $('setting-window').value = config.matchWindowMs || 600; $('setting-twofingers').checked = config.twoFingers !== false;
-        $('setting-meeting').value = meetingSecs(); $('setting-repair').value = repairSecs();
+        $('version-tag').textContent = VERSION; $('setting-takeoff-delay').value = (config.takeoffDelay === undefined ? 12 : config.takeoffDelay); $('setting-meeting').value = meetingSecs(); $('setting-repair').value = repairSecs();
         openLessons(); $('setting-popup').value = config.popupSeconds || 2;
         $('settings-error').textContent = ''; $('reveal-box').textContent = ''; refreshUndoBtn();
         $('settings-overlay').style.display = 'flex';
@@ -1507,6 +1543,7 @@
         }
         var chosen = lessonsOut.filter(function (x) { return x.id === ui.lessonSel; })[0] || lessonsOut[0];
         next.lessons = lessonsOut; next.activeLesson = chosen.id; next.exercises = chosen.exercises; next.repairPairs = chosen.repairPairs;
+        var td = parseInt($('setting-takeoff-delay').value, 10); next.takeoffDelay = isNaN(td) ? 12 : Math.max(0, Math.min(120, td));
         var ms = parseInt($('setting-meeting').value, 10); next.meetingSeconds = isNaN(ms) ? 30 : Math.max(5, Math.min(600, ms));
         var rs = parseInt($('setting-repair').value, 10); next.repairSeconds = isNaN(rs) ? 60 : Math.max(10, Math.min(600, rs));
         var pu = parseInt($('setting-popup').value, 10); next.popupSeconds = isNaN(pu) ? 2 : Math.max(1, Math.min(10, pu));
