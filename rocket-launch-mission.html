@@ -249,8 +249,8 @@
     @keyframes popupBar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 
     /* Crew scan (Assign roles) */
-    .scan-list { display: flex; flex-wrap: wrap; gap: 1.2rem; justify-content: center; max-width: 100rem; }
-    .scan-chip { position: relative; padding: 0.8rem 2rem; border: 3px solid #3b4d71; border-radius: 12px; font-size: min(3.2rem, 6vh); font-weight: 700; color: #8a90a0; min-width: 16rem; overflow: hidden; text-align: center; }
+    .scan-list { display: flex; flex-wrap: wrap; gap: 1.2rem; justify-content: center; width: min(100%, 100rem); container-type: inline-size; --cols: 3; }
+    .scan-chip { position: relative; padding: 0.8rem 2rem; border: 3px solid #3b4d71; border-radius: 12px; font-size: min(3.2rem, 6vh, calc(100cqw / var(--cols) / 8.5)); font-weight: 700; color: #8a90a0; min-width: 0; flex: 0 0 calc((100% - (var(--cols) - 1) * 1.2rem) / var(--cols)); overflow: hidden; text-align: center; }
     .scan-chip.scanning { border-color: #00ffcc; color: #fff; }
     .scan-chip.scanning::after { content: ''; position: absolute; left: -30%; top: 0; bottom: 0; width: 30%; background: linear-gradient(90deg, transparent, rgba(0,255,204,0.6), transparent); animation: scanSweep 0.45s linear; }
     @keyframes scanSweep { to { left: 110%; } }
@@ -313,6 +313,9 @@
     .ex-row .ex-n { width: 1.4rem; color: #6c7a99; text-align: right; }
     .ex-x { background: #3a1519; color: #ff7675; border: 2px solid #ff3838; border-radius: 6px; padding: 0.1rem 0.5rem; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
     .ex-add { background: #00b894; color: #000; border: none; border-radius: 8px; padding: 0.35rem 0.8rem; font-weight: bold; cursor: pointer; margin-top: 0.2rem; font-size: 0.9rem; }
+    .lv-label { color: #00ffcc; font-size: 0.9rem; }
+    .lesson-chip.lv { background: #2a2248; border-color: #7d5cd6; }
+    .lesson-chip.lv.sel { background: #9b59b6; color: #fff; border-color: #d2a8ff; }
 </style>
 </head>
 <body>
@@ -422,14 +425,15 @@
                 <div class="form-group checkbox-group"><input type="checkbox" id="setting-twofingers"><label for="setting-twofingers">Require two fingers at once (a mouse cannot make a match)</label></div>
                 <div class="form-group"><label for="setting-popup">First-look popup stays open (seconds)</label><input type="number" id="setting-popup" min="1" max="10"></div>
             </details>
+        </div>
+        <div class="settings-col">
             <details class="sec grow" id="sec-lessons"><summary>Lessons and exercises</summary>
+                <div class="filerow lesson-tools"><b class="lv-label">Level</b><div id="level-chips" class="lesson-chips"></div><button class="btn" id="level-new" type="button">+ Level</button><button class="btn" id="level-rename" type="button">Rename level</button><button class="btn" id="level-delete" type="button">Delete level</button></div>
                 <div class="filerow lesson-tools"><button class="btn" id="lesson-new" type="button">+ New session</button><button class="btn" id="lesson-import" type="button">📥 Import file</button><button class="btn" id="btn-copy-format" type="button">📋 Copy format</button><input type="file" id="file-lessons" accept=".txt,.json,text/plain,application/json" hidden></div>
                 <div id="lesson-msg" class="lesson-msg"></div>
                 <div id="lesson-chips" class="lesson-chips"></div>
                 <div id="lesson-panel" class="lesson-panel"></div>
             </details>
-        </div>
-        <div class="settings-col">
             <details class="sec"><summary>Sounds, take-off and video</summary>
                 <div class="form-group"><label for="setting-takeoff-sound">Take-off sound file (plays when the last floor is finished; blank for the built-in sound)</label><div class="filerow"><input type="text" id="setting-takeoff-sound" placeholder="takeoff.mp3"><button class="btn" id="pick-takeoff" type="button">Choose file</button></div><input type="file" accept="audio/*" id="file-takeoff" hidden></div>
                 <div class="form-group"><label for="setting-takeoff-delay">Take-off delay after the sound starts (seconds)</label><input type="number" id="setting-takeoff-delay" min="0" max="120"></div>
@@ -495,7 +499,7 @@
     /* ---------- Constants and defaults ---------- */
     var LS_CONFIG = 'rlm-config-v2', LS_STATE = 'rlm-state-v2', LS_RULES = 'rlm-rules-v2';
     var LIMIT = 4;
-    var VERSION = 'Version 4 · 7 Oct 2026';
+    var VERSION = 'Version 5 · 7 Oct 2026';
     var ROLES = [
         { icon: '👨‍✈️', name: 'Captain' }, { icon: '🧑‍🚀', name: 'Pilot' }, { icon: '🔧', name: 'Engineer' },
         { icon: '🩺', name: 'Doctor' }, { icon: '🧭', name: 'Navigator' }, { icon: '🔬', name: 'Scientist' },
@@ -519,6 +523,8 @@
         matchWindowMs: 600,
         meetingSeconds: 30,
         takeoffDelay: 12,
+        levels: null,
+        activeLevel: '',
         shakeDelay: 5,
         repairSeconds: 60,
         twoFingers: true,
@@ -596,6 +602,13 @@
         config.activeLesson = al.id; config.exercises = al.exercises; config.repairPairs = al.repairPairs;
     }
     syncActiveLesson();
+    function ensureLevels() {
+        if (!Array.isArray(config.levels) || !config.levels.length) config.levels = [{ id: 'lv1', name: 'Level 1', lessons: config.lessons, activeLesson: config.activeLesson }];
+        var lv = config.levels.filter(function (l) { return l.id === config.activeLevel; })[0] || config.levels[0];
+        config.activeLevel = lv.id; config.lessons = lv.lessons; config.activeLesson = lv.activeLesson; syncActiveLesson();
+        lv.lessons = config.lessons; lv.activeLesson = config.activeLesson;
+    }
+    ensureLevels();
     function configSig() { return JSON.stringify([config.students, config.impostorCount, config.noImpostor, config.exercises]); }
 
     function newState() {
@@ -903,6 +916,7 @@
         ensureAudio();
         ui.assigning = true;
         var ov = $('assign-overlay'), n = totalImpostors(), list = $('scan-list'), done = false;
+        var cnt = state.students.length; list.style.setProperty('--cols', cnt <= 4 ? Math.max(1, cnt) : (cnt === 5 || cnt === 6 || cnt === 9) ? 3 : 4);
         $('assign-title').textContent = 'Scanning the crew…'; $('assign-sub').textContent = ''; $('assign-big').textContent = ''; $('assign-big').classList.remove('glitch');
         list.innerHTML = '';
         var chips = state.students.map(function (st) { var c = el('div', 'scan-chip'); c.appendChild(el('span', 'scan-name', st.name)); c.appendChild(el('span', 'scan-stamp', '')); list.appendChild(c); return c; });
@@ -1334,7 +1348,7 @@
             board.appendChild(colL); board.appendChild(colR); ov.appendChild(board);
         }
         var bottom = el('div', 'repair-bottom');
-        if (!R.result) { var lv = el('button', 'btn', '↩ Leave repair'); lv.onclick = leaveRepair; bottom.appendChild(lv); }
+        if (!R.result) { var lv = el('button', 'btn', '↩ Leave repair'); lv.onclick = leaveRepair; lv.addEventListener('pointerdown', function (e) { e.preventDefault(); leaveRepair(); }); bottom.appendChild(lv); }
         if (R.stage === 'nominate') {
             if (!state.practiceDone) { var pb = el('button', 'btn', '🎯 Practice'); pb.onclick = startPractice; bottom.appendChild(pb); }
             var go = el('button', 'btn btn-good', '▶ Start repair'); go.disabled = R.delegates.length < 2 && candidates().length >= 2;
@@ -1522,25 +1536,48 @@
     }
     function normaliseExercises(ex) { return ex.map(function (e2) { return { page: Number(e2.page), exercise: Number(e2.exercise), questions: Math.floor(Number(e2.questions)), time: Number(e2.time) || defaultTime(Math.floor(Number(e2.questions))) }; }); }
     function selLesson() { return ui.lessons.filter(function (x) { return x.id === ui.lessonSel; })[0]; }
-    function saveLessonDraft() { var L = selLesson(); if (L) L.pairsText = $('setting-pairs').value; }
+    function curLevel() { return ui.levels.filter(function (x) { return x.id === ui.levelSel; })[0]; }
+    function saveLessonDraft() { var L = selLesson(); if (L) L.pairsText = $('setting-pairs').value; var lv = curLevel(); if (lv) lv.lessonSel = ui.lessonSel; }
     function loadLessonFields() { var L = selLesson(); $('setting-pairs').value = L ? L.pairsText : ''; }
+    function renderLevels() {
+        var box = $('level-chips'); box.innerHTML = '';
+        ui.levels.forEach(function (lv) {
+            var b = el('button', 'lesson-chip lv' + (lv.id === ui.levelSel ? ' sel' : ''), lv.name); b.type = 'button';
+            b.onclick = function () { switchUILevel(lv.id); };
+            box.appendChild(b);
+        });
+    }
+    function switchUILevel(id) {
+        if (id === ui.levelSel) return;
+        saveLessonDraft();
+        ui.levelSel = id; var lv = curLevel(); ui.lessons = lv.lessons;
+        ui.lessonSel = (ui.lessons.filter(function (x) { return x.id === lv.lessonSel; })[0] || ui.lessons[0]).id;
+        ui.panelOpen = false; loadLessonFields(); renderLevels(); renderLessons();
+    }
     function renderLessons() {
         var chips = $('lesson-chips'); chips.innerHTML = '';
         ui.lessons.forEach(function (L) {
             var b = el('button', 'lesson-chip' + (L.id === ui.lessonSel ? ' sel' : ''), L.name); b.type = 'button';
-            b.title = L.exercises.length + ' exercises'; b.onclick = function () { saveLessonDraft(); ui.lessonSel = L.id; loadLessonFields(); renderLessons(); };
+            b.title = L.exercises.length + ' exercises';
+            b.onclick = function () {
+                saveLessonDraft();
+                if (L.id === ui.lessonSel) ui.panelOpen = !ui.panelOpen; else { ui.lessonSel = L.id; ui.panelOpen = true; }
+                loadLessonFields(); renderLessons();
+            };
             chips.appendChild(b);
         });
-        var panel = $('lesson-panel'); panel.innerHTML = ''; var L = selLesson(); if (!L) { fitSettings(); return; }
+        var panel = $('lesson-panel'); panel.innerHTML = ''; var L = selLesson();
+        panel.style.display = (L && ui.panelOpen) ? '' : 'none';
+        if (!L || !ui.panelOpen) { fitSettings(); return; }
         var head = el('div', 'lesson-head'); head.appendChild(el('b', '', L.name + ' · plays in the game'));
         var rn = el('button', 'btn', 'Rename'); rn.type = 'button'; rn.onclick = function () { var n = prompt('New name for this session:', L.name); if (n === null) return; n = n.trim(); if (!n) return; L.name = n; renderLessons(); };
         var dl = el('button', 'btn', 'Delete session'); dl.type = 'button'; dl.onclick = function () {
             if (ui.lessons.length < 2) { $('settings-error').textContent = 'You need at least one session.'; return; }
             if (!confirm('Delete "' + L.name + '"?')) return;
-            ui.lessons = ui.lessons.filter(function (x) { return x.id !== L.id; }); ui.lessonSel = ui.lessons[0].id; loadLessonFields(); renderLessons();
+            var k = ui.lessons.indexOf(L); ui.lessons.splice(k, 1); ui.lessonSel = ui.lessons[0].id; loadLessonFields(); renderLessons();
         };
         head.appendChild(rn); head.appendChild(dl); panel.appendChild(head);
-        function field(e, key, row, isTime) {
+        function field(e, key, isTime) {
             var inp = document.createElement('input'); inp.type = 'text'; inp.inputMode = 'numeric';
             inp.value = isTime ? e.time : e[key];
             inp.oninput = function () {
@@ -1555,7 +1592,7 @@
             row.appendChild(document.createTextNode('P.')); row.appendChild(field(e, 'page'));
             row.appendChild(document.createTextNode('Ex.')); row.appendChild(field(e, 'exercise'));
             row.appendChild(document.createTextNode('Q')); row.appendChild(field(e, 'questions'));
-            row.appendChild(document.createTextNode('sec')); var ti = field(e, 'time', row, true); ti.style.width = '4rem'; row.appendChild(ti);
+            row.appendChild(document.createTextNode('sec')); var ti = field(e, 'time', true); ti.style.width = '4rem'; row.appendChild(ti);
             var x = el('button', 'ex-x', '✕'); x.type = 'button'; x.title = 'Delete this exercise'; x.onclick = function () { L.exercises.splice(k, 1); renderLessons(); };
             row.appendChild(x); panel.appendChild(row);
         });
@@ -1565,14 +1602,33 @@
         fitSettings();
     }
     function openLessons() {
-        ui.lessons = config.lessons.map(function (l) { return { id: l.id, name: l.name, exercises: clone(l.exercises), pairsText: l.repairPairs || '' }; });
-        ui.lessonSel = config.activeLesson; loadLessonFields(); renderLessons(); $('lesson-msg').textContent = '';
+        ui.levels = config.levels.map(function (lv) {
+            return { id: lv.id, name: lv.name, lessonSel: lv.activeLesson, lessons: lv.lessons.map(function (l) { return { id: l.id, name: l.name, exercises: clone(l.exercises), pairsText: l.repairPairs || '' }; }) };
+        });
+        ui.levelSel = config.activeLevel; var lv = curLevel(); ui.lessons = lv.lessons;
+        ui.lessonSel = (ui.lessons.filter(function (x) { return x.id === lv.lessonSel; })[0] || ui.lessons[0]).id;
+        ui.panelOpen = false; loadLessonFields(); renderLevels(); renderLessons(); $('lesson-msg').textContent = '';
     }
+    $('level-new').onclick = function () {
+        var n = prompt('Name of the new level (for example B1+):', ''); if (n === null) return; n = n.trim(); if (!n) return;
+        saveLessonDraft();
+        var id = 'lv' + Date.now(), sid = 'l' + Date.now();
+        ui.levels.push({ id: id, name: n, lessonSel: sid, lessons: [{ id: sid, name: 'Session 1', exercises: [{ page: 1, exercise: 1, questions: 5, time: defaultTime(5) }], pairsText: DEFAULT_PAIRS }] });
+        ui.levelSel = null; switchUILevel(id);
+    };
+    $('level-rename').onclick = function () {
+        var lv = curLevel(); var n = prompt('New name for this level:', lv.name); if (n === null) return; n = n.trim(); if (!n) return; lv.name = n; renderLevels();
+    };
+    $('level-delete').onclick = function () {
+        if (ui.levels.length < 2) { $('settings-error').textContent = 'You need at least one level.'; return; }
+        var lv = curLevel(); if (!confirm('Delete the level "' + lv.name + '" with all its sessions?')) return;
+        ui.levels = ui.levels.filter(function (x) { return x.id !== lv.id; }); ui.levelSel = null; switchUILevel(ui.levels[0].id);
+    };
     $('lesson-new').onclick = function () {
         var n = prompt('Name of the new session:', 'Session ' + (ui.lessons.length + 1)); if (n === null) return; n = n.trim(); if (!n) return;
         saveLessonDraft(); var id = 'l' + Date.now();
         ui.lessons.push({ id: id, name: n, exercises: [{ page: 1, exercise: 1, questions: 5, time: defaultTime(5) }], pairsText: DEFAULT_PAIRS });
-        ui.lessonSel = id; loadLessonFields(); renderLessons();
+        ui.lessonSel = id; ui.panelOpen = true; loadLessonFields(); renderLessons();
     };
     $('lesson-import').onclick = function () { $('file-lessons').click(); };
     $('file-lessons').onchange = function () {
@@ -1582,14 +1638,11 @@
             var res = parseLessonsText(String(rd.result || '')), msg = $('lesson-msg');
             if (!res.lessons.length) { msg.style.color = '#ff7675'; msg.textContent = 'No exercises found in that file.'; return; }
             saveLessonDraft();
-            res.lessons.forEach(function (n) {
-                var old = ui.lessons.filter(function (x) { return x.name.toLowerCase() === n.name.toLowerCase(); })[0];
-                if (old) old.exercises = n.exercises;
-                else ui.lessons.push({ id: 'l' + Date.now() + '_' + ui.lessons.length, name: n.name, exercises: n.exercises, pairsText: DEFAULT_PAIRS });
-            });
-            var first = ui.lessons.filter(function (x) { return x.name.toLowerCase() === res.lessons[0].name.toLowerCase(); })[0];
-            ui.lessonSel = first.id; loadLessonFields(); renderLessons();
-            msg.style.color = '#55efc4'; msg.textContent = '✔ Imported ' + res.lessons.length + (res.lessons.length === 1 ? ' session' : ' sessions') + (res.bad ? ' (' + res.bad + ' lines skipped)' : '') + '. Press Save & Restart to keep them.';
+            var oldPairs = {}; ui.lessons.forEach(function (x) { oldPairs[x.name.toLowerCase()] = x.pairsText; });
+            ui.lessons.splice(0, ui.lessons.length);
+            res.lessons.forEach(function (n, k) { ui.lessons.push({ id: 'l' + Date.now() + '_' + k, name: n.name, exercises: n.exercises, pairsText: oldPairs[n.name.toLowerCase()] || DEFAULT_PAIRS }); });
+            ui.lessonSel = ui.lessons[0].id; ui.panelOpen = false; loadLessonFields(); renderLessons();
+            msg.style.color = '#55efc4'; msg.textContent = '✔ Level "' + curLevel().name + '" now has ' + res.lessons.length + (res.lessons.length === 1 ? ' session' : ' sessions') + (res.bad ? ' (' + res.bad + ' lines skipped)' : '') + '. Press Save & Restart to keep them.';
         };
         rd.readAsText(f);
     };
@@ -1597,7 +1650,7 @@
         var ov = $('settings-overlay'); if (ov.style.display !== 'flex') return;
         var root = document.documentElement, body = document.querySelector('.settings-body'), lo = 9, hi = 22;
         var pn = $('lesson-panel');
-        function fits(px) { root.style.fontSize = px + 'px'; if (pn.offsetParent && pn.scrollHeight > pn.clientHeight + 1) return false; return body.scrollHeight <= body.clientHeight + 1 && body.scrollWidth <= body.clientWidth + 1 && ov.scrollHeight <= ov.clientHeight + 1; }
+        function fits(px) { root.style.fontSize = px + 'px'; if (pn.offsetParent && pn.scrollHeight > pn.clientHeight + 1) return false; var ds = ov.querySelectorAll('details[open]'); for (var di = 0; di < ds.length; di++) if (ds[di].scrollHeight > ds[di].clientHeight + 1) return false; return body.scrollHeight <= body.clientHeight + 1 && body.scrollWidth <= body.clientWidth + 1 && ov.scrollHeight <= ov.clientHeight + 1; }
         for (var q = 0; q < 9; q++) { var mid = (lo + hi) / 2; if (fits(mid)) lo = mid; else hi = mid; }
         root.style.fontSize = lo + 'px';
     }
@@ -1649,24 +1702,41 @@
         var mw = parseInt($('setting-window').value, 10); next.twoFingers = $('setting-twofingers').checked; next.matchWindowMs = isNaN(mw) ? 600 : Math.max(200, Math.min(2000, mw));
         if ($('lesson-panel').querySelector('.bad')) { err.textContent = 'Fix the red boxes first: 1 to 12 questions and a time in seconds.'; return; }
         saveLessonDraft();
-        var lessonsOut = [];
-        for (var li = 0; li < ui.lessons.length; li++) {
-            var L = ui.lessons[li], bad = checkExercises(L.exercises);
-            if (bad) { err.textContent = 'Session "' + L.name + '": ' + bad; return; }
-            lessonsOut.push({ id: L.id, name: L.name, exercises: normaliseExercises(L.exercises), repairPairs: L.pairsText });
+        var levelsOut = [];
+        for (var vi = 0; vi < ui.levels.length; vi++) {
+            var LV = ui.levels[vi], lessonsOut = [];
+            for (var li = 0; li < LV.lessons.length; li++) {
+                var L = LV.lessons[li], bad = checkExercises(L.exercises);
+                if (bad) { err.textContent = (ui.levels.length > 1 ? LV.name + ' · ' : '') + 'Session "' + L.name + '": ' + bad; return; }
+                lessonsOut.push({ id: L.id, name: L.name, exercises: normaliseExercises(L.exercises), repairPairs: L.pairsText });
+            }
+            var pick = lessonsOut.filter(function (x) { return x.id === LV.lessonSel; })[0] || lessonsOut[0];
+            levelsOut.push({ id: LV.id, name: LV.name, lessons: lessonsOut, activeLesson: pick.id });
         }
-        var chosen = lessonsOut.filter(function (x) { return x.id === ui.lessonSel; })[0] || lessonsOut[0];
-        next.lessons = lessonsOut; next.activeLesson = chosen.id; next.exercises = chosen.exercises; next.repairPairs = chosen.repairPairs;
+        var activeLv = levelsOut.filter(function (x) { return x.id === ui.levelSel; })[0] || levelsOut[0];
+        var chosen = activeLv.lessons.filter(function (x) { return x.id === activeLv.activeLesson; })[0];
+        next.levels = levelsOut; next.activeLevel = activeLv.id;
+        next.lessons = activeLv.lessons; next.activeLesson = chosen.id; next.exercises = chosen.exercises; next.repairPairs = chosen.repairPairs;
         var sh = parseInt($('setting-shake-delay').value, 10); next.shakeDelay = isNaN(sh) ? 5 : Math.max(0, Math.min(120, sh));
         var td = parseInt($('setting-takeoff-delay').value, 10); next.takeoffDelay = isNaN(td) ? 12 : Math.max(0, Math.min(120, td));
         var ms = parseInt($('setting-meeting').value, 10); next.meetingSeconds = isNaN(ms) ? 30 : Math.max(5, Math.min(600, ms));
         var rs = parseInt($('setting-repair').value, 10); next.repairSeconds = isNaN(rs) ? 60 : Math.max(10, Math.min(600, rs));
         var pu = parseInt($('setting-popup').value, 10); next.popupSeconds = isNaN(pu) ? 2 : Math.max(1, Math.min(10, pu));
         config = next; lsSet(LS_CONFIG, config);
+        restartGame(); closeSettings();
+    };
+    function restartGame() {
         state = newState(); undoStack = []; R = null; $('repair-overlay').style.display = 'none';
         ui.popup = -1; ui.cycling = -1; ui.picking = false; ui.fx = null; ui.lastPercent = -1; ui.lastDanger = -1; ui.timeUp = {};
-        resetEffects(); save(); closeSettings(); render();
-    };
+        resetEffects(); save(); render();
+    }
+    function switchLevelByName(name) {
+        var n = String(name || '').trim().toLowerCase(); if (!n || $('settings-overlay').style.display === 'flex') return;
+        var lv = config.levels.filter(function (l) { return String(l.name).trim().toLowerCase() === n; })[0];
+        if (!lv || lv.id === config.activeLevel) return;
+        config.activeLevel = lv.id; config.lessons = lv.lessons; config.activeLesson = lv.activeLesson; syncActiveLesson(); lsSet(LS_CONFIG, config);
+        restartGame();
+    }
 
     ['takeoff', 'damage'].forEach(function (key) {
         $('pick-' + key).onclick = function () { $('file-' + key).click(); };
@@ -1728,18 +1798,31 @@
         if (!e.data || typeof e.data !== 'object' || e.source !== window.parent) return;
         var d = e.data;
         if (d.type === 'fh-student-names') { fh.names = Array.isArray(d.names) ? d.names : []; scheduleFunhouse(); }          // fh-team-split is ignored: this game has no teams
+        else if (d.type === 'fh-active-level') { switchLevelByName(d.level); }
         else if (d.type === 'fh-student-cards') { fh.cards = Array.isArray(d.cards) ? d.cards : []; scheduleFunhouse(); }
         else if (d.type === 'fh-export-request') {
-            try { window.parent.postMessage({ type: 'fh-export-data', gameId: 'rocket', raw: JSON.stringify({ lessons: config.lessons, activeLesson: config.activeLesson }) }, '*'); } catch (err) { /* not embedded */ }
+            try { window.parent.postMessage({ type: 'fh-export-data', gameId: 'rocket', raw: JSON.stringify({ lessons: config.lessons, activeLesson: config.activeLesson, levels: config.levels, activeLevel: config.activeLevel }) }, '*'); } catch (err) { /* not embedded */ }
         } else if (d.type === 'fh-import-data' && d.gameId === 'rocket') {
             try {
-                var data = JSON.parse(d.raw), list = [];
-                (data.lessons || []).forEach(function (l, k) {
-                    if (!l || typeof l.name !== 'string' || checkExercises(l.exercises)) return;
-                    list.push({ id: typeof l.id === 'string' && l.id ? l.id : 'l' + Date.now() + k, name: l.name, exercises: normaliseExercises(l.exercises), repairPairs: typeof l.repairPairs === 'string' ? l.repairPairs : DEFAULT_PAIRS });
-                });
-                if (!list.length) return;
-                config.lessons = list; config.activeLesson = data.activeLesson; syncActiveLesson(); lsSet(LS_CONFIG, config);
+                var data = JSON.parse(d.raw);
+                function cleanLessons(arr) {
+                    var out = [];
+                    (arr || []).forEach(function (l, k) {
+                        if (!l || typeof l.name !== 'string' || checkExercises(l.exercises)) return;
+                        out.push({ id: typeof l.id === 'string' && l.id ? l.id : 'l' + Date.now() + k, name: l.name, exercises: normaliseExercises(l.exercises), repairPairs: typeof l.repairPairs === 'string' ? l.repairPairs : DEFAULT_PAIRS });
+                    });
+                    return out;
+                }
+                if (Array.isArray(data.levels)) {
+                    var lvOut = [];
+                    data.levels.forEach(function (lv, k) { var ls = cleanLessons(lv && lv.lessons); if (ls.length && lv && typeof lv.name === 'string') lvOut.push({ id: typeof lv.id === 'string' && lv.id ? lv.id : 'lv' + Date.now() + k, name: lv.name, lessons: ls, activeLesson: lv.activeLesson }); });
+                    if (!lvOut.length) return;
+                    config.levels = lvOut; config.activeLevel = data.activeLevel;
+                } else {
+                    var list = cleanLessons(data.lessons); if (!list.length) return;
+                    var cl = config.levels.filter(function (l) { return l.id === config.activeLevel; })[0]; cl.lessons = list; cl.activeLesson = data.activeLesson;
+                }
+                ensureLevels(); lsSet(LS_CONFIG, config);
                 window.parent.postMessage({ type: 'fh-import-done', gameId: 'rocket' }, '*');
             } catch (err) { /* not valid */ }
         }
