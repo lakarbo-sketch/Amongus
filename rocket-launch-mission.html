@@ -1550,7 +1550,7 @@
     }
     // Funhouse sends the names and then the cards in one burst: wait a moment so the roster is judged with both
     var fhTimer = null;
-    function scheduleFunhouse() { if (fhTimer) clearTimeout(fhTimer); fhTimer = setTimeout(function () { fhTimer = null; applyFunhouse(); }, 300); }
+    function scheduleFunhouse() { if (fhTimer) return; fhTimer = setTimeout(function () { fhTimer = null; applyFunhouse(); }, 300); }
     window.addEventListener('message', function (e) {
         if (!e.data || typeof e.data !== 'object' || e.source !== window.parent) return;
         var d = e.data;
