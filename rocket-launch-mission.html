@@ -549,7 +549,7 @@
     /* ---------- Constants and defaults ---------- */
     var LS_CONFIG = 'rlm-config-v2', LS_STATE = 'rlm-state-v2', LS_RULES = 'rlm-rules-v2';
     var LIMIT = 4;
-    var VERSION = 'Version 8 · 8 Oct 2026';
+    var VERSION = 'Version 9 · 8 Oct 2026';
     var ROLES = [
         { icon: '👨‍✈️', name: 'Captain' }, { icon: '🧑‍🚀', name: 'Pilot' }, { icon: '🔧', name: 'Engineer' },
         { icon: '🩺', name: 'Doctor' }, { icon: '🧭', name: 'Navigator' }, { icon: '🔬', name: 'Scientist' },
@@ -636,7 +636,7 @@
         ].join(''),
         sa2: [
             rule('1. 🎯 Your mission', '<p>You are the crew of a rocket. Each floor of the rocket is an exercise from your book. Answer all the questions on every floor to fill the fuel tank. When the tank is full, the rocket takes off! 🚀</p>'),
-            rule('2. 👨‍✈️ Your job on the ship', '<p>Every student has a job on the ship. Tap your name to see it.</p>'),
+            rule('2. 👨‍✈️ Your job on the ship', '<p>Every student has a job on the ship.</p>'),
             rule('3. 🎲 The picker', '<p>The teacher taps a question number. The computer chooses a student. That student answers the question. Everyone must pay attention, because you can be chosen again soon!</p>'),
             rule('4. ✅ Right and wrong', '<p>The teacher says if the answer is right or wrong. Tap the number once for a green ✅ answer. Tap again for a red ❌ answer. A wrong answer is 1 damage point for the ship.</p>'),
             rule('5. 💥 Damage', '<p>Damage points are errors. The ship can have only a few errors. You can see them at the top of the screen: DAMAGE 2 / 6 means 2 errors, and the ship can have 6. One more error after that and the rocket explodes 💥. A floor is in danger, too. If half of the questions on one floor are wrong, the rocket explodes.</p><blockquote><b>damage</b> (noun): harm to something, so that it does not work well.</blockquote>'),
@@ -648,7 +648,7 @@
         ].join(''),
         sb1: [
             rule('1. 🎯 Your mission', '<p>Your crew has to launch a rocket. Each floor of the rocket is an exercise from your book. To fill the fuel tank, you must complete every question on every floor. When the tank is full, the rocket takes off 🚀. Your task is to avoid damage.</p>'),
-            rule('2. 👨‍✈️ Your role', '<p>Each student has a job on the ship, for example captain or engineer. Tap your name to see it.</p>'),
+            rule('2. 👨‍✈️ Your role', '<p>Each student has a job on the ship, for example captain or engineer.</p>'),
             rule('3. 🎲 The picker', '<p>The teacher taps a question number and the computer chooses a student, who answers the question. Stay focused, because you could be chosen again soon.</p>'),
             rule('4. ✅ Right and wrong', '<p>The teacher tells you whether the answer is right or wrong. The question number turns green ✅ for a correct answer and red ❌ for a wrong one. Every wrong answer is one damage point for the ship.</p>'),
             rule('5. 💥 Damage', '<p>The ship can only take a limited amount of damage. The counter at the top shows it, for example DAMAGE 2 / 6: two errors so far, and six are allowed. One more error and the rocket explodes 💥. A single floor can also take only so much: if half of its questions are wrong, the rocket explodes, however well the other floors went.</p><blockquote><b>damage</b> (noun): physical harm to something, so that it no longer works properly. <i>The storm caused a lot of damage.</i></blockquote>'),
@@ -1651,6 +1651,9 @@
         var plain = partial ? sel.toString() : $('rules-text').innerText, rich;
         if (holder.querySelector('.rule')) rich = cleanCopyHtml(holder);
         else rich = '<div style="font-family:Calibri,Arial,sans-serif;color:#000000;background:#ffffff;">' + holder.innerHTML.replace(/ style="[^"]*"/g, '').replace(/ class="[^"]*"/g, '') + '</div>';
+        var ICONS = /[\u{1F000}-\u{1FAFF}\u{2190}-\u{21FF}\u{2300}-\u{23FF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0E}\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu;
+        plain = plain.replace(ICONS, '').replace(/[ \t]{2,}/g, ' ').replace(/ +([.,!?;:])/g, '$1').replace(/^ +/gm, '');
+        rich = rich.replace(ICONS, '').replace(/ {2,}/g, ' ').replace(/> +</g, '><').replace(/(<h3[^>]*>) +/g, '$1');
         return { plain: plain, html: rich };
     }
     document.addEventListener('copy', function (e) {
@@ -1906,9 +1909,10 @@
         return added;
     }
     function importSetupObject(obj) {
-        var total = 0, firstLevel = null, firstSession = null;
+        var total = 0, listsAdded = 0, firstLevel = null, firstSession = null;
         (obj.levels || []).forEach(function (fl) {
-            if (!fl || typeof fl.name !== 'string' || !Array.isArray(fl.sessions)) return;
+            if (!fl || typeof fl.name !== 'string') return;
+            fl.sessions = Array.isArray(fl.sessions) ? fl.sessions : [];
             var lv = ui.levels.filter(function (x) { return x.name.toLowerCase() === fl.name.toLowerCase(); })[0];
             if (!lv) { lv = newLevelObj(fl.name); lv.lessons = []; ui.levels.push(lv); }
             var map = {};
@@ -1917,14 +1921,15 @@
                 var ex = lv.wordLists.filter(function (x) { return x.name.toLowerCase() === w.name.toLowerCase(); })[0];
                 if (ex && ex.text === w.text) { map[w.name] = ex.id; return; }
                 var nm = ex ? uniqueName(w.name, lv.wordLists.map(function (x) { return x.name; })) : w.name;
-                var nw = { id: uid('w'), name: nm, text: String(w.text || '') }; lv.wordLists.push(nw); map[w.name] = nw.id;
+                var nw = { id: uid('w'), name: nm, text: String(w.text || '') }; lv.wordLists.push(nw); map[w.name] = nw.id; listsAdded++;
+                if (!firstLevel) firstLevel = lv;
             });
             var sessions = fl.sessions.filter(function (S) { return S && typeof S.name === 'string' && !checkExercises(S.exercises); }).map(function (S) { return { name: S.name, exercises: normaliseExercises(S.exercises), wordList: S.wordList }; });
             var added = addSessionsToLevel(lv, sessions, map); total += added.length;
             if (added.length && !firstLevel) { firstLevel = lv; firstSession = added[0]; }
             if (!lv.lessonSel && lv.lessons.length) lv.lessonSel = lv.lessons[0].id;
         });
-        return { total: total, level: firstLevel, session: firstSession };
+        return { total: total, lists: listsAdded, level: firstLevel, session: firstSession };
     }
     $('lesson-import').onclick = function () { $('file-lessons').click(); };
     $('file-lessons').onchange = function () {
@@ -1936,15 +1941,16 @@
             if (/^\s*\{/.test(text)) { try { obj = JSON.parse(text); } catch (e) { obj = null; } }
             if (obj && obj.app === 'rocket-setup') {
                 res = importSetupObject(obj); total = res.total;
-                if (res.level) { ui.levelSel = res.level.id; res.level.lessonSel = res.session.id; selectLevelUI(res.level.id); }
+                if (res.level) { ui.levelSel = res.level.id; if (res.session) res.level.lessonSel = res.session.id; selectLevelUI(res.level.id); }
             } else {
                 var parsed = parseLessonsText(text); bad = parsed.bad;
                 var lv = curLevel();
                 var added = addSessionsToLevel(lv, parsed.lessons.map(function (n) { return { name: n.name, exercises: n.exercises }; }), {});
                 total = added.length; if (added.length) { lv.lessonSel = added[0].id; selectLevelUI(lv.id); }
             }
-            if (!total) { msg.style.color = '#ff7675'; msg.textContent = 'No exercises found in that file.'; return; }
-            msg.style.color = '#55efc4'; msg.textContent = '✔ Added ' + total + (total === 1 ? ' session' : ' sessions') + (bad ? ' (' + bad + ' lines skipped)' : '');
+            var nl = res ? res.lists : 0;
+            if (!total && !nl) { msg.style.color = '#ff7675'; msg.textContent = 'No exercises or word lists found in that file.'; return; }
+            msg.style.color = '#55efc4'; msg.textContent = '✔ Added ' + [total ? total + (total === 1 ? ' session' : ' sessions') : '', nl ? nl + (nl === 1 ? ' word list' : ' word lists') : ''].filter(Boolean).join(' and ') + (bad ? ' (' + bad + ' lines skipped)' : '');
             scheduleCommit();
         };
         rd.readAsText(f);
