@@ -1911,25 +1911,25 @@
         var levels = [], curLv = null, curList = null, curSes = null, bad = 0;
         function level(name) { var lv = levels.filter(function (x) { return (x.name || '') === (name || ''); })[0]; if (!lv) { lv = { name: name || null, wordLists: [], sessions: [] }; levels.push(lv); } curLv = lv; curList = null; curSes = null; return lv; }
         String(text || '').split(/\r?\n/).forEach(function (raw) {
-            var line = raw.trim(); if (!line || /^skipped\b/i.test(line)) return;
+            var line = raw.trim(); if (!line || /^skipped\b/i.test(line) || /^rocket setup\b/i.test(line)) return;
             var m = line.match(/^level\s+(.+?)\s*(?:[·•|:]|\s-\s|$)/i);
             if (m) { level(m[1].trim()); return; }
             m = line.match(/^=+\s*(.+?)\s*=+$/);
             if (m) {
                 var nm = m[1].replace(/\s*\(\s*\d+\s*pairs?\s*\)\s*$/i, '').trim();
-                curList = { name: nm, lines: [] }; (curLv || level(null)).wordLists.push(curList); curSes = null; return;
+                var hl = curLv || level(null); curList = { name: nm, lines: [] }; hl.wordLists.push(curList); curSes = null; return;
             }
             if (/^(session|lesson)\b/i.test(line)) {
                 var wl = line.match(/\(\s*word list\s*:\s*(.+?)\s*\)\s*$/i), head = line.replace(/\s*\(\s*word list\s*:[^)]*\)\s*$/i, '');
                 var sn = head.match(/^session\s*:\s*(.+)$/i); head = sn ? sn[1].trim() : head.replace(/[:\s]+$/, '').replace(/\s+/g, ' ');
                 if (!sn && head === head.toUpperCase()) head = head.charAt(0) + head.slice(1).toLowerCase();
-                curSes = { name: head, exercises: [], wordList: wl ? wl[1] : undefined }; (curLv || level(null)).sessions.push(curSes); curList = null; return;
+                var hs = curLv || level(null); curSes = { name: head, exercises: [], wordList: wl ? wl[1] : undefined }; hs.sessions.push(curSes); curList = null; return;
             }
             if (curList) { curList.lines.push(line); return; }
             var ex = parseExerciseLine(line); if (!ex) return;
             if (isNaN(ex.page) || isNaN(ex.exercise) || !(ex.questions >= 1 && ex.questions <= 12)) { bad++; return; }
             if (isNaN(ex.time) || ex.time <= 0) ex.time = defaultTime(ex.questions);
-            if (!curSes) { curSes = { name: 'Imported', exercises: [] }; (curLv || level(null)).sessions.push(curSes); }
+            if (!curSes) { var hi = curLv || level(null); curSes = { name: 'Imported', exercises: [] }; hi.sessions.push(curSes); }
             curSes.exercises.push(ex);
         });
         levels.forEach(function (lv) { lv.wordLists = lv.wordLists.map(function (w) { return { name: w.name, text: w.lines.join('\n') }; }).filter(function (w) { return w.text.trim(); }); lv.sessions = lv.sessions.filter(function (x) { return x.exercises.length; }); });
