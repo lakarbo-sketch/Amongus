@@ -329,6 +329,24 @@
     @keyframes cdPulse { 0% { filter: brightness(1); } 50% { filter: brightness(1.35); } 100% { filter: brightness(1); } }
     .chip-wrap { display: inline-flex; align-items: center; gap: 0.15rem; }
     .chip-tick { width: 0.9rem; height: 0.9rem; cursor: pointer; }
+    .settings-top { flex-shrink: 0; display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.7rem; }
+    .st-row { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; }
+    .st-label { color: #00ffcc; font-weight: bold; min-width: 4.5rem; font-size: 1rem; }
+    .st-spacer { flex: 1; }
+    .seg, .onoff { display: inline-flex; gap: 0.4rem; }
+    .seg button, .onoff button { background: #1f293d; color: #fff; border: 2px solid #3b4d71; border-radius: 10px; padding: 0.5rem 1.4rem; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
+    .seg button.sel { background: #00b894; color: #000; border-color: #55efc4; }
+    .onoff button { padding: 0.3rem 1.1rem; font-size: 1rem; }
+    .onoff button.sel { background: #00b894; color: #000; border-color: #55efc4; }
+    .onoff button.sel[data-v="0"] { background: #7a2530; color: #fff; border-color: #ff7675; }
+    .lesson-chips.big .lesson-chip { font-size: 1.05rem; padding: 0.4rem 1rem; }
+    .lesson-chips.big .chip-tick { width: 1.1rem; height: 1.1rem; }
+    .level-manage { display: flex; flex-direction: column; gap: 0.3rem; }
+    .lm-row { display: flex; align-items: center; gap: 0.5rem; font-weight: bold; }
+    .lm-row .lm-name { flex: 1; }
+    .lm-row .lm-name.hid { color: #6c7a99; }
+    .lm-row button { background: #1f293d; color: #fff; border: 2px solid #3b4d71; border-radius: 8px; padding: 0.15rem 0.7rem; font-size: 0.9rem; font-weight: bold; cursor: pointer; }
+    .lm-row button.on { background: #00b894; color: #000; border-color: #55efc4; }
 </style>
 </head>
 <body>
@@ -409,57 +427,70 @@
         <h2>⚙ Game Settings<span class="version-tag" id="version-tag"></span></h2>
         <button class="btn" id="settings-close-top">✕ Close</button>
     </div>
+    <div class="settings-top">
+        <div class="st-row"><span class="st-label">Mode</span>
+            <div class="seg" id="mode-btns"><button type="button" data-v="classic">Classic</button><button type="button" data-v="simple">Simple</button></div>
+            <select id="setting-mode" hidden><option value="classic">Classic</option><option value="simple">Simple</option></select>
+            <span class="st-spacer"></span>
+            <button class="btn btn-assign" id="btn-newgame" type="button">🔄 New game</button>
+            <button class="btn btn-test" id="btn-test" type="button">⚡ Test All Green</button>
+        </div>
+        <div class="st-row"><span class="st-label">Level</span><div id="level-chips" class="lesson-chips big"></div></div>
+        <div class="st-row"><span class="st-label">Session</span><div id="lesson-chips" class="lesson-chips big"></div><button class="btn" id="lesson-new" type="button">+ Session</button></div>
+        <div id="lesson-msg" class="lesson-msg"></div>
+    </div>
     <div class="settings-body">
         <div class="settings-col">
-            <details class="sec" open><summary>Class</summary>
-                <div class="form-group"><label for="setting-mode">Game mode</label><select id="setting-mode"><option value="classic">Classic (with impostors)</option><option value="simple">Simple (avoid damage, no impostor)</option></select></div>
+            <details class="sec"><summary>Game</summary>
                 <div class="form-group"><label for="setting-rocket-label">Rocket label</label><input type="text" id="setting-rocket-label"></div>
                 <input type="hidden" id="setting-students">
-                <div class="form-group"><label for="setting-impostor-count">Number of impostors (1 or 2)</label><input type="number" id="setting-impostor-count" min="1" max="2"></div>
-                <div class="form-group"><label>Cannot be the impostor</label><div class="noimp-list" id="noimp-list"></div></div>
-                <div style="display:flex; gap:0.6rem;"><div class="form-group" style="flex:1"><label for="setting-errors-per">Questions per error</label><input type="number" id="setting-errors-per" min="1" max="50"></div>
-                <div class="form-group" style="flex:1"><label for="setting-repair-rounds">Repair rounds</label><input type="number" id="setting-repair-rounds" min="0" max="20"></div></div>
-                <div class="form-group"><label for="setting-weight">Chance of a student who has not been picked yet (times)</label><input type="number" id="setting-weight" min="1" max="10"></div>
+                <div class="form-group"><label for="setting-weight">Chance of a student not picked yet (times)</label><input type="number" id="setting-weight" min="1" max="10"></div>
             </details>
-            <details class="sec" open><summary>Tools</summary>
+            <details class="sec" data-mode="classic"><summary>Classic game</summary>
+                <div class="form-group"><label for="setting-impostor-count">Impostors (1 or 2)</label><input type="number" id="setting-impostor-count" min="1" max="2"></div>
+                <div class="form-group"><label>Cannot be the impostor</label><div class="noimp-list" id="noimp-list"></div></div>
+                <div class="form-group"><label>Sabotage</label><div class="onoff" data-for="setting-sabotage-enabled"><button type="button" data-v="1">On</button><button type="button" data-v="0">Off</button></div><input type="checkbox" id="setting-sabotage-enabled" hidden></div>
+                <div class="form-group"><label for="setting-sabotage-delay">Sabotage delay (seconds)</label><input type="number" id="setting-sabotage-delay" min="0"></div>
+                <div class="form-group"><label for="setting-meeting">Meeting (seconds)</label><input type="number" id="setting-meeting" min="5" max="600"></div>
+                <div class="form-group"><label for="setting-popup">First-look popup (seconds)</label><input type="number" id="setting-popup" min="1" max="10"></div>
+            </details>
+            <details class="sec" data-mode="simple"><summary>Simple game</summary>
+                <div class="form-group"><label for="setting-errors-per">Questions for each error</label><input type="number" id="setting-errors-per" min="1" max="50"></div>
+                <div class="form-group"><label for="setting-repair-rounds">Repair rounds in a game</label><input type="number" id="setting-repair-rounds" min="0" max="20"></div>
+            </details>
+            <details class="sec"><summary>Tools</summary>
                 <div class="form-group"><label>Who is the impostor? (press and hold)</label>
                     <button class="btn" id="btn-reveal" style="width:100%; justify-content:center;">👁 Hold to show</button>
                     <div class="reveal-box" id="reveal-box"></div></div>
-                <div class="note-box"><b>Red button (bottom right):</b> the decoy. Any tap starts the alarm. The second and later taps also make the student whose turn it is a Killed ghost.</div>
-                <div style="display:flex; gap:0.6rem;"><button class="btn" id="btn-undo">↩ Undo</button><button class="btn btn-test" id="btn-test">⚡ Test All Green</button></div>
+                <button class="btn" id="btn-undo" type="button" style="align-self:flex-start;">↩ Undo</button>
             </details>
         </div>
         <div class="settings-col">
-            <details class="sec" open><summary>Sabotage and repair game</summary>
-                <div class="form-group checkbox-group"><input type="checkbox" id="setting-sabotage-enabled"><label for="setting-sabotage-enabled">Enable sabotage</label></div>
-                <div class="form-group"><label for="setting-sabotage-delay">Sabotage delay after the floor is finished (seconds)</label><input type="number" id="setting-sabotage-delay" min="0"></div>
-                <div style="display:flex; gap:0.6rem;"><div class="form-group" style="flex:1"><label for="setting-meeting">Meeting (seconds)</label><input type="number" id="setting-meeting" min="5" max="600"></div>
-                <div class="form-group" style="flex:1"><label for="setting-repair">Repair game (seconds)</label><input type="number" id="setting-repair" min="10" max="600"></div></div>
-                <div class="form-group"><label for="setting-delegates">Repair game delegates</label><select id="setting-delegates"><option value="nominate">The class nominates two students</option><option value="random">The game draws two students at random</option></select></div>
-                <div class="form-group"><label for="setting-window">Repair game: both taps within (milliseconds)</label><input type="number" id="setting-window" min="200" max="2000" step="100"></div>
-                <div class="form-group checkbox-group"><input type="checkbox" id="setting-twofingers"><label for="setting-twofingers">Require two fingers at once (a mouse cannot make a match)</label></div>
-                <div class="form-group"><label for="setting-popup">First-look popup stays open (seconds)</label><input type="number" id="setting-popup" min="1" max="10"></div>
-            </details>
-        </div>
-        <div class="settings-col">
-            <details class="sec grow" id="sec-lessons"><summary>Lessons and exercises</summary>
-                <div class="filerow lesson-tools"><b class="lv-label">Level</b><div id="level-chips" class="lesson-chips"></div><button class="btn" id="level-new" type="button">+ Level</button><button class="btn" id="level-rename" type="button">Rename level</button><button class="btn" id="level-delete" type="button">Delete level</button></div>
-                <div class="filerow lesson-tools"><button class="btn" id="lesson-new" type="button">+ New session</button><button class="btn" id="lesson-import" type="button">📥 Import</button><button class="btn" id="lesson-export" type="button">📤 Export</button><button class="btn" id="btn-copy-format" type="button">📋 Copy format</button><input type="file" id="file-lessons" accept=".txt,.json,text/plain,application/json" hidden></div>
-                <div id="lesson-msg" class="lesson-msg"></div>
-                <div id="lesson-chips" class="lesson-chips"></div>
+            <details class="sec grow" id="sec-lessons"><summary>Exercises</summary>
+                <div class="filerow lesson-tools"><button class="btn" id="lesson-import" type="button">📥 Import</button><button class="btn" id="lesson-export" type="button">📤 Export</button><button class="btn" id="btn-copy-format" type="button">📋 Copy format</button><input type="file" id="file-lessons" accept=".txt,.json,text/plain,application/json" hidden></div>
                 <div id="lesson-panel" class="lesson-panel"></div>
             </details>
-            <details class="sec"><summary>Sounds, take-off and video</summary>
-                <div class="form-group"><label for="setting-takeoff-sound">Take-off sound file (plays when the last floor is finished; blank for the built-in sound)</label><div class="filerow"><input type="text" id="setting-takeoff-sound" placeholder="takeoff.mp3"><button class="btn" id="pick-takeoff" type="button">Choose file</button></div><input type="file" accept="audio/*" id="file-takeoff" hidden></div>
-                <div class="form-group"><label for="setting-takeoff-delay">Take-off delay after the sound starts (seconds)</label><input type="number" id="setting-takeoff-delay" min="0" max="120"></div>
-                <div class="form-group"><label for="setting-voice">Voice that reads the roles aloud (simple mode scan)</label><select id="setting-voice"></select></div>
-                <div class="form-group"><label for="setting-shake-delay">Rocket starts shaking this many seconds after the sound starts</label><input type="number" id="setting-shake-delay" min="0" max="120"></div>
-                <div class="form-group"><label for="setting-damage-sound">Meltdown sound file (blank for the built-in sound)</label><div class="filerow"><input type="text" id="setting-damage-sound" placeholder="meltdown.mp3"><button class="btn" id="pick-damage" type="button">Choose file</button></div><input type="file" accept="audio/*" id="file-damage" hidden></div>
-                <div class="form-group"><label for="setting-video">Rocket video address (the 🚀 Video button opens it)</label><input type="text" id="setting-video"></div>
-            </details>
-            <details class="sec grow"><summary>Repair game words</summary>
+            <details class="sec grow"><summary>Repair game</summary>
+                <div style="display:flex; gap:0.6rem;"><div class="form-group" style="flex:1"><label for="setting-repair">Time (seconds)</label><input type="number" id="setting-repair" min="10" max="600"></div>
+                <div class="form-group" style="flex:1"><label for="setting-window">Both taps within (ms)</label><input type="number" id="setting-window" min="200" max="2000" step="100"></div></div>
+                <div class="form-group"><label for="setting-delegates">Players</label><select id="setting-delegates"><option value="nominate">The class nominates two students</option><option value="random">The game draws two students</option></select></div>
+                <div class="form-group"><label>Two fingers at once (a mouse cannot play)</label><div class="onoff" data-for="setting-twofingers"><button type="button" data-v="1">On</button><button type="button" data-v="0">Off</button></div><input type="checkbox" id="setting-twofingers" hidden></div>
                 <div class="filerow lesson-tools"><select id="setting-wordlist"></select><button class="btn" id="wl-new" type="button">+ List</button><button class="btn" id="wl-rename" type="button">Rename</button><button class="btn" id="wl-delete" type="button">Delete</button></div>
-                <div class="form-group grow"><label for="setting-pairs">Words of the selected list for the selected session, one pair per line like "cat = hat" (a word alone is an extra decoy)</label><textarea id="setting-pairs"></textarea></div>
+                <div class="form-group grow"><label for="setting-pairs">Words, one pair per line like "cat = hat"</label><textarea id="setting-pairs"></textarea></div>
+            </details>
+        </div>
+        <div class="settings-col">
+            <details class="sec"><summary>Sounds and take-off</summary>
+                <div class="form-group"><label for="setting-takeoff-sound">Take-off sound file</label><div class="filerow"><input type="text" id="setting-takeoff-sound" placeholder="takeoff.mp3"><button class="btn" id="pick-takeoff" type="button">Choose file</button></div><input type="file" accept="audio/*" id="file-takeoff" hidden></div>
+                <div class="form-group"><label for="setting-takeoff-delay">Take-off delay (seconds)</label><input type="number" id="setting-takeoff-delay" min="0" max="120"></div>
+                <div class="form-group"><label for="setting-shake-delay">Shaking starts after (seconds)</label><input type="number" id="setting-shake-delay" min="0" max="120"></div>
+                <div class="form-group"><label for="setting-damage-sound">Meltdown sound file</label><div class="filerow"><input type="text" id="setting-damage-sound" placeholder="meltdown.mp3"><button class="btn" id="pick-damage" type="button">Choose file</button></div><input type="file" accept="audio/*" id="file-damage" hidden></div>
+                <div class="form-group"><label for="setting-voice">Voice that reads the roles</label><select id="setting-voice"></select></div>
+                <div class="form-group"><label for="setting-video">Video address</label><input type="text" id="setting-video"></div>
+            </details>
+            <details class="sec"><summary>Levels</summary>
+                <div id="level-manage" class="level-manage"></div>
+                <div class="filerow lesson-tools"><button class="btn" id="level-new" type="button">+ Level</button><button class="btn" id="level-rename" type="button">Rename level</button><button class="btn" id="level-delete" type="button">Delete level</button></div>
             </details>
         </div>
     </div>
@@ -512,7 +543,7 @@
     /* ---------- Constants and defaults ---------- */
     var LS_CONFIG = 'rlm-config-v2', LS_STATE = 'rlm-state-v2', LS_RULES = 'rlm-rules-v2';
     var LIMIT = 4;
-    var VERSION = 'Version 6 · 8 Oct 2026';
+    var VERSION = 'Version 7 · 8 Oct 2026';
     var ROLES = [
         { icon: '👨‍✈️', name: 'Captain' }, { icon: '🧑‍🚀', name: 'Pilot' }, { icon: '🔧', name: 'Engineer' },
         { icon: '🩺', name: 'Doctor' }, { icon: '🧭', name: 'Navigator' }, { icon: '🔬', name: 'Scientist' },
@@ -536,6 +567,7 @@
         matchWindowMs: 600,
         meetingSeconds: 30,
         takeoffDelay: 12,
+        levelsSeeded: false,
         mode: 'classic',
         errorsPerQ: 6,
         repairRounds: 3,
@@ -575,7 +607,7 @@
             rule('10. 🗳️ Voting', '<p>After the talk, everyone votes for one student. Or you can pass. The student with the most votes is ejected. If you eject a crewmate by mistake, the crew gets smaller! If you find all the impostors, there is no more sabotage.</p>'),
             rule('11. 👻 Ghosts', '<p>A student who leaves the game becomes a ghost. There are three kinds:</p><ul><li><b>Ejected:</b> a student voted off the ship. The screen shows if the student was an impostor.</li><li><b>Killed:</b> a student killed by an impostor.</li><li><b>Casualty:</b> a student with two yellow cards.</li></ul><p>Ghosts can still be chosen and still answer questions. They cannot vote. Their questions do not count in the game, and then they disappear.</p>'),
             rule('12. 🏆 How to win', '<p>The crew wins when the rocket takes off! 🚀 With 0 danger points, the take-off is perfect. With 1 point, it is shaky. With 2 points, it is very risky. With 3 points, the crew barely makes it. The impostor wins if the crew becomes as small as the number of impostors, or if the repair fails. Then the mission fails and the rocket cannot take off.</p>'),
-            rule('13. 🔒 The DO NOT USE button', '<p>There is a red button at the bottom of the screen. It says DO NOT USE. Do not touch it! It is a control of the rocket, and nobody on board may touch the controls without permission. A person who tampers with the controls puts the whole crew in danger. The first time, the alarm sounds. If it happens again, the student whose turn it is becomes a ghost 👻, because tampering is sabotage. Only the teacher can use the button.</p><blockquote><b>to tamper with</b> (verb): to touch something that is not yours, in a way that can cause damage.</blockquote>'),
+            rule('13. 🔒 The DO NOT USE button', '<p>There is a red button at the bottom of the screen. It says DO NOT USE. Do not touch it! The button is one of the rocket\'s controls, and a person who tampers with the controls puts the whole crew in danger. Only the teacher can use the button.</p><blockquote><b>to tamper with</b> (verb): to touch something that is not yours, in a way that can cause damage.</blockquote>'),
             rule('14. 🙈 No cheating', '<p>Do not cheat! If a student peeks when everybody is asleep, the game is over. There are no winners and no losers, and the class does classwork.</p>'),
             rule('15. 🟨🟨 Casualty', '<p>Sometimes a student gets two yellow cards from the teacher. This student is a casualty. A casualty has had a fatal accident and becomes a ghost 👻. Casualties still answer questions in the lesson, but their answers do not count in the game.</p><blockquote><b>casualty</b> (noun): a person who is badly hurt or killed in an accident.</blockquote>')
         ].join(''),
@@ -592,32 +624,32 @@
             rule('10. 🗳️ Voting', '<p>After the discussion, each student votes for one person or chooses to pass. The student with the most votes is ejected from the ship. If you eject a crewmate by mistake, the crew gets smaller. If you find every impostor, the sabotage stops, but the mission is not over yet.</p>'),
             rule('11. 👻 Ghosts', '<p>A student who leaves the game becomes a ghost. There are three kinds:</p><ul><li><b>Ejected:</b> a student who has been voted off the ship. The screen shows whether that student was an impostor.</li><li><b>Killed:</b> a student who has been killed by an impostor.</li><li><b>Casualty:</b> a student who has received two yellow cards.</li></ul><p>Ghosts stay in the lesson and can still be chosen to answer questions, but they can\'t vote. Their questions don\'t count towards the mission, and they disappear after the answer has been marked.</p>'),
             rule('12. 🏆 Winning', '<p>The crew wins when the rocket takes off 🚀. With no danger points, the take-off is perfect. With one point it is shaky, with two points it is very risky, and with three points the crew only just makes it. The impostor wins if the crew becomes as small as the number of impostors, or if the repair of a sabotaged floor fails. Then the mission fails and the rocket can\'t take off.</p>'),
-            rule('13. 🔒 The DO NOT USE button', '<p>At the bottom of the screen there is a red button marked DO NOT USE. It is one of the rocket\'s controls, and nobody on board is allowed to touch the controls without permission. Anyone who tampers with them puts the whole crew in danger. The first time, the alarm goes off. If it happens again, the student whose turn it is becomes a ghost 👻, because tampering with the ship is sabotage. Only the teacher may use the button.</p><blockquote><b>to tamper with something</b> (verb): to touch or change something without permission, especially in a way that can damage it.</blockquote>'),
+            rule('13. 🔒 The DO NOT USE button', '<p>At the bottom of the screen there is a red button marked DO NOT USE. The button is one of the rocket\'s controls, and a person who tampers with the controls puts the whole crew in danger. Only the teacher may use the button.</p><blockquote><b>to tamper with something</b> (verb): to touch or change something without permission, especially in a way that can damage it.</blockquote>'),
             rule('14. 🙈 No cheating', '<p>No cheating! If anyone peeks while everybody is asleep, the game ends immediately with no winners and no losers, and the class goes on to classwork.</p>'),
             rule('15. 🟨🟨 Casualty', '<p>A student who gets two yellow cards from the teacher is a casualty. In the story, a casualty has suffered a fatal accident and becomes a ghost 👻. Casualties stay in the lesson and still answer questions, but their answers don\'t count towards the mission.</p><blockquote><b>casualty</b> (noun): a person who is killed or seriously injured in an accident, a war or a disaster. <i>There were no casualties in the fire.</i></blockquote>')
         ].join(''),
         sa2: [
             rule('1. 🎯 Your mission', '<p>You are the crew of a rocket. Each floor of the rocket is an exercise from your book. Answer all the questions on every floor to fill the fuel tank. When the tank is full, the rocket takes off! 🚀</p>'),
-            rule('2. 👨‍✈️ Your job on the ship', '<p>Every student has a job on the ship. Tap your name to see it. It is not a secret.</p>'),
+            rule('2. 👨‍✈️ Your job on the ship', '<p>Every student has a job on the ship. Tap your name to see it.</p>'),
             rule('3. 🎲 The picker', '<p>The teacher taps a question number. The computer chooses a student. That student answers the question. Everyone must pay attention, because you can be chosen again soon!</p>'),
             rule('4. ✅ Right and wrong', '<p>The teacher says if the answer is right or wrong. Tap the number once for a green ✅ answer. Tap again for a red ❌ answer. A wrong answer is 1 damage point for the ship.</p>'),
             rule('5. 💥 Damage', '<p>Damage points are errors. The ship can have only a few errors. You can see them at the top of the screen: DAMAGE 2 / 6 means 2 errors, and the ship can have 6. One more error after that and the rocket explodes 💥. A floor is in danger, too. If half of the questions on one floor are wrong, the rocket explodes.</p><blockquote><b>damage</b> (noun): harm to something, so that it does not work well.</blockquote>'),
             rule('6. ⏱️ Floor timers', '<p>A floor can have a timer. If the time is over before the floor is finished, that is 1 damage point.</p>'),
-            rule('7. 🔧 Repairs', '<p>A floor with errors has a 🔧 button. The class can play the repair game. Two students tap two matching colours at the same time. If you win, one error on that floor is repaired. You can play only a few repair rounds in one game, so choose the right moment!</p>'),
-            rule('8. 🟨🟨 Casualty', '<p>Sometimes a student gets two yellow cards from the teacher. This student is a casualty and becomes a ghost 👻. Casualties still answer questions, but their answers do not count in the game.</p><blockquote><b>casualty</b> (noun): a person who is badly hurt or killed in an accident.</blockquote>'),
-            rule('9. 🔒 The DO NOT USE button', '<p>There is a red button at the bottom of the screen. It says DO NOT USE. Do not touch it! It is a control of the rocket, and nobody may touch the controls without permission. A person who tampers with the controls puts the whole crew in danger. The first time, the alarm sounds. If it happens again, the student whose turn it is becomes a ghost 👻.</p><blockquote><b>to tamper with</b> (verb): to touch something that is not yours, in a way that can cause damage.</blockquote>'),
+            rule('7. 🔧 Repairs', '<p>A floor with errors has a 🔧 button. The class can play the repair game. If you win, one error on that floor is repaired. You can play only a few repair rounds in one game, so choose the right moment!</p>'),
+            rule('8. 🟨🟨 Casualty', '<p>Sometimes a student gets two yellow cards from the teacher. This student is a casualty and becomes a ghost 👻. Casualties still answer questions, but they can\'t be winners.</p><blockquote><b>casualty</b> (noun): a person who is badly hurt or killed in an accident.</blockquote>'),
+            rule('9. 🔒 The DO NOT USE button', '<p>There is a red button at the bottom of the screen. It says DO NOT USE. Do not touch it! The button is one of the rocket\'s controls, and a person who tampers with the controls puts the whole crew in danger.</p><blockquote><b>to tamper with</b> (verb): to touch something that is not yours, in a way that can cause damage.</blockquote>'),
             rule('10. 🏆 How to win', '<p>The crew wins when the rocket takes off! 🚀 With no damage, the take-off is perfect. With a little damage, it is shaky. With more damage, it is very risky. With a lot of damage, the crew barely makes it. If the rocket explodes, the mission fails.</p>')
         ].join(''),
         sb1: [
             rule('1. 🎯 Your mission', '<p>Your crew has to launch a rocket. Each floor of the rocket is an exercise from your book. To fill the fuel tank, you must complete every question on every floor. When the tank is full, the rocket takes off 🚀. Your task is to avoid damage.</p>'),
-            rule('2. 👨‍✈️ Your role', '<p>Each student has a job on the ship, for example captain or engineer. Tap your name to see it. Nothing is secret in this game: you are all on the same team.</p>'),
+            rule('2. 👨‍✈️ Your role', '<p>Each student has a job on the ship, for example captain or engineer. Tap your name to see it.</p>'),
             rule('3. 🎲 The picker', '<p>The teacher taps a question number and the computer chooses a student, who answers the question. Stay focused, because you could be chosen again soon.</p>'),
             rule('4. ✅ Right and wrong', '<p>The teacher tells you whether the answer is right or wrong. The question number turns green ✅ for a correct answer and red ❌ for a wrong one. Every wrong answer is one damage point for the ship.</p>'),
             rule('5. 💥 Damage', '<p>The ship can only take a limited amount of damage. The counter at the top shows it, for example DAMAGE 2 / 6: two errors so far, and six are allowed. One more error and the rocket explodes 💥. A single floor can also take only so much: if half of its questions are wrong, the rocket explodes, however well the other floors went.</p><blockquote><b>damage</b> (noun): physical harm to something, so that it no longer works properly. <i>The storm caused a lot of damage.</i></blockquote>'),
             rule('6. ⏱️ Timers', '<p>A floor may have a timer. If it runs out before you have finished the floor, you get one damage point. The teacher can switch a timer off for a floor.</p>'),
-            rule('7. 🔧 Repairs', '<p>When a floor has errors, a 🔧 button appears on it. The class can then play the repair game: two players have to tap two matching colours at the same moment. If you win, one error on that floor is repaired. The number of repair rounds in a game is limited, so use them wisely.</p>'),
-            rule('8. 🟨🟨 Casualty', '<p>A student who gets two yellow cards from the teacher is a casualty. In the story, a casualty has suffered a fatal accident and becomes a ghost 👻. Casualties stay in the lesson and still answer questions, but their answers don\'t count towards the mission.</p><blockquote><b>casualty</b> (noun): a person who is killed or seriously injured in an accident. <i>There were no casualties in the fire.</i></blockquote>'),
-            rule('9. 🔒 The DO NOT USE button', '<p>At the bottom of the screen there is a red button marked DO NOT USE. It is one of the rocket\'s controls, and nobody on board is allowed to touch the controls without permission. Anyone who tampers with them puts the whole crew in danger. The first time, the alarm goes off. If it happens again, the student whose turn it is becomes a ghost 👻, because tampering with the ship is sabotage.</p><blockquote><b>to tamper with something</b> (verb): to touch or change something without permission, especially in a way that can damage it.</blockquote>'),
+            rule('7. 🔧 Repairs', '<p>When a floor has errors, a 🔧 button appears on it. The class can then play the repair game. If you win, one error on that floor is repaired. The number of repair rounds in a game is limited, so use them wisely.</p>'),
+            rule('8. 🟨🟨 Casualty', '<p>A student who gets two yellow cards from the teacher is a casualty. In the story, a casualty has suffered a fatal accident and becomes a ghost 👻. Casualties stay in the lesson and still answer questions, but they can\'t be winners.</p><blockquote><b>casualty</b> (noun): a person who is killed or seriously injured in an accident. <i>There were no casualties in the fire.</i></blockquote>'),
+            rule('9. 🔒 The DO NOT USE button', '<p>At the bottom of the screen there is a red button marked DO NOT USE. The button is one of the rocket\'s controls, and a person who tampers with the controls puts the whole crew in danger.</p><blockquote><b>to tamper with something</b> (verb): to touch or change something without permission, especially in a way that can damage it.</blockquote>'),
             rule('10. 🏆 Winning', '<p>The crew wins when the rocket takes off 🚀. With no damage the take-off is perfect; the more damage there is, the shakier and riskier it gets, until the crew only just makes it. If the rocket explodes, the mission fails.</p>')
         ].join('')
     };
@@ -649,6 +681,17 @@
         config.activeLevel = lv.id; config.lessons = lv.lessons; config.activeLesson = lv.activeLesson; syncActiveLesson();
         lv.lessons = config.lessons; lv.activeLesson = config.activeLesson;
         ensureWordLists();
+        if (!config.levelsSeeded) {
+            config.levelsSeeded = true;
+            if (config.levels.length === 1 && config.levels[0].name === 'Level 1') {
+                var cur = config.levels[0]; cur.name = 'B1+';
+                config.levels = ['A1', 'A2', 'A2+', 'B1', 'B1+', 'B2'].map(function (n) {
+                    if (n === 'B1+') return cur;
+                    var lv = newLevelObj(n); if (n === 'B1' || n === 'B2') lv.hidden = true; return lv;
+                });
+                config.activeLevel = cur.id;
+            }
+        }
     }
     function ensureWordLists() {
         config.levels.forEach(function (lv) {
@@ -949,7 +992,7 @@
         if (!state.ended) return [];
         var crew = state.ended === 'launch';
         if (isSimple()) return crew ? state.students.filter(function (s) { return s.status === 'active'; }).map(function (s) { return s.name; }) : [];
-        return state.students.filter(function (s) { return crew ? !s.impostor : s.impostor; }).map(function (s) { return s.name; });
+        return state.students.filter(function (s) { return s.status !== 'casualty' && (crew ? !s.impostor : s.impostor); }).map(function (s) { return s.name; });
     }
     $('btn-award').onclick = function () {
         if (state.gemsAwarded || window.parent === window) return;
@@ -1024,14 +1067,13 @@
         list.innerHTML = '';
         var chips = state.students.map(function (st) { var c = el('div', 'scan-chip'); c.appendChild(el('span', 'scan-name', st.name)); c.appendChild(el('span', 'scan-stamp', '')); list.appendChild(c); return c; });
         ov.style.display = 'flex';
-        var simple = isSimple(), per = simple ? 1700 : 700, start = 900, gap = 1000;
+        var simple = isSimple(), per = 1700, start = 900, gap = 1000;
         (function heartbeat() { if (done) return; thump(0.35); gap = Math.max(330, gap * 0.88); setTimeout(heartbeat, gap); })();
         chips.forEach(function (c, k) {
             setTimeout(function () { c.classList.add('scanning'); tone('square', 900, 1200, 0.08, 0.06); }, start + k * per);
             setTimeout(function () {
                 c.classList.remove('scanning'); c.classList.add('scanned'); playTickSound();
-                if (simple) { var r = state.students[k].official; c.lastChild.textContent = r.icon + ' ' + r.name; c.classList.add('flip'); speak(r.name); }
-                else c.lastChild.textContent = '✔ SCANNED';
+                var r = state.students[k].official; c.lastChild.textContent = r.icon + ' ' + r.name; c.classList.add('flip'); speak(r.name);
             }, start + k * per + Math.round(per * 0.4));
         });
         var tEnd = start + chips.length * per + 500;
@@ -1039,7 +1081,8 @@
             $('assign-title').textContent = simple ? 'Systems check complete' : 'Scan complete';
             $('assign-big').textContent = simple ? state.students.length + ' CREW ON BOARD' : n + (n === 1 ? ' IMPOSTOR' : ' IMPOSTORS') + ' AMONG US'; $('assign-big').classList.add('glitch');
             $('assign-sub').textContent = simple ? 'Errors allowed: ' + allowedErrors() : 'Tap your name to see your role. You can look only once.';
-            tone('sawtooth', 300, 80, 0.6, 0.25);
+            if (simple) { tone('triangle', 523, 523, 0.18, 0.18); setTimeout(function () { tone('triangle', 659, 659, 0.18, 0.18); }, 150); setTimeout(function () { tone('triangle', 784, 784, 0.18, 0.18); }, 300); setTimeout(function () { tone('triangle', 1047, 1047, 0.5, 0.2); }, 450); }
+            else tone('sawtooth', 300, 80, 0.6, 0.25);
         }, tEnd);
         setTimeout(function () { done = true; ov.style.display = 'none'; ui.assigning = false; state.rolesAssigned = true; save(); render(); }, tEnd + 3500);
     };
@@ -1684,9 +1727,24 @@
     function renderLevels() {
         var box = $('level-chips'); box.innerHTML = '';
         ui.levels.forEach(function (lv) {
+            if (lv.hidden && lv.id !== ui.levelSel) return;
             var b = el('button', 'lesson-chip lv' + (lv.id === ui.levelSel ? ' sel' : ''), lv.name); b.type = 'button';
             b.onclick = function () { switchUILevel(lv.id); };
             box.appendChild(b);
+        });
+        var man = $('level-manage'); man.innerHTML = '';
+        ui.levels.forEach(function (lv) {
+            var row = el('div', 'lm-row'); row.appendChild(el('span', 'lm-name' + (lv.hidden ? ' hid' : ''), lv.name));
+            var sh = el('button', lv.hidden ? '' : 'on', lv.hidden ? 'Hidden' : 'Shown'); sh.type = 'button';
+            sh.title = lv.hidden ? 'Show this level at the top' : 'Hide this level from the top';
+            sh.onclick = function () {
+                if (!lv.hidden && ui.levels.filter(function (x) { return !x.hidden; }).length < 2) { $('settings-error').textContent = 'At least one level must be shown.'; return; }
+                lv.hidden = !lv.hidden;
+                if (lv.hidden && lv.id === ui.levelSel) { var first = ui.levels.filter(function (x) { return !x.hidden; })[0]; saveLessonDraft(); selectLevelUI(first.id); }
+                else { renderLevels(); }
+                scheduleCommit();
+            };
+            row.appendChild(sh); man.appendChild(row);
         });
     }
     function selectLevelUI(id) {
@@ -1711,7 +1769,7 @@
             wrap.appendChild(tk); wrap.appendChild(b); chips.appendChild(wrap);
         });
         var panel = $('lesson-panel'); panel.innerHTML = ''; var L = selLesson();
-        panel.style.display = (L && ui.panelOpen) ? '' : 'none';
+        var secL = $('sec-lessons'); if (secL.open !== !!ui.panelOpen) { ui.syncing = true; secL.open = !!ui.panelOpen; setTimeout(function () { ui.syncing = false; }, 0); }
         scheduleCommit();
         if (!L || !ui.panelOpen) { fitSettings(); return; }
         var head = el('div', 'lesson-head'); head.appendChild(el('b', '', L.name + ' · plays in the game'));
@@ -1748,7 +1806,7 @@
     }
     function openLessons() {
         ui.levels = config.levels.map(function (lv) {
-            return { id: lv.id, name: lv.name, lessonSel: lv.activeLesson,
+            return { id: lv.id, name: lv.name, hidden: !!lv.hidden, lessonSel: lv.activeLesson,
                 wordLists: lv.wordLists.map(function (w) { return { id: w.id, name: w.name, text: w.text }; }),
                 lessons: lv.lessons.map(function (l) { return { id: l.id, name: l.name, exercises: clone(l.exercises), wordList: l.wordList }; }) };
         });
@@ -1770,7 +1828,7 @@
     $('level-delete').onclick = function () {
         if (ui.levels.length < 2) { $('settings-error').textContent = 'You need at least one level.'; return; }
         var lv = curLevel(); if (!confirm('Delete the level "' + lv.name + '" with all its sessions?')) return;
-        ui.levels = ui.levels.filter(function (x) { return x.id !== lv.id; }); selectLevelUI(ui.levels[0].id);
+        ui.levels = ui.levels.filter(function (x) { return x.id !== lv.id; }); selectLevelUI((ui.levels.filter(function (x) { return !x.hidden; })[0] || ui.levels[0]).id);
     };
     $('lesson-new').onclick = function () {
         var n = prompt('Name of the new session:', 'Session ' + (ui.lessons.length + 1)); if (n === null) return; n = n.trim(); if (!n) return;
@@ -1882,8 +1940,24 @@
         for (var q = 0; q < 9; q++) { var mid = (lo + hi) / 2; if (fits(mid)) lo = mid; else hi = mid; }
         root.style.fontSize = lo + 'px';
     }
+    $('sec-lessons').addEventListener('toggle', function () { if (ui.syncing || !ui.settingsReady) return; if (this.open !== !!ui.panelOpen) { ui.panelOpen = this.open; renderLessons(); } });
     $('settings-overlay').addEventListener('toggle', function () { fitSettings(); }, true);
     window.addEventListener('resize', function () { fitSettings(); });
+    function syncModeUI() {
+        var m = $('setting-mode').value === 'simple' ? 'simple' : 'classic';
+        Array.prototype.forEach.call($('mode-btns').children, function (b) { b.classList.toggle('sel', b.getAttribute('data-v') === m); });
+        Array.prototype.forEach.call($('settings-overlay').querySelectorAll('details[data-mode]'), function (d) { d.style.display = d.getAttribute('data-mode') === m ? '' : 'none'; });
+        Array.prototype.forEach.call($('settings-overlay').querySelectorAll('.onoff'), function (g) {
+            var on = $(g.getAttribute('data-for')).checked;
+            Array.prototype.forEach.call(g.children, function (b) { b.classList.toggle('sel', (b.getAttribute('data-v') === '1') === on); });
+        });
+        fitSettings();
+    }
+    Array.prototype.forEach.call($('mode-btns').children, function (b) { b.onclick = function () { $('setting-mode').value = b.getAttribute('data-v'); syncModeUI(); scheduleCommit(); }; });
+    Array.prototype.forEach.call($('settings-overlay').querySelectorAll('.onoff'), function (g) {
+        Array.prototype.forEach.call(g.children, function (b) { b.onclick = function () { $(g.getAttribute('data-for')).checked = b.getAttribute('data-v') === '1'; syncModeUI(); scheduleCommit(); }; });
+    });
+    $('btn-newgame').onclick = function () { if (!confirm('Start a new game?')) return; closeSettings(); if ($('settings-overlay').style.display === 'none') restartGame(); };
     function floorSig(c) { return JSON.stringify([c.mode, c.students, c.impostorCount, c.noImpostor, c.activeLevel, c.activeLesson, c.exercises]); }
     $('btn-settings').onclick = function () {
         ui.settingsReady = false;
@@ -1903,7 +1977,7 @@
         $('settings-error').textContent = ''; $('reveal-box').textContent = ''; refreshUndoBtn();
         $('setting-shake-delay').value = (config.shakeDelay === undefined ? 5 : config.shakeDelay);
         ui.sigAtOpen = floorSig(config);
-        $('settings-overlay').style.display = 'flex'; fitSettings();
+        $('settings-overlay').style.display = 'flex'; syncModeUI();
         ui.settingsReady = true;
     };
     (function () {
@@ -1962,7 +2036,7 @@
             }
             if (!lessonsOut.length) { err.textContent = 'Level "' + LV.name + '" needs at least one session.'; return null; }
             var pick = lessonsOut.filter(function (x) { return x.id === LV.lessonSel; })[0] || lessonsOut[0];
-            levelsOut.push({ id: LV.id, name: LV.name, lessons: lessonsOut, wordLists: wordListsOut, activeLesson: pick.id });
+            levelsOut.push({ id: LV.id, name: LV.name, hidden: !!LV.hidden, lessons: lessonsOut, wordLists: wordListsOut, activeLesson: pick.id });
         }
         var activeLv = levelsOut.filter(function (x) { return x.id === ui.levelSel; })[0] || levelsOut[0];
         var chosen = activeLv.lessons.filter(function (x) { return x.id === activeLv.activeLesson; })[0];
