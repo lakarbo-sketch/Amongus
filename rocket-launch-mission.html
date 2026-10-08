@@ -255,6 +255,9 @@
     .scan-chip.scanning::after { content: ''; position: absolute; left: -30%; top: 0; bottom: 0; width: 30%; background: linear-gradient(90deg, transparent, rgba(0,255,204,0.6), transparent); animation: scanSweep 0.45s linear; }
     @keyframes scanSweep { to { left: 110%; } }
     .scan-chip.scanned { border-color: #55efc4; color: #fff; }
+    .scan-chip.flip { animation: chipFlip 0.6s ease-out; }
+    .scan-chip.flip .scan-stamp { font-size: 1.1em; color: #ffe066; min-height: 1.3em; }
+    @keyframes chipFlip { 0% { transform: rotateX(90deg); } 100% { transform: rotateX(0); } }
     .scan-stamp { display: block; font-size: 0.8rem; color: #55efc4; min-height: 1rem; }
     .assign-big.glitch { animation: glitchText 0.12s steps(2, end) 14; }
     @keyframes glitchText { 0% { transform: translate(0, 0) skewX(0); text-shadow: 3px 0 #0ff, -3px 0 #f0f; } 50% { transform: translate(-6px, 2px) skewX(-8deg); text-shadow: -4px 0 #0ff, 4px 0 #f0f; } 100% { transform: translate(5px, -2px) skewX(6deg); text-shadow: 2px 0 #0ff, -2px 0 #f0f; } }
@@ -316,6 +319,16 @@
     .lv-label { color: #00ffcc; font-size: 0.9rem; }
     .lesson-chip.lv { background: #2a2248; border-color: #7d5cd6; }
     .lesson-chip.lv.sel { background: #9b59b6; color: #fff; border-color: #d2a8ff; }
+    .timer-switch { background: transparent; color: #8aa0c4; border: 1px solid #3b4d71; border-radius: 6px; padding: 0.1rem 0.4rem; font-size: 0.8rem; font-weight: bold; cursor: pointer; }
+    .timer-switch.off { color: #ff7675; border-color: #ff7675; }
+    .repair-floor-btn { background: #1d6f5c; color: #fff; border: 2px solid #55efc4; border-radius: 6px; padding: 0.15rem 0.6rem; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
+    .repair-time { display: flex; gap: 0.8rem; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 800; color: #f2b705; }
+    .repair-time .btn { font-size: 1.6rem; padding: 0.2rem 1.1rem; }
+    .repair-time-v { min-width: 4.5rem; text-align: center; color: #fff; }
+    .ribbon.countdown { font-size: min(7vw, 11vh); line-height: 1.1; padding: 0.4rem 0.6rem; letter-spacing: 0.08em; color: #fff; background: linear-gradient(90deg, #b00020, #ff7a00, #b00020); text-shadow: 0 0 20px #000; animation: cdPulse 1s ease-in-out infinite; }
+    @keyframes cdPulse { 0% { filter: brightness(1); } 50% { filter: brightness(1.35); } 100% { filter: brightness(1); } }
+    .chip-wrap { display: inline-flex; align-items: center; gap: 0.15rem; }
+    .chip-tick { width: 0.9rem; height: 0.9rem; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -335,11 +348,10 @@
 <div class="app">
     <div class="top-header">
         <div class="header-title-area">
-            <span class="esl-badge">ESL AMONG US</span>
             <h1>Rocket Launch Mission</h1>
         </div>
         <div class="header-controls">
-            <span class="danger-status" id="danger-status">DANGER: <span id="danger-count">0</span> / 4</span>
+            <span class="danger-status" id="danger-status"><span id="danger-label">DANGER</span>: <span id="danger-count">0</span> / <span id="danger-max">4</span></span><span class="danger-status" id="repairs-left" style="display:none"></span>
             <button class="btn btn-assign" id="btn-assign">🎲 Assign roles</button>
             <button class="btn btn-rules" id="btn-rules">📜 Rules</button>
             <button class="btn" id="btn-video">🚀 Video</button>
@@ -400,10 +412,13 @@
     <div class="settings-body">
         <div class="settings-col">
             <details class="sec" open><summary>Class</summary>
+                <div class="form-group"><label for="setting-mode">Game mode</label><select id="setting-mode"><option value="classic">Classic (with impostors)</option><option value="simple">Simple (avoid damage, no impostor)</option></select></div>
                 <div class="form-group"><label for="setting-rocket-label">Rocket label</label><input type="text" id="setting-rocket-label"></div>
                 <input type="hidden" id="setting-students">
                 <div class="form-group"><label for="setting-impostor-count">Number of impostors (1 or 2)</label><input type="number" id="setting-impostor-count" min="1" max="2"></div>
                 <div class="form-group"><label>Cannot be the impostor</label><div class="noimp-list" id="noimp-list"></div></div>
+                <div style="display:flex; gap:0.6rem;"><div class="form-group" style="flex:1"><label for="setting-errors-per">Questions per error</label><input type="number" id="setting-errors-per" min="1" max="50"></div>
+                <div class="form-group" style="flex:1"><label for="setting-repair-rounds">Repair rounds</label><input type="number" id="setting-repair-rounds" min="0" max="20"></div></div>
                 <div class="form-group"><label for="setting-weight">Chance of a student who has not been picked yet (times)</label><input type="number" id="setting-weight" min="1" max="10"></div>
             </details>
             <details class="sec" open><summary>Tools</summary>
@@ -429,7 +444,7 @@
         <div class="settings-col">
             <details class="sec grow" id="sec-lessons"><summary>Lessons and exercises</summary>
                 <div class="filerow lesson-tools"><b class="lv-label">Level</b><div id="level-chips" class="lesson-chips"></div><button class="btn" id="level-new" type="button">+ Level</button><button class="btn" id="level-rename" type="button">Rename level</button><button class="btn" id="level-delete" type="button">Delete level</button></div>
-                <div class="filerow lesson-tools"><button class="btn" id="lesson-new" type="button">+ New session</button><button class="btn" id="lesson-import" type="button">📥 Import file</button><button class="btn" id="btn-copy-format" type="button">📋 Copy format</button><input type="file" id="file-lessons" accept=".txt,.json,text/plain,application/json" hidden></div>
+                <div class="filerow lesson-tools"><button class="btn" id="lesson-new" type="button">+ New session</button><button class="btn" id="lesson-import" type="button">📥 Import</button><button class="btn" id="lesson-export" type="button">📤 Export</button><button class="btn" id="btn-copy-format" type="button">📋 Copy format</button><input type="file" id="file-lessons" accept=".txt,.json,text/plain,application/json" hidden></div>
                 <div id="lesson-msg" class="lesson-msg"></div>
                 <div id="lesson-chips" class="lesson-chips"></div>
                 <div id="lesson-panel" class="lesson-panel"></div>
@@ -437,21 +452,19 @@
             <details class="sec"><summary>Sounds, take-off and video</summary>
                 <div class="form-group"><label for="setting-takeoff-sound">Take-off sound file (plays when the last floor is finished; blank for the built-in sound)</label><div class="filerow"><input type="text" id="setting-takeoff-sound" placeholder="takeoff.mp3"><button class="btn" id="pick-takeoff" type="button">Choose file</button></div><input type="file" accept="audio/*" id="file-takeoff" hidden></div>
                 <div class="form-group"><label for="setting-takeoff-delay">Take-off delay after the sound starts (seconds)</label><input type="number" id="setting-takeoff-delay" min="0" max="120"></div>
+                <div class="form-group"><label for="setting-voice">Voice that reads the roles aloud (simple mode scan)</label><select id="setting-voice"></select></div>
                 <div class="form-group"><label for="setting-shake-delay">Rocket starts shaking this many seconds after the sound starts</label><input type="number" id="setting-shake-delay" min="0" max="120"></div>
                 <div class="form-group"><label for="setting-damage-sound">Meltdown sound file (blank for the built-in sound)</label><div class="filerow"><input type="text" id="setting-damage-sound" placeholder="meltdown.mp3"><button class="btn" id="pick-damage" type="button">Choose file</button></div><input type="file" accept="audio/*" id="file-damage" hidden></div>
                 <div class="form-group"><label for="setting-video">Rocket video address (the 🚀 Video button opens it)</label><input type="text" id="setting-video"></div>
             </details>
             <details class="sec grow"><summary>Repair game words</summary>
-                <div class="form-group grow"><label for="setting-pairs">Repair game words for the selected session, one pair per line like "cat = hat" (a word alone is an extra decoy)</label><textarea id="setting-pairs"></textarea></div>
+                <div class="filerow lesson-tools"><select id="setting-wordlist"></select><button class="btn" id="wl-new" type="button">+ List</button><button class="btn" id="wl-rename" type="button">Rename</button><button class="btn" id="wl-delete" type="button">Delete</button></div>
+                <div class="form-group grow"><label for="setting-pairs">Words of the selected list for the selected session, one pair per line like "cat = hat" (a word alone is an extra decoy)</label><textarea id="setting-pairs"></textarea></div>
             </details>
         </div>
     </div>
     <div class="settings-footer">
         <div class="settings-error" id="settings-error"></div>
-        <div style="display:flex; gap:0.8rem;">
-            <button class="btn" id="settings-cancel">Cancel</button>
-            <button class="btn btn-good" id="settings-save">Save &amp; Restart</button>
-        </div>
     </div>
 </div>
 
@@ -499,7 +512,7 @@
     /* ---------- Constants and defaults ---------- */
     var LS_CONFIG = 'rlm-config-v2', LS_STATE = 'rlm-state-v2', LS_RULES = 'rlm-rules-v2';
     var LIMIT = 4;
-    var VERSION = 'Version 5 · 7 Oct 2026';
+    var VERSION = 'Version 6 · 8 Oct 2026';
     var ROLES = [
         { icon: '👨‍✈️', name: 'Captain' }, { icon: '🧑‍🚀', name: 'Pilot' }, { icon: '🔧', name: 'Engineer' },
         { icon: '🩺', name: 'Doctor' }, { icon: '🧭', name: 'Navigator' }, { icon: '🔬', name: 'Scientist' },
@@ -523,6 +536,10 @@
         matchWindowMs: 600,
         meetingSeconds: 30,
         takeoffDelay: 12,
+        mode: 'classic',
+        errorsPerQ: 6,
+        repairRounds: 3,
+        voice: '',
         levels: null,
         activeLevel: '',
         shakeDelay: 5,
@@ -558,7 +575,7 @@
             rule('10. 🗳️ Voting', '<p>After the talk, everyone votes for one student. Or you can pass. The student with the most votes is ejected. If you eject a crewmate by mistake, the crew gets smaller! If you find all the impostors, there is no more sabotage.</p>'),
             rule('11. 👻 Ghosts', '<p>A student who leaves the game becomes a ghost. There are three kinds:</p><ul><li><b>Ejected:</b> a student voted off the ship. The screen shows if the student was an impostor.</li><li><b>Killed:</b> a student killed by an impostor.</li><li><b>Casualty:</b> a student with two yellow cards.</li></ul><p>Ghosts can still be chosen and still answer questions. They cannot vote. Their questions do not count in the game, and then they disappear.</p>'),
             rule('12. 🏆 How to win', '<p>The crew wins when the rocket takes off! 🚀 With 0 danger points, the take-off is perfect. With 1 point, it is shaky. With 2 points, it is very risky. With 3 points, the crew barely makes it. The impostor wins if the crew becomes as small as the number of impostors, or if the repair fails. Then the mission fails and the rocket cannot take off.</p>'),
-            rule('13. 🔒 The DO NOT USE button', '<p>There is a red button at the bottom of the screen. Do not touch it! It shows who the impostors are. Only the teacher can use it.</p>'),
+            rule('13. 🔒 The DO NOT USE button', '<p>There is a red button at the bottom of the screen. It says DO NOT USE. Do not touch it! It is a control of the rocket, and nobody on board may touch the controls without permission. A person who tampers with the controls puts the whole crew in danger. The first time, the alarm sounds. If it happens again, the student whose turn it is becomes a ghost 👻, because tampering is sabotage. Only the teacher can use the button.</p><blockquote><b>to tamper with</b> (verb): to touch something that is not yours, in a way that can cause damage.</blockquote>'),
             rule('14. 🙈 No cheating', '<p>Do not cheat! If a student peeks when everybody is asleep, the game is over. There are no winners and no losers, and the class does classwork.</p>'),
             rule('15. 🟨🟨 Casualty', '<p>Sometimes a student gets two yellow cards from the teacher. This student is a casualty. A casualty has had a fatal accident and becomes a ghost 👻. Casualties still answer questions in the lesson, but their answers do not count in the game.</p><blockquote><b>casualty</b> (noun): a person who is badly hurt or killed in an accident.</blockquote>')
         ].join(''),
@@ -575,9 +592,33 @@
             rule('10. 🗳️ Voting', '<p>After the discussion, each student votes for one person or chooses to pass. The student with the most votes is ejected from the ship. If you eject a crewmate by mistake, the crew gets smaller. If you find every impostor, the sabotage stops, but the mission is not over yet.</p>'),
             rule('11. 👻 Ghosts', '<p>A student who leaves the game becomes a ghost. There are three kinds:</p><ul><li><b>Ejected:</b> a student who has been voted off the ship. The screen shows whether that student was an impostor.</li><li><b>Killed:</b> a student who has been killed by an impostor.</li><li><b>Casualty:</b> a student who has received two yellow cards.</li></ul><p>Ghosts stay in the lesson and can still be chosen to answer questions, but they can\'t vote. Their questions don\'t count towards the mission, and they disappear after the answer has been marked.</p>'),
             rule('12. 🏆 Winning', '<p>The crew wins when the rocket takes off 🚀. With no danger points, the take-off is perfect. With one point it is shaky, with two points it is very risky, and with three points the crew only just makes it. The impostor wins if the crew becomes as small as the number of impostors, or if the repair of a sabotaged floor fails. Then the mission fails and the rocket can\'t take off.</p>'),
-            rule('13. 🔒 The DO NOT USE button', '<p>At the bottom of the screen there is a button marked DO NOT USE. It would reveal who the impostors are, so only the teacher is allowed to use it.</p>'),
+            rule('13. 🔒 The DO NOT USE button', '<p>At the bottom of the screen there is a red button marked DO NOT USE. It is one of the rocket\'s controls, and nobody on board is allowed to touch the controls without permission. Anyone who tampers with them puts the whole crew in danger. The first time, the alarm goes off. If it happens again, the student whose turn it is becomes a ghost 👻, because tampering with the ship is sabotage. Only the teacher may use the button.</p><blockquote><b>to tamper with something</b> (verb): to touch or change something without permission, especially in a way that can damage it.</blockquote>'),
             rule('14. 🙈 No cheating', '<p>No cheating! If anyone peeks while everybody is asleep, the game ends immediately with no winners and no losers, and the class goes on to classwork.</p>'),
             rule('15. 🟨🟨 Casualty', '<p>A student who gets two yellow cards from the teacher is a casualty. In the story, a casualty has suffered a fatal accident and becomes a ghost 👻. Casualties stay in the lesson and still answer questions, but their answers don\'t count towards the mission.</p><blockquote><b>casualty</b> (noun): a person who is killed or seriously injured in an accident, a war or a disaster. <i>There were no casualties in the fire.</i></blockquote>')
+        ].join(''),
+        sa2: [
+            rule('1. 🎯 Your mission', '<p>You are the crew of a rocket. Each floor of the rocket is an exercise from your book. Answer all the questions on every floor to fill the fuel tank. When the tank is full, the rocket takes off! 🚀</p>'),
+            rule('2. 👨‍✈️ Your job on the ship', '<p>Every student has a job on the ship. Tap your name to see it. It is not a secret.</p>'),
+            rule('3. 🎲 The picker', '<p>The teacher taps a question number. The computer chooses a student. That student answers the question. Everyone must pay attention, because you can be chosen again soon!</p>'),
+            rule('4. ✅ Right and wrong', '<p>The teacher says if the answer is right or wrong. Tap the number once for a green ✅ answer. Tap again for a red ❌ answer. A wrong answer is 1 damage point for the ship.</p>'),
+            rule('5. 💥 Damage', '<p>Damage points are errors. The ship can have only a few errors. You can see them at the top of the screen: DAMAGE 2 / 6 means 2 errors, and the ship can have 6. One more error after that and the rocket explodes 💥. A floor is in danger, too. If half of the questions on one floor are wrong, the rocket explodes.</p><blockquote><b>damage</b> (noun): harm to something, so that it does not work well.</blockquote>'),
+            rule('6. ⏱️ Floor timers', '<p>A floor can have a timer. If the time is over before the floor is finished, that is 1 damage point.</p>'),
+            rule('7. 🔧 Repairs', '<p>A floor with errors has a 🔧 button. The class can play the repair game. Two students tap two matching colours at the same time. If you win, one error on that floor is repaired. You can play only a few repair rounds in one game, so choose the right moment!</p>'),
+            rule('8. 🟨🟨 Casualty', '<p>Sometimes a student gets two yellow cards from the teacher. This student is a casualty and becomes a ghost 👻. Casualties still answer questions, but their answers do not count in the game.</p><blockquote><b>casualty</b> (noun): a person who is badly hurt or killed in an accident.</blockquote>'),
+            rule('9. 🔒 The DO NOT USE button', '<p>There is a red button at the bottom of the screen. It says DO NOT USE. Do not touch it! It is a control of the rocket, and nobody may touch the controls without permission. A person who tampers with the controls puts the whole crew in danger. The first time, the alarm sounds. If it happens again, the student whose turn it is becomes a ghost 👻.</p><blockquote><b>to tamper with</b> (verb): to touch something that is not yours, in a way that can cause damage.</blockquote>'),
+            rule('10. 🏆 How to win', '<p>The crew wins when the rocket takes off! 🚀 With no damage, the take-off is perfect. With a little damage, it is shaky. With more damage, it is very risky. With a lot of damage, the crew barely makes it. If the rocket explodes, the mission fails.</p>')
+        ].join(''),
+        sb1: [
+            rule('1. 🎯 Your mission', '<p>Your crew has to launch a rocket. Each floor of the rocket is an exercise from your book. To fill the fuel tank, you must complete every question on every floor. When the tank is full, the rocket takes off 🚀. Your task is to avoid damage.</p>'),
+            rule('2. 👨‍✈️ Your role', '<p>Each student has a job on the ship, for example captain or engineer. Tap your name to see it. Nothing is secret in this game: you are all on the same team.</p>'),
+            rule('3. 🎲 The picker', '<p>The teacher taps a question number and the computer chooses a student, who answers the question. Stay focused, because you could be chosen again soon.</p>'),
+            rule('4. ✅ Right and wrong', '<p>The teacher tells you whether the answer is right or wrong. The question number turns green ✅ for a correct answer and red ❌ for a wrong one. Every wrong answer is one damage point for the ship.</p>'),
+            rule('5. 💥 Damage', '<p>The ship can only take a limited amount of damage. The counter at the top shows it, for example DAMAGE 2 / 6: two errors so far, and six are allowed. One more error and the rocket explodes 💥. A single floor can also take only so much: if half of its questions are wrong, the rocket explodes, however well the other floors went.</p><blockquote><b>damage</b> (noun): physical harm to something, so that it no longer works properly. <i>The storm caused a lot of damage.</i></blockquote>'),
+            rule('6. ⏱️ Timers', '<p>A floor may have a timer. If it runs out before you have finished the floor, you get one damage point. The teacher can switch a timer off for a floor.</p>'),
+            rule('7. 🔧 Repairs', '<p>When a floor has errors, a 🔧 button appears on it. The class can then play the repair game: two players have to tap two matching colours at the same moment. If you win, one error on that floor is repaired. The number of repair rounds in a game is limited, so use them wisely.</p>'),
+            rule('8. 🟨🟨 Casualty', '<p>A student who gets two yellow cards from the teacher is a casualty. In the story, a casualty has suffered a fatal accident and becomes a ghost 👻. Casualties stay in the lesson and still answer questions, but their answers don\'t count towards the mission.</p><blockquote><b>casualty</b> (noun): a person who is killed or seriously injured in an accident. <i>There were no casualties in the fire.</i></blockquote>'),
+            rule('9. 🔒 The DO NOT USE button', '<p>At the bottom of the screen there is a red button marked DO NOT USE. It is one of the rocket\'s controls, and nobody on board is allowed to touch the controls without permission. Anyone who tampers with them puts the whole crew in danger. The first time, the alarm goes off. If it happens again, the student whose turn it is becomes a ghost 👻, because tampering with the ship is sabotage.</p><blockquote><b>to tamper with something</b> (verb): to touch or change something without permission, especially in a way that can damage it.</blockquote>'),
+            rule('10. 🏆 Winning', '<p>The crew wins when the rocket takes off 🚀. With no damage the take-off is perfect; the more damage there is, the shakier and riskier it gets, until the crew only just makes it. If the rocket explodes, the mission fails.</p>')
         ].join('')
     };
 
@@ -607,6 +648,24 @@
         var lv = config.levels.filter(function (l) { return l.id === config.activeLevel; })[0] || config.levels[0];
         config.activeLevel = lv.id; config.lessons = lv.lessons; config.activeLesson = lv.activeLesson; syncActiveLesson();
         lv.lessons = config.lessons; lv.activeLesson = config.activeLesson;
+        ensureWordLists();
+    }
+    function ensureWordLists() {
+        config.levels.forEach(function (lv) {
+            if (!Array.isArray(lv.wordLists) || !lv.wordLists.length) {
+                lv.wordLists = []; var byText = {};
+                lv.lessons.forEach(function (l) {
+                    var t = l.repairPairs || DEFAULT_PAIRS;
+                    if (!byText[t]) { var n = lv.wordLists.length + 1; byText[t] = 'w' + n; lv.wordLists.push({ id: 'w' + n, name: 'Words ' + n, text: t }); }
+                    l.wordList = byText[t];
+                });
+                if (!lv.wordLists.length) lv.wordLists.push({ id: 'w1', name: 'Words 1', text: DEFAULT_PAIRS });
+            }
+            lv.lessons.forEach(function (l) { var w = lv.wordLists.filter(function (x) { return x.id === l.wordList; })[0] || lv.wordLists[0]; l.wordList = w.id; l.repairPairs = w.text; });
+        });
+        var al = config.levels.filter(function (l) { return l.id === config.activeLevel; })[0];
+        var cl = al && al.lessons.filter(function (l) { return l.id === config.activeLesson; })[0];
+        if (cl) config.repairPairs = cl.repairPairs;
     }
     ensureLevels();
     function configSig() { return JSON.stringify([config.students, config.impostorCount, config.noImpostor, config.exercises]); }
@@ -614,7 +673,7 @@
     function newState() {
         var names = (config.students || []).slice(0, 9);
         var roles = shuffle(ROLES.slice());
-        var numImp = Math.max(0, Math.min(Math.max(1, Math.min(2, config.impostorCount || 1)), names.length));
+        var numImp = config.mode === 'simple' ? 0 : Math.max(0, Math.min(Math.max(1, Math.min(2, config.impostorCount || 1)), names.length));
         var allowed = names.map(function (_, i) { return i; }).filter(function (i) { return (config.noImpostor || []).indexOf(names[i]) === -1; });
         if (allowed.length < numImp) allowed = names.map(function (_, i) { return i; });
         var imp = {};
@@ -625,9 +684,9 @@
         var floors = (config.exercises || []).map(function (ex) {
             var t = (ex.time > 0) ? ex.time : 180, qs = [];
             for (var i = 0; i < ex.questions; i++) qs.push({ s: 'normal', ghost: false, pen: false, hideAt: 0 });
-            return { page: ex.page, exercise: ex.exercise, timeLeft: t, running: false, started: false, timerStartedOnce: false, timedOut: false, acc: 0, fin: false, armed: false, fireAt: 0, sabotaged: false, questions: qs };
+            return { page: ex.page, exercise: ex.exercise, timeLeft: t, running: false, started: false, timerStartedOnce: false, timedOut: false, acc: 0, fin: false, armed: false, fireAt: 0, sabotaged: false, timerOff: false, questions: qs };
         });
-        return { v: 2, sig: configSig(), students: students, floors: floors, rolesAssigned: false, gemsAwarded: false, sabotageEndAt: 0, phase: 'play', nightQueue: 0, nightAt: 0, meetingFlash: false,
+        return { v: 2, sig: configSig(), students: students, floors: floors, rolesAssigned: config.mode === 'simple', repairsUsed: 0, gemsAwarded: false, sabotageEndAt: 0, phase: 'play', nightQueue: 0, nightAt: 0, meetingFlash: false,
             lastPicked: -1, sabotageUsed: 0, meetingsUsed: 0, decoyUses: 0, practiceDone: false, repairFloor: -1, ended: null, grade: 0, crewDirty: false };
     }
     var state = (function () {
@@ -677,6 +736,32 @@
     }
     function playMeltdownSound() { playFile(config.damageSound, function () { noiseBurst(3.5, 500, 40, 0.7); }); }
     function playTakeoffAudio() { playFile(config.takeoffSound, function () { noiseBurst(5, 200, 1800, 0.45); }); }
+    var voices = [];
+    function loadVoices() { try { voices = (window.speechSynthesis && speechSynthesis.getVoices()) || []; } catch (e) { voices = []; } return voices; }
+    try { if (window.speechSynthesis) speechSynthesis.onvoiceschanged = function () { loadVoices(); fillVoiceSelect(); }; } catch (e) { /* no speech */ }
+    function pickVoice() {
+        var vs = loadVoices(); if (!vs.length) return null;
+        if (config.voice) { var m = vs.filter(function (v) { return v.name === config.voice; })[0]; if (m) return m; }
+        var gb = vs.filter(function (v) { return /^en[-_]GB/i.test(v.lang); });
+        var male = gb.filter(function (v) { return /male|daniel|george|ryan|oliver|arthur|thomas|james|harry/i.test(v.name) && !/female|hazel|susan|libby|sonia|serena|kate|mia/i.test(v.name); })[0];
+        return male || gb[0] || vs.filter(function (v) { return /^en/i.test(v.lang); })[0] || null;
+    }
+    function speak(text) {
+        try {
+            if (!window.speechSynthesis) return;
+            speechSynthesis.cancel();
+            var u = new SpeechSynthesisUtterance(text), v = pickVoice();
+            if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-GB';
+            u.rate = 0.95; speechSynthesis.speak(u);
+        } catch (e) { /* no speech */ }
+    }
+    function fillVoiceSelect() {
+        var sel = document.getElementById('setting-voice'); if (!sel) return;
+        var vs = loadVoices(), cur = config.voice || '';
+        sel.innerHTML = ''; var o0 = document.createElement('option'); o0.value = ''; o0.textContent = 'Automatic (British male when available)'; sel.appendChild(o0);
+        vs.filter(function (v) { return /^en/i.test(v.lang); }).forEach(function (v) { var o = document.createElement('option'); o.value = v.name; o.textContent = v.name + ' (' + v.lang + ')'; sel.appendChild(o); });
+        sel.value = cur;
+    }
     function thump(vol) { tone('sine', 70, 40, 0.22, vol); setTimeout(function () { tone('sine', 60, 35, 0.2, vol * 0.7); }, 160); }
     function startSiren(ms) {
         var ctx = ensureAudio(); if (!ctx) return;
@@ -706,6 +791,18 @@
     function floorFinished(f) { return f.questions.every(qFinished); }
     function allFinished() { return state.floors.length > 0 && state.floors.every(floorFinished); }
     function unfinishedCount() { var n = 0; state.floors.forEach(function (f) { f.questions.forEach(function (q) { if (!qFinished(q)) n++; }); }); return n; }
+    function isSimple() { return config.mode === 'simple'; }
+    function sabotageOn() { return !!config.sabotageEnabled && !isSimple(); }
+    function totalQuestions() { var n = 0; state.floors.forEach(function (f) { n += f.questions.length; }); return n; }
+    function allowedErrors() { return Math.floor(totalQuestions() / Math.max(1, Number(config.errorsPerQ) || 6)); }
+    function floorErrors(f) { var d = f.timedOut ? 1 : 0; f.questions.forEach(function (q) { if (q.pen) d++; }); return d; }
+    function repairsLeft() { return Math.max(0, (Math.max(0, Number(config.repairRounds)) || 0) - (state.repairsUsed || 0)); }
+    function overLimit() {
+        var d = dangerPoints();
+        if (!isSimple()) return d >= LIMIT;
+        if (d > allowedErrors()) return true;
+        return state.floors.some(function (f) { var e = floorErrors(f); return e >= 2 && e * 2 >= f.questions.length; });
+    }
     function dangerPoints() {
         var d = 0;
         state.floors.forEach(function (f) { if (f.timedOut) d++; f.questions.forEach(function (q) { if (q.pen) d++; }); });
@@ -718,7 +815,7 @@
     function sabotagesAllowed() { return Math.min(Math.max(0, totalImpostors() - state.sabotageUsed), activeImpostors()); }
     function floorInProgress(f) { return f.started && !floorFinished(f); }
     function meetingsAvailable() { return state.floors.filter(function (f) { return f.fin; }).length - state.meetingsUsed; }
-    function meetingAllowed() { return !state.ended && state.phase === 'play' && meetingsAvailable() > 0 && !state.floors.some(floorInProgress); }
+    function meetingAllowed() { return !isSimple() && !state.ended && state.phase === 'play' && meetingsAvailable() > 0 && !state.floors.some(floorInProgress); }
     function sabotageDelayMs() { var d = Number(config.sabotageDelay); return (isFinite(d) && d >= 0 ? d : 20) * 1000; }
     function pendingSabotage() { return state.floors.some(function (f) { return (f.armed && f.fireAt > 0) || f.sabotaged; }); }
     function overlayOpen() { return state.phase !== 'play' || ui.assigning || ui.meetingEnd > 0 || ui.warningActive; }
@@ -751,18 +848,23 @@
                 if (f.running) f.running = false;
                 if (!f.fin) {
                     f.fin = true;
-                    if (!allFinished()) state.nightQueue++;
+                    if (!allFinished() && !isSimple()) state.nightQueue++;
                 }
                 if (f.armed && !f.fireAt && !f.sabotaged) f.fireAt = Date.now() + sabotageDelayMs();
             }
         });
-        if (dangerPoints() >= LIMIT) { state.ended = 'meltdown'; return; }
+        if (overLimit()) { state.ended = 'meltdown'; return; }
         if (allFinished() && state.phase === 'play' && !pendingSabotage() && state.nightQueue === 0) {
-            state.grade = Math.min(3, dangerPoints());
+            state.grade = simpleGrade();
             var dl = launchDelaySecs();
             if (dl > 0) { state.phase = 'countdown'; state.countdownStart = Date.now(); state.launchAt = state.countdownStart + dl * 1000; state.countdownPlayed = true; playTakeoffAudio(); }
             else state.ended = 'launch';
         }
+    }
+    function simpleGrade() {
+        var d = dangerPoints(); if (!isSimple()) return Math.min(3, d);
+        if (d <= 0) return 0; var a = allowedErrors(); if (a <= 0) return 3;
+        var r = d / a; return r <= 1 / 3 ? 1 : (r <= 2 / 3 ? 2 : 3);
     }
     function launchDelaySecs() {
         if (!String(config.takeoffSound || '').trim()) return 0;
@@ -804,7 +906,7 @@
         var f = state.floors[fi], q = f.questions[qi];
         pushUndo('picked a student');
         f.started = true;
-        if (!f.timerStartedOnce && f.timeLeft > 0) { f.timerStartedOnce = true; f.running = true; }
+        if (!f.timerStartedOnce && f.timeLeft > 0 && !f.timerOff) { f.timerStartedOnce = true; f.running = true; }
         var n = state.students.length;
         if (n === 0) { q.s = 'assigned'; afterChange(); return; }
         var chosen = weightedPick();
@@ -846,6 +948,7 @@
     function gemWinners() {
         if (!state.ended) return [];
         var crew = state.ended === 'launch';
+        if (isSimple()) return crew ? state.students.filter(function (s) { return s.status === 'active'; }).map(function (s) { return s.name; }) : [];
         return state.students.filter(function (s) { return crew ? !s.impostor : s.impostor; }).map(function (s) { return s.name; });
     }
     $('btn-award').onclick = function () {
@@ -856,7 +959,7 @@
     };
     $('btn-exit').onclick = function () { try { window.parent.postMessage({ type: 'rocket-back' }, '*'); } catch (e) { /* not embedded */ } };
     function armSabotage(fi) {
-        if (!config.sabotageEnabled || state.ended || state.phase !== 'play') return;
+        if (!sabotageOn() || state.ended || state.phase !== 'play') return;
         var f = state.floors[fi];
         if (f.armed || f.sabotaged || sabotagesAllowed() <= 0) return;
         act('armed a floor', function () {
@@ -866,7 +969,7 @@
     }
     function toggleTimer(fi) {
         var f = state.floors[fi];
-        if (state.ended || state.phase !== 'play' || f.timeLeft <= 0 || floorFinished(f)) return;
+        if (state.ended || state.phase !== 'play' || f.timeLeft <= 0 || floorFinished(f) || f.timerOff) return;
         act('timer', function () { f.running = !f.running; f.started = true; f.timerStartedOnce = true; });
     }
     function editTimer(fi) {
@@ -912,7 +1015,7 @@
         if (left === 0) { $('meeting-clock').classList.add('done'); $('meeting-sub').textContent = 'Time is up. Vote now!'; }
     }
     $('btn-assign').onclick = function () {
-        if (state.rolesAssigned || ui.assigning) return;
+        if (ui.assigning || (state.rolesAssigned && !isSimple())) return;
         ensureAudio();
         ui.assigning = true;
         var ov = $('assign-overlay'), n = totalImpostors(), list = $('scan-list'), done = false;
@@ -921,17 +1024,21 @@
         list.innerHTML = '';
         var chips = state.students.map(function (st) { var c = el('div', 'scan-chip'); c.appendChild(el('span', 'scan-name', st.name)); c.appendChild(el('span', 'scan-stamp', '')); list.appendChild(c); return c; });
         ov.style.display = 'flex';
-        var per = 700, start = 900, gap = 1000;
+        var simple = isSimple(), per = simple ? 1700 : 700, start = 900, gap = 1000;
         (function heartbeat() { if (done) return; thump(0.35); gap = Math.max(330, gap * 0.88); setTimeout(heartbeat, gap); })();
         chips.forEach(function (c, k) {
             setTimeout(function () { c.classList.add('scanning'); tone('square', 900, 1200, 0.08, 0.06); }, start + k * per);
-            setTimeout(function () { c.classList.remove('scanning'); c.classList.add('scanned'); c.lastChild.textContent = '✔ SCANNED'; playTickSound(); }, start + k * per + Math.round(per * 0.65));
+            setTimeout(function () {
+                c.classList.remove('scanning'); c.classList.add('scanned'); playTickSound();
+                if (simple) { var r = state.students[k].official; c.lastChild.textContent = r.icon + ' ' + r.name; c.classList.add('flip'); speak(r.name); }
+                else c.lastChild.textContent = '✔ SCANNED';
+            }, start + k * per + Math.round(per * 0.4));
         });
         var tEnd = start + chips.length * per + 500;
         setTimeout(function () {
-            $('assign-title').textContent = 'Scan complete';
-            $('assign-big').textContent = n + (n === 1 ? ' IMPOSTOR' : ' IMPOSTORS') + ' AMONG US'; $('assign-big').classList.add('glitch');
-            $('assign-sub').textContent = 'Tap your name to see your role. You can look only once.';
+            $('assign-title').textContent = simple ? 'Systems check complete' : 'Scan complete';
+            $('assign-big').textContent = simple ? state.students.length + ' CREW ON BOARD' : n + (n === 1 ? ' IMPOSTOR' : ' IMPOSTORS') + ' AMONG US'; $('assign-big').classList.add('glitch');
+            $('assign-sub').textContent = simple ? 'Errors allowed: ' + allowedErrors() : 'Tap your name to see your role. You can look only once.';
             tone('sawtooth', 300, 80, 0.6, 0.25);
         }, tEnd);
         setTimeout(function () { done = true; ov.style.display = 'none'; ui.assigning = false; state.rolesAssigned = true; save(); render(); }, tEnd + 3500);
@@ -943,7 +1050,7 @@
         var changed = false;
         if (!state.ended) {
             state.floors.forEach(function (f, fi) {
-                if (f.running && state.phase === 'play') {
+                if (f.running && state.phase === 'play' && !f.timerOff) {
                     f.acc = (f.acc || 0) + dt;
                     while (f.acc >= 1000 && f.timeLeft > 0) { f.acc -= 1000; f.timeLeft--; }
                     if (f.timeLeft === 0 && f.running) { f.running = false; f.timedOut = true; ui.timeUp[fi] = now + 3000; ui.lastDanger = -2; playFailureSound(); changed = true; }
@@ -975,8 +1082,12 @@
     function updateCountdownRibbon() {
         updateRocketShake();
         var rb = $('ribbon');
-        if (state.phase === 'countdown' && !state.ended) { rb.hidden = false; rb.textContent = '🚀 LIFT-OFF IN ' + Math.max(0, Math.ceil((state.launchAt - Date.now()) / 1000)); }
-        else if (rb.textContent !== 'ALL IMPOSTORS DISCOVERED') { rb.textContent = 'ALL IMPOSTORS DISCOVERED'; rb.hidden = !allImpostorsGone(); }
+        if (state.phase === 'countdown' && !state.ended) {
+            rb.hidden = false; rb.classList.add('countdown');
+            rb.textContent = '🚀 LIFT-OFF IN ' + Math.max(0, Math.ceil((state.launchAt - Date.now()) / 1000));
+        } else {
+            rb.classList.remove('countdown'); rb.textContent = 'ALL IMPOSTORS DISCOVERED'; rb.hidden = !allImpostorsGone();
+        }
     }
     setInterval(tick, 250);
     setInterval(function () { if (saveDirty) save(); }, 2000);
@@ -997,9 +1108,14 @@
             var head = el('div', 'card-header');
             head.appendChild(el('span', 'card-title', 'P.' + f.page + ' Ex.' + f.exercise));
             var tc = el('div', 'timer-container');
-            var sb = el('button', 'timer-start-btn', f.running ? '⏸' : '▶'); sb.title = 'Start or pause the timer'; sb.onclick = function () { toggleTimer(fi); };
-            var tm = el('span', 'card-timer'); tm.id = 'floor-' + fi + '-timer'; tm.title = 'Click to edit the timer'; tm.onclick = function () { editTimer(fi); };
-            tc.appendChild(sb); tc.appendChild(tm); head.appendChild(tc);
+            if (!f.timerOff) {
+                var sb = el('button', 'timer-start-btn', f.running ? '⏸' : '▶'); sb.title = 'Start or pause the timer'; sb.onclick = function () { toggleTimer(fi); };
+                var tm = el('span', 'card-timer'); tm.id = 'floor-' + fi + '-timer'; tm.title = 'Click to edit the timer'; tm.onclick = function () { editTimer(fi); };
+                tc.appendChild(sb); tc.appendChild(tm);
+            }
+            var sw = el('button', 'timer-switch' + (f.timerOff ? ' off' : ''), f.timerOff ? '⏱ off' : '⏱'); sw.title = f.timerOff ? 'Turn the timer on' : 'Turn the timer off';
+            sw.onclick = function () { if (state.ended || state.phase !== 'play') return; act('timer ' + (f.timerOff ? 'on' : 'off'), function () { f.timerOff = !f.timerOff; if (f.timerOff) f.running = false; }); };
+            tc.appendChild(sw); head.appendChild(tc);
             var grid = el('div', 'nodes-grid'), green = 0, valid = 0;
             f.questions.forEach(function (q, qi) {
                 var cls = 'node';
@@ -1012,7 +1128,11 @@
             if (f.sabotaged) left.appendChild(el('span', 'repair-warning', '🚨 SABOTAGED!'));
             left.appendChild(el('span', '', green + ' / ' + valid));
             var right = el('div'); right.style.cssText = 'display:flex; gap:0.4rem; align-items:center;';
-            if (config.sabotageEnabled) { var ab = el('button', 'floor-sabotage-btn', '⚠️'); ab.title = 'Discreet sabotage'; ab.onclick = function () { armSabotage(fi); }; right.appendChild(ab); }
+            if (sabotageOn()) { var ab = el('button', 'floor-sabotage-btn', '⚠️'); ab.title = 'Discreet sabotage'; ab.onclick = function () { armSabotage(fi); }; right.appendChild(ab); }
+            if (isSimple() && !state.ended && state.phase === 'play' && floorErrors(f) > 0 && repairsLeft() > 0) {
+                var rb = el('button', 'repair-floor-btn', '🔧'); rb.title = 'Repair this floor'; rb.onclick = function () { act('repair round', function () { state.phase = 'repair'; state.repairFloor = fi; }); };
+                right.appendChild(rb);
+            }
             foot.appendChild(left); foot.appendChild(right);
             card.appendChild(head); card.appendChild(grid); card.appendChild(foot);
             if (f.sabotaged) { card.style.cursor = 'pointer'; card.onclick = function (e) { if (state.phase !== 'play' || state.ended || e.target.closest('.node, .timer-container, .floor-sabotage-btn')) return; act('reopen repair', function () { state.phase = 'repair'; state.repairFloor = fi; }); }; }
@@ -1041,13 +1161,13 @@
         });
     }
     function togglePopup(i) {
-        if (!state.rolesAssigned || ui.picking) return;
+        if ((!state.rolesAssigned && !isSimple()) || ui.picking) return;
         if (ui.popup === i) { ui.popup = -1; renderStudents(); return; }
         ui.popup = i;
         var s = state.students[i];
-        ui.firstView = !s.viewed;       // the first look shows the secret role and no buttons
+        ui.firstView = !isSimple() && !s.viewed;       // the first look shows the secret role and no buttons (classic game only)
         if (ui.popupTimer) { clearTimeout(ui.popupTimer); ui.popupTimer = null; }
-        if (!s.viewed) {
+        if (!s.viewed && !isSimple()) {
             s.viewed = true; save(); ui.popupStart = Date.now();
             ui.popupTimer = setTimeout(function () { if (ui.popup === i && ui.firstView) { ui.popup = -1; renderStudents(); } }, Math.max(1, Number(config.popupSeconds) || 2) * 1000);   // the first look closes by itself
         }
@@ -1067,8 +1187,7 @@
         var btns = el('div', 'popup-buttons');
         function add(text, c, fn) { var b = el('button', c, text); b.onclick = fn; btns.appendChild(b); }
         if (s.status === 'active') {
-            add('Ejected', 'danger', function () { setStatus(i, 'ejected'); });
-            add('Killed', 'danger', function () { setStatus(i, 'killed'); });
+            if (!isSimple()) { add('Ejected', 'danger', function () { setStatus(i, 'ejected'); }); add('Killed', 'danger', function () { setStatus(i, 'killed'); }); }
             add('Card', 'yellow', function () { addCardFor(i); });
         } else if (s.status === 'casualty') { if (!s.blocked) add('Healed', '', function () { restoreStudent(i); }); }
         else add('Undo', '', function () { restoreStudent(i); });
@@ -1079,6 +1198,9 @@
     function renderStatus() {
         var d = dangerPoints();
         $('danger-count').textContent = d;
+        $('danger-label').textContent = isSimple() ? 'DAMAGE' : 'DANGER'; $('danger-max').textContent = isSimple() ? allowedErrors() : LIMIT;
+        var rl = $('repairs-left'); rl.style.display = isSimple() ? '' : 'none'; rl.textContent = 'REPAIRS LEFT ' + repairsLeft();
+        $('btn-meeting').style.display = isSimple() ? 'none' : '';
         if ((ui.lastDanger >= 0 && d > ui.lastDanger) || ui.lastDanger === -2) { var ds = $('danger-status'); ds.classList.remove('bump'); void ds.offsetWidth; ds.classList.add('bump'); }
         ui.lastDanger = d;
         var valid = 0, green = 0;
@@ -1091,8 +1213,8 @@
         ui.lastPercent = pct;
         $('meeting-count').textContent = Math.max(0, meetingsAvailable());
         var mb = $('btn-meeting'); mb.disabled = !meetingAllowed(); mb.classList.toggle('flash', !!state.meetingFlash && meetingAllowed());
-        if (state.phase === 'countdown') updateCountdownRibbon(); else $('ribbon').hidden = !allImpostorsGone();
-        $('btn-assign').style.display = state.rolesAssigned ? 'none' : '';
+        updateCountdownRibbon();
+        $('btn-assign').style.display = (state.rolesAssigned && !isSimple()) ? 'none' : ''; $('btn-assign').textContent = isSimple() ? '🎲 Scan crew' : '🎲 Assign roles';
         $('btn-video').style.display = /^https?:\/\//i.test(config.videoUrl || '') ? '' : 'none';
         updateRocketShake();
         $('night-overlay').style.display = state.phase === 'night' && !state.ended ? 'flex' : 'none';
@@ -1136,7 +1258,7 @@
     ];
     function showTakeoffBanner() {
         var g = GRADES[state.grade] || GRADES[0], b = $('takeoff-banner');
-        b.className = 'takeoff-banner ' + g.cls; $('takeoff-title').textContent = g.title; $('takeoff-sub').textContent = g.sub; b.style.display = 'block';
+        b.className = 'takeoff-banner ' + g.cls; $('takeoff-title').textContent = g.title; $('takeoff-sub').textContent = isSimple() ? dangerPoints() + (dangerPoints() === 1 ? ' damage point' : ' damage points') : g.sub; b.style.display = 'block';
     }
     function runLaunch(instant) {
         var rocket = $('rocket'), g = GRADES[state.grade] || GRADES[0], core = $('plasma-core');
@@ -1284,6 +1406,11 @@
         R.B = { pairs: pairs, decoys: [] }; boardFill(R.B, 5, 8); R.stage = 'practice'; R.practiceCount = 0; R.msg = 'Practice: tap the same colour on both sides together'; R.msgBad = false;
         renderRepair();
     }
+    function clearOneError(f) {
+        var qs = f.questions, q = qs.filter(function (x) { return x.pen && x.s === 'incorrect'; })[0] || qs.filter(function (x) { return x.pen; })[0];
+        if (q) { q.pen = false; if (q.s === 'incorrect') q.s = 'normal'; return; }
+        if (f.timedOut) { f.timedOut = false; f.timeLeft = Math.max(f.timeLeft, 60); }
+    }
     function finishRepair(won) {
         if (!R || R.result) return;
         R.result = won ? 'good' : 'bad'; if (R.iv) { clearInterval(R.iv); R.iv = null; }
@@ -1292,7 +1419,8 @@
         setTimeout(function () {
             var fi = state.repairFloor, f = state.floors[fi];
             R = null; $('repair-overlay').style.display = 'none';
-            if (won) { if (f) { f.sabotaged = false; f.armed = false; } state.phase = 'play'; state.repairFloor = -1; afterChange(); }
+            if (isSimple()) { state.repairsUsed = (state.repairsUsed || 0) + 1; if (won && f) clearOneError(f); state.phase = 'play'; state.repairFloor = -1; afterChange(); }
+            else if (won) { if (f) { f.sabotaged = false; f.armed = false; } state.phase = 'play'; state.repairFloor = -1; afterChange(); }
             else { state.phase = 'play'; state.ended = 'impostorwin'; afterChange(true); }
         }, 2600);
     }
@@ -1327,6 +1455,11 @@
                 });
             }
             ov.appendChild(list);
+            var tr = el('div', 'repair-time');
+            var tm1 = el('button', 'btn', '−'), tm2 = el('button', 'btn', '+'), tv = el('span', 'repair-time-v', repairSecs() + ' s');
+            function chg(d) { config.repairSeconds = Math.max(10, Math.min(600, repairSecs() + d)); lsSet(LS_CONFIG, config); renderRepair(); }
+            tm1.onclick = function () { chg(-10); }; tm2.onclick = function () { chg(10); };
+            tr.appendChild(el('span', '', 'Time')); tr.appendChild(tm1); tr.appendChild(tv); tr.appendChild(tm2); ov.appendChild(tr);
             ov.appendChild(el('div', 'repair-msg', 'Match ' + REPAIR_TARGET + ' pairs in ' + repairSecs() + ' seconds. A wrong match costs ' + REPAIR_PENALTY + ' seconds.'));
             ov.appendChild(el('div', 'repair-board'));
         } else {
@@ -1411,7 +1544,8 @@
 
     /* ---------- Rules ---------- */
     var rulesEdits = lsGet(LS_RULES) || {}, rulesEditing = false;
-    function rulesHtml(tab) { return rulesEdits[tab] || RULES_DEFAULT[tab]; }
+    function rulesKey(tab) { return (isSimple() ? 's' : '') + tab; }
+    function rulesHtml(tab) { var k = rulesKey(tab); return rulesEdits[k] || RULES_DEFAULT[k]; }
     function fitRules() {
         var t = $('rules-text'), wrap = $('rules-wrap'), avail = wrap.clientHeight;
         var px = Math.min(parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.5, 30);
@@ -1430,14 +1564,14 @@
     $('rules-close').onclick = function () { if (rulesEditing) stopEditing(false); $('rules-overlay').style.display = 'none'; };
     function stopEditing(saveIt) {
         var t = $('rules-text');
-        if (saveIt) { rulesEdits[ui.rulesTab] = t.innerHTML; lsSet(LS_RULES, rulesEdits); }
+        if (saveIt) { rulesEdits[rulesKey(ui.rulesTab)] = t.innerHTML; lsSet(LS_RULES, rulesEdits); }
         rulesEditing = false; t.removeAttribute('contenteditable');
         $('rules-save').style.display = 'none'; $('rules-reset').style.display = 'none'; $('rules-edit').style.display = '';
         showRules();
     }
     $('rules-edit').onclick = function () { rulesEditing = true; $('rules-text').setAttribute('contenteditable', 'true'); $('rules-save').style.display = ''; $('rules-reset').style.display = ''; $('rules-edit').style.display = 'none'; $('rules-text').focus(); };
     $('rules-save').onclick = function () { stopEditing(true); };
-    $('rules-reset').onclick = function () { delete rulesEdits[ui.rulesTab]; lsSet(LS_RULES, rulesEdits); stopEditing(false); };
+    $('rules-reset').onclick = function () { delete rulesEdits[rulesKey(ui.rulesTab)]; lsSet(LS_RULES, rulesEdits); stopEditing(false); };
 
     /* Copying the rules: always black text on white, without the dark screen colours */
     function cleanCopyHtml(holder) {
@@ -1535,10 +1669,18 @@
         return '';
     }
     function normaliseExercises(ex) { return ex.map(function (e2) { return { page: Number(e2.page), exercise: Number(e2.exercise), questions: Math.floor(Number(e2.questions)), time: Number(e2.time) || defaultTime(Math.floor(Number(e2.questions))) }; }); }
+    function uid(p) { return p + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36); }
+    function todayStr() { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
     function selLesson() { return ui.lessons.filter(function (x) { return x.id === ui.lessonSel; })[0]; }
     function curLevel() { return ui.levels.filter(function (x) { return x.id === ui.levelSel; })[0]; }
-    function saveLessonDraft() { var L = selLesson(); if (L) L.pairsText = $('setting-pairs').value; var lv = curLevel(); if (lv) lv.lessonSel = ui.lessonSel; }
-    function loadLessonFields() { var L = selLesson(); $('setting-pairs').value = L ? L.pairsText : ''; }
+    function selWordList() { var L = selLesson(), lv = curLevel(); if (!L || !lv) return null; return lv.wordLists.filter(function (w) { return w.id === L.wordList; })[0] || lv.wordLists[0] || null; }
+    function saveLessonDraft() { var lv = curLevel(); if (lv) lv.lessonSel = ui.lessonSel; }
+    function loadLessonFields() {
+        var lv = curLevel(), sel = $('setting-wordlist'), w = selWordList(); sel.innerHTML = '';
+        if (lv) lv.wordLists.forEach(function (x) { var o = document.createElement('option'); o.value = x.id; o.textContent = x.name; sel.appendChild(o); });
+        if (w) sel.value = w.id; $('setting-pairs').value = w ? w.text : '';
+    }
+    function scheduleCommit() { if (!ui.settingsReady) return; clearTimeout(ui.commitTimer); ui.commitTimer = setTimeout(commitSettings, 250); }
     function renderLevels() {
         var box = $('level-chips'); box.innerHTML = '';
         ui.levels.forEach(function (lv) {
@@ -1547,16 +1689,18 @@
             box.appendChild(b);
         });
     }
-    function switchUILevel(id) {
-        if (id === ui.levelSel) return;
-        saveLessonDraft();
+    function selectLevelUI(id) {
         ui.levelSel = id; var lv = curLevel(); ui.lessons = lv.lessons;
         ui.lessonSel = (ui.lessons.filter(function (x) { return x.id === lv.lessonSel; })[0] || ui.lessons[0]).id;
-        ui.panelOpen = false; loadLessonFields(); renderLevels(); renderLessons();
+        ui.panelOpen = false; ui.ticked = {}; loadLessonFields(); renderLevels(); renderLessons();
     }
+    function switchUILevel(id) { if (id === ui.levelSel) return; saveLessonDraft(); selectLevelUI(id); }
     function renderLessons() {
         var chips = $('lesson-chips'); chips.innerHTML = '';
         ui.lessons.forEach(function (L) {
+            var wrap = el('span', 'chip-wrap');
+            var tk = document.createElement('input'); tk.type = 'checkbox'; tk.className = 'chip-tick'; tk.checked = !!ui.ticked[L.id]; tk.title = 'Tick the sessions you want to export';
+            tk.onchange = function () { ui.ticked[L.id] = tk.checked; };
             var b = el('button', 'lesson-chip' + (L.id === ui.lessonSel ? ' sel' : ''), L.name); b.type = 'button';
             b.title = L.exercises.length + ' exercises';
             b.onclick = function () {
@@ -1564,10 +1708,11 @@
                 if (L.id === ui.lessonSel) ui.panelOpen = !ui.panelOpen; else { ui.lessonSel = L.id; ui.panelOpen = true; }
                 loadLessonFields(); renderLessons();
             };
-            chips.appendChild(b);
+            wrap.appendChild(tk); wrap.appendChild(b); chips.appendChild(wrap);
         });
         var panel = $('lesson-panel'); panel.innerHTML = ''; var L = selLesson();
         panel.style.display = (L && ui.panelOpen) ? '' : 'none';
+        scheduleCommit();
         if (!L || !ui.panelOpen) { fitSettings(); return; }
         var head = el('div', 'lesson-head'); head.appendChild(el('b', '', L.name + ' · plays in the game'));
         var rn = el('button', 'btn', 'Rename'); rn.type = 'button'; rn.onclick = function () { var n = prompt('New name for this session:', L.name); if (n === null) return; n = n.trim(); if (!n) return; L.name = n; renderLessons(); };
@@ -1603,46 +1748,129 @@
     }
     function openLessons() {
         ui.levels = config.levels.map(function (lv) {
-            return { id: lv.id, name: lv.name, lessonSel: lv.activeLesson, lessons: lv.lessons.map(function (l) { return { id: l.id, name: l.name, exercises: clone(l.exercises), pairsText: l.repairPairs || '' }; }) };
+            return { id: lv.id, name: lv.name, lessonSel: lv.activeLesson,
+                wordLists: lv.wordLists.map(function (w) { return { id: w.id, name: w.name, text: w.text }; }),
+                lessons: lv.lessons.map(function (l) { return { id: l.id, name: l.name, exercises: clone(l.exercises), wordList: l.wordList }; }) };
         });
-        ui.levelSel = config.activeLevel; var lv = curLevel(); ui.lessons = lv.lessons;
+        ui.levelSel = config.activeLevel; ui.ticked = {}; var lv = curLevel(); ui.lessons = lv.lessons;
         ui.lessonSel = (ui.lessons.filter(function (x) { return x.id === lv.lessonSel; })[0] || ui.lessons[0]).id;
         ui.panelOpen = false; loadLessonFields(); renderLevels(); renderLessons(); $('lesson-msg').textContent = '';
     }
+    function newLevelObj(name) {
+        var sid = uid('l'), wid = uid('w');
+        return { id: uid('lv'), name: name, lessonSel: sid, wordLists: [{ id: wid, name: 'Words 1', text: DEFAULT_PAIRS }], lessons: [{ id: sid, name: 'Session 1', exercises: [{ page: 1, exercise: 1, questions: 5, time: defaultTime(5) }], wordList: wid }] };
+    }
     $('level-new').onclick = function () {
         var n = prompt('Name of the new level (for example B1+):', ''); if (n === null) return; n = n.trim(); if (!n) return;
-        saveLessonDraft();
-        var id = 'lv' + Date.now(), sid = 'l' + Date.now();
-        ui.levels.push({ id: id, name: n, lessonSel: sid, lessons: [{ id: sid, name: 'Session 1', exercises: [{ page: 1, exercise: 1, questions: 5, time: defaultTime(5) }], pairsText: DEFAULT_PAIRS }] });
-        ui.levelSel = null; switchUILevel(id);
+        saveLessonDraft(); var lv = newLevelObj(n); ui.levels.push(lv); selectLevelUI(lv.id);
     };
     $('level-rename').onclick = function () {
-        var lv = curLevel(); var n = prompt('New name for this level:', lv.name); if (n === null) return; n = n.trim(); if (!n) return; lv.name = n; renderLevels();
+        var lv = curLevel(); var n = prompt('New name for this level:', lv.name); if (n === null) return; n = n.trim(); if (!n) return; lv.name = n; renderLevels(); scheduleCommit();
     };
     $('level-delete').onclick = function () {
         if (ui.levels.length < 2) { $('settings-error').textContent = 'You need at least one level.'; return; }
         var lv = curLevel(); if (!confirm('Delete the level "' + lv.name + '" with all its sessions?')) return;
-        ui.levels = ui.levels.filter(function (x) { return x.id !== lv.id; }); ui.levelSel = null; switchUILevel(ui.levels[0].id);
+        ui.levels = ui.levels.filter(function (x) { return x.id !== lv.id; }); selectLevelUI(ui.levels[0].id);
     };
     $('lesson-new').onclick = function () {
         var n = prompt('Name of the new session:', 'Session ' + (ui.lessons.length + 1)); if (n === null) return; n = n.trim(); if (!n) return;
-        saveLessonDraft(); var id = 'l' + Date.now();
-        ui.lessons.push({ id: id, name: n, exercises: [{ page: 1, exercise: 1, questions: 5, time: defaultTime(5) }], pairsText: DEFAULT_PAIRS });
+        saveLessonDraft(); var lv = curLevel(), id = uid('l');
+        ui.lessons.push({ id: id, name: n, exercises: [{ page: 1, exercise: 1, questions: 5, time: defaultTime(5) }], wordList: lv.wordLists[0].id });
         ui.lessonSel = id; ui.panelOpen = true; loadLessonFields(); renderLessons();
     };
+    $('setting-pairs').addEventListener('input', function () { var w = selWordList(); if (w) w.text = $('setting-pairs').value; });
+    $('setting-wordlist').onchange = function () { var L = selLesson(); if (L) L.wordList = this.value; loadLessonFields(); scheduleCommit(); };
+    $('wl-new').onclick = function () {
+        var n = prompt('Name of the new word list:', 'Words ' + (curLevel().wordLists.length + 1)); if (n === null) return; n = n.trim(); if (!n) return;
+        var w = { id: uid('w'), name: n, text: DEFAULT_PAIRS }; curLevel().wordLists.push(w); selLesson().wordList = w.id; loadLessonFields(); scheduleCommit();
+    };
+    $('wl-rename').onclick = function () {
+        var w = selWordList(); if (!w) return; var n = prompt('New name for this word list:', w.name); if (n === null) return; n = n.trim(); if (!n) return; w.name = n; loadLessonFields(); scheduleCommit();
+    };
+    $('wl-delete').onclick = function () {
+        var lv = curLevel(), w = selWordList(); if (!w) return;
+        if (lv.wordLists.length < 2) { $('settings-error').textContent = 'You need at least one word list.'; return; }
+        if (!confirm('Delete the word list "' + w.name + '"?')) return;
+        lv.wordLists = lv.wordLists.filter(function (x) { return x.id !== w.id; });
+        lv.lessons.forEach(function (l) { if (l.wordList === w.id) l.wordList = lv.wordLists[0].id; });
+        loadLessonFields(); scheduleCommit();
+    };
+
+    /* ----- export and import ----- */
+    function downloadText(name, text) {
+        var blob = new Blob([text], { type: 'application/json' }), a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); if (a.parentNode) a.parentNode.removeChild(a); }, 500);
+    }
+    function levelOut(lv, sessions) {
+        var used = {}; sessions.forEach(function (L) { used[L.wordList] = true; });
+        var wls = lv.wordLists.filter(function (w) { return used[w.id]; });
+        return { name: lv.name, wordLists: wls.map(function (w) { return { name: w.name, text: w.text }; }),
+            sessions: sessions.map(function (L) { var w = lv.wordLists.filter(function (x) { return x.id === L.wordList; })[0]; return { name: L.name, exercises: normaliseExercises(L.exercises), wordList: w ? w.name : '' }; }) };
+    }
+    $('lesson-export').onclick = function () {
+        saveLessonDraft();
+        var ticked = ui.lessons.filter(function (L) { return ui.ticked[L.id]; });
+        var payload = { app: 'rocket-setup', version: 1, exportedAt: new Date().toISOString(), levels: [] };
+        if (ticked.length) payload.levels.push(levelOut(curLevel(), ticked)); else ui.levels.forEach(function (lv) { payload.levels.push(levelOut(lv, lv.lessons)); });
+        downloadText('rocket-' + (ticked.length ? 'sessions' : 'setup') + '-' + todayStr() + '.json', JSON.stringify(payload, null, 1));
+        var msg = $('lesson-msg'); msg.style.color = '#55efc4'; msg.textContent = '✔ Exported ' + (ticked.length ? ticked.length + (ticked.length === 1 ? ' session' : ' sessions') : 'everything');
+    };
+    function uniqueName(name, taken) {
+        var n = name, low = function (x) { return String(x).toLowerCase(); };
+        function used(v) { return taken.some(function (t) { return low(t) === low(v); }); }
+        if (!used(n)) return n; n = name + ' ' + todayStr(); var k = 2; while (used(n)) { n = name + ' ' + todayStr() + ' (' + k + ')'; k++; } return n;
+    }
+    function addSessionsToLevel(lv, sessions, wordListMap) {
+        var added = [];
+        sessions.forEach(function (S) {
+            var name = uniqueName(S.name, lv.lessons.map(function (l) { return l.name; }));
+            var wid = (S.wordList && wordListMap[S.wordList]) || lv.wordLists[0].id;
+            var L = { id: uid('l'), name: name, exercises: S.exercises, wordList: wid }; lv.lessons.push(L); added.push(L);
+        });
+        return added;
+    }
+    function importSetupObject(obj) {
+        var total = 0, firstLevel = null, firstSession = null;
+        (obj.levels || []).forEach(function (fl) {
+            if (!fl || typeof fl.name !== 'string' || !Array.isArray(fl.sessions)) return;
+            var lv = ui.levels.filter(function (x) { return x.name.toLowerCase() === fl.name.toLowerCase(); })[0];
+            if (!lv) { lv = newLevelObj(fl.name); lv.lessons = []; ui.levels.push(lv); }
+            var map = {};
+            (fl.wordLists || []).forEach(function (w) {
+                if (!w || typeof w.name !== 'string') return;
+                var ex = lv.wordLists.filter(function (x) { return x.name.toLowerCase() === w.name.toLowerCase(); })[0];
+                if (ex && ex.text === w.text) { map[w.name] = ex.id; return; }
+                var nm = ex ? uniqueName(w.name, lv.wordLists.map(function (x) { return x.name; })) : w.name;
+                var nw = { id: uid('w'), name: nm, text: String(w.text || '') }; lv.wordLists.push(nw); map[w.name] = nw.id;
+            });
+            var sessions = fl.sessions.filter(function (S) { return S && typeof S.name === 'string' && !checkExercises(S.exercises); }).map(function (S) { return { name: S.name, exercises: normaliseExercises(S.exercises), wordList: S.wordList }; });
+            var added = addSessionsToLevel(lv, sessions, map); total += added.length;
+            if (added.length && !firstLevel) { firstLevel = lv; firstSession = added[0]; }
+            if (!lv.lessonSel && lv.lessons.length) lv.lessonSel = lv.lessons[0].id;
+        });
+        return { total: total, level: firstLevel, session: firstSession };
+    }
     $('lesson-import').onclick = function () { $('file-lessons').click(); };
     $('file-lessons').onchange = function () {
         var f = this.files && this.files[0]; this.value = ''; if (!f) return;
         var rd = new FileReader();
         rd.onload = function () {
-            var res = parseLessonsText(String(rd.result || '')), msg = $('lesson-msg');
-            if (!res.lessons.length) { msg.style.color = '#ff7675'; msg.textContent = 'No exercises found in that file.'; return; }
+            var text = String(rd.result || ''), msg = $('lesson-msg'), obj = null, res = null, total = 0, bad = 0;
             saveLessonDraft();
-            var oldPairs = {}; ui.lessons.forEach(function (x) { oldPairs[x.name.toLowerCase()] = x.pairsText; });
-            ui.lessons.splice(0, ui.lessons.length);
-            res.lessons.forEach(function (n, k) { ui.lessons.push({ id: 'l' + Date.now() + '_' + k, name: n.name, exercises: n.exercises, pairsText: oldPairs[n.name.toLowerCase()] || DEFAULT_PAIRS }); });
-            ui.lessonSel = ui.lessons[0].id; ui.panelOpen = false; loadLessonFields(); renderLessons();
-            msg.style.color = '#55efc4'; msg.textContent = '✔ Level "' + curLevel().name + '" now has ' + res.lessons.length + (res.lessons.length === 1 ? ' session' : ' sessions') + (res.bad ? ' (' + res.bad + ' lines skipped)' : '') + '. Press Save & Restart to keep them.';
+            if (/^\s*\{/.test(text)) { try { obj = JSON.parse(text); } catch (e) { obj = null; } }
+            if (obj && obj.app === 'rocket-setup') {
+                res = importSetupObject(obj); total = res.total;
+                if (res.level) { ui.levelSel = res.level.id; res.level.lessonSel = res.session.id; selectLevelUI(res.level.id); }
+            } else {
+                var parsed = parseLessonsText(text); bad = parsed.bad;
+                var lv = curLevel();
+                var added = addSessionsToLevel(lv, parsed.lessons.map(function (n) { return { name: n.name, exercises: n.exercises }; }), {});
+                total = added.length; if (added.length) { lv.lessonSel = added[0].id; selectLevelUI(lv.id); }
+            }
+            if (!total) { msg.style.color = '#ff7675'; msg.textContent = 'No exercises found in that file.'; return; }
+            msg.style.color = '#55efc4'; msg.textContent = '✔ Added ' + total + (total === 1 ? ' session' : ' sessions') + (bad ? ' (' + bad + ' lines skipped)' : '');
+            scheduleCommit();
         };
         rd.readAsText(f);
     };
@@ -1656,20 +1884,27 @@
     }
     $('settings-overlay').addEventListener('toggle', function () { fitSettings(); }, true);
     window.addEventListener('resize', function () { fitSettings(); });
+    function floorSig(c) { return JSON.stringify([c.mode, c.students, c.impostorCount, c.noImpostor, c.activeLevel, c.activeLesson, c.exercises]); }
     $('btn-settings').onclick = function () {
+        ui.settingsReady = false;
         $('setting-rocket-label').value = config.rocketLabel;
         $('setting-students').value = (config.students || []).join(', ');
         $('setting-impostor-count').value = config.impostorCount || 1;
+        $('setting-mode').value = config.mode === 'simple' ? 'simple' : 'classic';
+        $('setting-errors-per').value = config.errorsPerQ || 6; $('setting-repair-rounds').value = (config.repairRounds === undefined ? 3 : config.repairRounds);
         $('noimp-list').innerHTML = ''; buildNoImp();
         $('setting-weight').value = config.unpickedWeight || 3;
         $('setting-takeoff-sound').value = config.takeoffSound || ''; $('setting-damage-sound').value = config.damageSound || ''; $('setting-video').value = config.videoUrl || '';
         $('setting-sabotage-enabled').checked = !!config.sabotageEnabled; $('setting-sabotage-delay').value = config.sabotageDelay;
         $('setting-delegates').value = config.delegateMode || 'nominate'; $('setting-window').value = config.matchWindowMs || 600; $('setting-twofingers').checked = config.twoFingers !== false;
         $('version-tag').textContent = VERSION; $('setting-takeoff-delay').value = (config.takeoffDelay === undefined ? 12 : config.takeoffDelay); $('setting-meeting').value = meetingSecs(); $('setting-repair').value = repairSecs();
+        fillVoiceSelect();
         openLessons(); $('setting-popup').value = config.popupSeconds || 2;
         $('settings-error').textContent = ''; $('reveal-box').textContent = ''; refreshUndoBtn();
         $('setting-shake-delay').value = (config.shakeDelay === undefined ? 5 : config.shakeDelay);
+        ui.sigAtOpen = floorSig(config);
         $('settings-overlay').style.display = 'flex'; fitSettings();
+        ui.settingsReady = true;
     };
     (function () {
         var b = $('btn-reveal');
@@ -1679,39 +1914,55 @@
         ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { b.addEventListener(ev, hide); });
         b.addEventListener('contextmenu', function (e) { e.preventDefault(); });
     })();
-    function closeSettings() { $('settings-overlay').style.display = 'none'; document.documentElement.style.fontSize = ''; $('reveal-box').textContent = ''; }
-    $('settings-close-top').onclick = closeSettings; $('settings-cancel').onclick = closeSettings;
+    function closeSettings() {
+        clearTimeout(ui.commitTimer);
+        if (ui.settingsReady && !commitSettings()) return;        // a box has a wrong value: stay open so it can be fixed
+        ui.settingsReady = false;
+        $('settings-overlay').style.display = 'none'; document.documentElement.style.fontSize = ''; $('reveal-box').textContent = '';
+        if (ui.sigAtOpen && floorSig(config) !== ui.sigAtOpen) restartGame();
+        ui.sigAtOpen = '';
+    }
+    $('settings-close-top').onclick = closeSettings;
+    $('settings-overlay').addEventListener('input', scheduleCommit);
+    $('settings-overlay').addEventListener('change', scheduleCommit);
     $('btn-undo').onclick = function () { undo(); refreshUndoBtn(); };
-    $('settings-save').onclick = function () {
+    function collectSettings() {
         var err = $('settings-error'); err.textContent = ''; var next = {};
+        Object.keys(config).forEach(function (k) { next[k] = config[k]; });
         next.rocketLabel = $('setting-rocket-label').value.trim() || 'P19';
         next.students = $('setting-students').value.split(',').map(function (s) { return s.trim(); }).filter(function (s) { return s.length > 0; });
-        if (next.students.length < 1) { err.textContent = 'Enter at least one student name.'; return; }
-        if (next.students.length > 9) { err.textContent = 'Use 9 names at most.'; return; }
-        var seen = {}; for (var i = 0; i < next.students.length; i++) { var key = next.students[i].toLowerCase(); if (seen[key]) { err.textContent = 'Each student name must be different: ' + next.students[i]; return; } seen[key] = true; }
+        if (next.students.length < 1) { err.textContent = 'Enter at least one student name.'; return null; }
+        if (next.students.length > 9) { err.textContent = 'Use 9 names at most.'; return null; }
         var imp = parseInt($('setting-impostor-count').value, 10); if (isNaN(imp)) imp = 1;
         next.impostorCount = Math.max(1, Math.min(2, imp)); if (next.students.length < 2) next.impostorCount = 1;
+        next.mode = $('setting-mode').value === 'simple' ? 'simple' : 'classic';
+        var ep = parseInt($('setting-errors-per').value, 10); next.errorsPerQ = isNaN(ep) ? 6 : Math.max(1, Math.min(50, ep));
+        var rr = parseInt($('setting-repair-rounds').value, 10); next.repairRounds = isNaN(rr) ? 3 : Math.max(0, Math.min(20, rr));
+        next.voice = $('setting-voice').value || '';
         next.noImpostor = Array.prototype.filter.call($('noimp-list').querySelectorAll('input'), function (c) { return c.checked; }).map(function (c) { return c.value; }).filter(function (n) { return next.students.indexOf(n) > -1; });
         var wt = parseInt($('setting-weight').value, 10); next.unpickedWeight = isNaN(wt) ? 3 : Math.max(1, Math.min(10, wt));
         next.takeoffSound = $('setting-takeoff-sound').value.trim(); next.damageSound = $('setting-damage-sound').value.trim();
         next.videoUrl = $('setting-video').value.trim();
-        if (next.videoUrl && !/^https?:\/\//i.test(next.videoUrl)) { err.textContent = 'The video address must start with http:// or https://'; return; }
+        if (next.videoUrl && !/^https?:\/\//i.test(next.videoUrl)) { err.textContent = 'The video address must start with http:// or https://'; return null; }
         next.sabotageEnabled = $('setting-sabotage-enabled').checked;
         var sd = parseInt($('setting-sabotage-delay').value, 10); next.sabotageDelay = isNaN(sd) || sd < 0 ? 20 : sd;
         next.delegateMode = $('setting-delegates').value === 'random' ? 'random' : 'nominate';
         var mw = parseInt($('setting-window').value, 10); next.twoFingers = $('setting-twofingers').checked; next.matchWindowMs = isNaN(mw) ? 600 : Math.max(200, Math.min(2000, mw));
-        if ($('lesson-panel').querySelector('.bad')) { err.textContent = 'Fix the red boxes first: 1 to 12 questions and a time in seconds.'; return; }
+        if ($('lesson-panel').querySelector('.bad')) { err.textContent = 'Fix the red boxes first: 1 to 12 questions and a time in seconds.'; return null; }
         saveLessonDraft();
         var levelsOut = [];
         for (var vi = 0; vi < ui.levels.length; vi++) {
             var LV = ui.levels[vi], lessonsOut = [];
+            var wordListsOut = LV.wordLists.map(function (w) { return { id: w.id, name: w.name, text: w.text }; });
             for (var li = 0; li < LV.lessons.length; li++) {
                 var L = LV.lessons[li], bad = checkExercises(L.exercises);
-                if (bad) { err.textContent = (ui.levels.length > 1 ? LV.name + ' · ' : '') + 'Session "' + L.name + '": ' + bad; return; }
-                lessonsOut.push({ id: L.id, name: L.name, exercises: normaliseExercises(L.exercises), repairPairs: L.pairsText });
+                if (bad) { err.textContent = (ui.levels.length > 1 ? LV.name + ' · ' : '') + 'Session "' + L.name + '": ' + bad; return null; }
+                var wl = wordListsOut.filter(function (w) { return w.id === L.wordList; })[0] || wordListsOut[0];
+                lessonsOut.push({ id: L.id, name: L.name, exercises: normaliseExercises(L.exercises), wordList: wl.id, repairPairs: wl.text });
             }
+            if (!lessonsOut.length) { err.textContent = 'Level "' + LV.name + '" needs at least one session.'; return null; }
             var pick = lessonsOut.filter(function (x) { return x.id === LV.lessonSel; })[0] || lessonsOut[0];
-            levelsOut.push({ id: LV.id, name: LV.name, lessons: lessonsOut, activeLesson: pick.id });
+            levelsOut.push({ id: LV.id, name: LV.name, lessons: lessonsOut, wordLists: wordListsOut, activeLesson: pick.id });
         }
         var activeLv = levelsOut.filter(function (x) { return x.id === ui.levelSel; })[0] || levelsOut[0];
         var chosen = activeLv.lessons.filter(function (x) { return x.id === activeLv.activeLesson; })[0];
@@ -1722,9 +1973,13 @@
         var ms = parseInt($('setting-meeting').value, 10); next.meetingSeconds = isNaN(ms) ? 30 : Math.max(5, Math.min(600, ms));
         var rs = parseInt($('setting-repair').value, 10); next.repairSeconds = isNaN(rs) ? 60 : Math.max(10, Math.min(600, rs));
         var pu = parseInt($('setting-popup').value, 10); next.popupSeconds = isNaN(pu) ? 2 : Math.max(1, Math.min(10, pu));
-        config = next; lsSet(LS_CONFIG, config);
-        restartGame(); closeSettings();
-    };
+        return next;
+    }
+    function commitSettings() {
+        if (!ui.settingsReady) return true;
+        var next = collectSettings(); if (!next) return false;
+        config = next; lsSet(LS_CONFIG, config); render(); return true;
+    }
     function restartGame() {
         state = newState(); undoStack = []; R = null; $('repair-overlay').style.display = 'none';
         ui.popup = -1; ui.cycling = -1; ui.picking = false; ui.fx = null; ui.lastPercent = -1; ui.lastDanger = -1; ui.timeUp = {};
@@ -1809,13 +2064,13 @@
                     var out = [];
                     (arr || []).forEach(function (l, k) {
                         if (!l || typeof l.name !== 'string' || checkExercises(l.exercises)) return;
-                        out.push({ id: typeof l.id === 'string' && l.id ? l.id : 'l' + Date.now() + k, name: l.name, exercises: normaliseExercises(l.exercises), repairPairs: typeof l.repairPairs === 'string' ? l.repairPairs : DEFAULT_PAIRS });
+                        out.push({ id: typeof l.id === 'string' && l.id ? l.id : 'l' + Date.now() + k, name: l.name, exercises: normaliseExercises(l.exercises), wordList: l.wordList, repairPairs: typeof l.repairPairs === 'string' ? l.repairPairs : DEFAULT_PAIRS });
                     });
                     return out;
                 }
                 if (Array.isArray(data.levels)) {
                     var lvOut = [];
-                    data.levels.forEach(function (lv, k) { var ls = cleanLessons(lv && lv.lessons); if (ls.length && lv && typeof lv.name === 'string') lvOut.push({ id: typeof lv.id === 'string' && lv.id ? lv.id : 'lv' + Date.now() + k, name: lv.name, lessons: ls, activeLesson: lv.activeLesson }); });
+                    data.levels.forEach(function (lv, k) { var ls = cleanLessons(lv && lv.lessons); if (ls.length && lv && typeof lv.name === 'string') lvOut.push({ id: typeof lv.id === 'string' && lv.id ? lv.id : 'lv' + Date.now() + k, name: lv.name, lessons: ls, wordLists: Array.isArray(lv.wordLists) ? lv.wordLists : undefined, activeLesson: lv.activeLesson }); });
                     if (!lvOut.length) return;
                     config.levels = lvOut; config.activeLevel = data.activeLevel;
                 } else {
