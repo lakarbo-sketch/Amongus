@@ -294,7 +294,7 @@
     /* Decoy second screen: every line stays inside the screen */
     .warning { overflow: hidden; }
     .warning.level2 h2 { font-size: clamp(24px, 4vw, 64px); }
-    .warning.level2 .kill { white-space: nowrap; font-size: clamp(40px, 9.4vw, 280px); }
+    .warning.level2 .kill { white-space: nowrap; font-size: clamp(28px, 5.6vw, 200px); }
     .settings-body { align-content: stretch; grid-template-rows: minmax(0, 1fr); }
     details.sec { background: #0f1626; border: 1px solid #22304f; border-radius: 10px; padding: 0.45rem 0.8rem; }
     details.sec > summary { cursor: pointer; font-weight: bold; color: #00ffcc; font-size: 1rem; padding: 0.2rem 0; user-select: none; }
@@ -539,7 +539,7 @@
 </div>
 <div class="warning" id="warning" role="alert">
     <h2 id="warning-title"></h2>
-    <p class="kill" id="warning-kill">KILL KILL KILL</p>
+    <p class="kill" id="warning-kill">EJECTED EJECTED EJECTED</p>
 </div>
 
 <script>
@@ -549,7 +549,7 @@
     /* ---------- Constants and defaults ---------- */
     var LS_CONFIG = 'rlm-config-v2', LS_STATE = 'rlm-state-v2', LS_RULES = 'rlm-rules-v2';
     var LIMIT = 4;
-    var VERSION = 'Version 9 · 8 Oct 2026';
+    var VERSION = 'Version 10 · 8 Oct 2026';
     var ROLES = [
         { icon: '👨‍✈️', name: 'Captain' }, { icon: '🧑‍🚀', name: 'Pilot' }, { icon: '🔧', name: 'Engineer' },
         { icon: '🩺', name: 'Doctor' }, { icon: '🧭', name: 'Navigator' }, { icon: '🔬', name: 'Scientist' },
@@ -721,7 +721,9 @@
 
     function newState() {
         var names = (config.students || []).slice(0, 9);
-        var roles = shuffle(ROLES.slice());
+        var captain = ROLES.filter(function (r) { return r.name === 'Captain'; })[0];
+        var roles = shuffle(ROLES.filter(function (r) { return r.name !== 'Captain'; })).slice(0, Math.max(0, names.length - 1));
+        roles.splice(Math.floor(Math.random() * (roles.length + 1)), 0, captain);
         var numImp = config.mode === 'simple' ? 0 : Math.max(0, Math.min(Math.max(1, Math.min(2, config.impostorCount || 1)), names.length));
         var allowed = names.map(function (_, i) { return i; }).filter(function (i) { return (config.noImpostor || []).indexOf(names[i]) === -1; });
         if (allowed.length < numImp) allowed = names.map(function (_, i) { return i; });
@@ -1202,7 +1204,7 @@
             if (ui.cycling === i) cls += ' cycling'; else if (!ui.picking && state.lastPicked === i) cls += ' selected-winner';
             var pill = el('div', cls); pill.appendChild(document.createTextNode(s.name));
             if (s.status !== 'active') {
-                pill.appendChild(el('span', 'pill-tag', STATUS_ICON[s.status] + ' ' + STATUS_LABEL[s.status] + (s.status === 'ejected' ? ' · ' + (s.impostor ? 'Impostor' : 'Crewmate') : '')));
+                pill.appendChild(el('span', 'pill-tag', STATUS_ICON[s.status] + ' ' + STATUS_LABEL[s.status] + (s.status === 'ejected' && !isSimple() ? ' · ' + (s.impostor ? 'Impostor' : 'Crewmate') : '')));
             }
             pill.onclick = function (e) { e.stopPropagation(); togglePopup(i); };
             wrap.appendChild(pill);
@@ -1234,7 +1236,7 @@
             return pop;
         }
         if (s.cards > 0) pop.appendChild(el('div', 'cards-line', s.cards >= 3 ? '🟥' : (s.cards === 2 ? '🟨🟨' : '🟨')));
-        if (s.status !== 'active') pop.appendChild(el('div', 'status-line', STATUS_LABEL[s.status] + (s.status === 'ejected' ? ' (was ' + (s.impostor ? 'an impostor' : 'a crewmate') + ')' : '')));
+        if (s.status !== 'active') pop.appendChild(el('div', 'status-line', STATUS_LABEL[s.status] + (s.status === 'ejected' && !isSimple() ? ' (was ' + (s.impostor ? 'an impostor' : 'a crewmate') + ')' : '')));
         var btns = el('div', 'popup-buttons');
         function add(text, c, fn) { var b = el('button', c, text); b.onclick = fn; btns.appendChild(b); }
         if (s.status === 'active') {
@@ -1583,7 +1585,7 @@
             w.style.display = 'none'; ui.warningActive = false;
             if (level >= 2) {
                 var s = state.students[state.lastPicked];
-                if (s && s.status === 'active') act('decoy kill', function () { s.status = 'killed'; state.crewDirty = true; });
+                if (s && s.status === 'active') act('decoy eject', function () { s.status = 'ejected'; state.crewDirty = true; });
             }
         }, WARNING_MS);
     }
@@ -1691,31 +1693,6 @@
         var n = parseInt(v, 10); return isNaN(n) ? NaN : n;
     }
     function defaultTime(q) { return Math.max(10, Math.round(q * 22 / 10) * 10); }
-    function parseLessonsText(text) {
-        var lessons = [], cur = null, bad = 0;
-        function lesson(name) { cur = { name: name, exercises: [] }; lessons.push(cur); return cur; }
-        String(text || '').split(/\r?\n/).forEach(function (raw) {
-            var line = raw.trim(); if (!line || /^skipped\b/i.test(line)) return;
-            if (/^(session|lesson)\b/i.test(line)) {
-                var nm = line.replace(/[:\s]+$/, '').replace(/\s+/g, ' ');
-                if (nm === nm.toUpperCase()) nm = nm.charAt(0) + nm.slice(1).toLowerCase();
-                lesson(nm); return;
-            }
-            var ex = null;
-            if (/"page"\s*:/.test(line)) {
-                var om = line.match(/\{[^}]*\}/);
-                if (om) { try { var o = JSON.parse(om[0]); ex = { page: Number(o.page), exercise: Number(o.exercise), questions: Math.floor(Number(o.questions)), time: o.time === undefined ? NaN : parseTimeText(o.time) }; } catch (e) { ex = null; } }
-            } else {
-                var nums = line.match(/\d+(?::\d{2})?/g);
-                if (nums && nums.length >= 3) ex = { page: parseInt(nums[0], 10), exercise: parseInt(nums[1], 10), questions: parseInt(nums[2], 10), time: nums.length >= 4 ? parseTimeText(nums[3]) : NaN };
-            }
-            if (!ex) return;
-            if (isNaN(ex.page) || isNaN(ex.exercise) || !(ex.questions >= 1 && ex.questions <= 12)) { bad++; return; }
-            if (isNaN(ex.time) || ex.time <= 0) ex.time = defaultTime(ex.questions);
-            (cur || lesson('Imported')).exercises.push(ex);
-        });
-        return { lessons: lessons.filter(function (l) { return l.exercises.length; }), bad: bad };
-    }
     function checkExercises(ex) {
         if (!Array.isArray(ex) || ex.length < 1) return 'it needs at least one exercise.';
         for (var k = 0; k < ex.length; k++) {
@@ -1734,8 +1711,21 @@
     function saveLessonDraft() { var lv = curLevel(); if (lv) lv.lessonSel = ui.lessonSel; }
     function loadLessonFields() {
         var lv = curLevel(), sel = $('setting-wordlist'), w = selWordList(); sel.innerHTML = '';
-        if (lv) lv.wordLists.forEach(function (x) { var o = document.createElement('option'); o.value = x.id; o.textContent = x.name; sel.appendChild(o); });
-        if (w) sel.value = w.id; $('setting-pairs').value = w ? w.text : '';
+        ui.levels.forEach(function (x) {
+            var g = document.createElement('optgroup'); g.label = x.name + (x.id === ui.levelSel ? '' : ' (copies into this level)');
+            x.wordLists.forEach(function (y) { var o = document.createElement('option'); o.value = x.id + '|' + y.id; o.textContent = y.name; g.appendChild(o); });
+            sel.appendChild(g);
+        });
+        if (w && lv) sel.value = lv.id + '|' + w.id; $('setting-pairs').value = w ? w.text : '';
+    }
+    function pickWordList(value) {
+        var L = selLesson(), lv = curLevel(); if (!L || !lv) return;
+        var parts = String(value).split('|'), from = ui.levels.filter(function (x) { return x.id === parts[0]; })[0], w = from && from.wordLists.filter(function (y) { return y.id === parts[1]; })[0];
+        if (!w) return;
+        if (from.id === lv.id) { L.wordList = w.id; return; }
+        var same = lv.wordLists.filter(function (y) { return y.name === w.name && y.text === w.text; })[0];
+        if (!same) { var nm = uniqueName(w.name, lv.wordLists.map(function (y) { return y.name; }).concat([])); same = { id: uid('w'), name: nm === w.name ? w.name : w.name + ' (from ' + from.name + ')', text: w.text }; lv.wordLists.push(same); }
+        L.wordList = same.id;
     }
     function scheduleCommit() { if (!ui.settingsReady) return; clearTimeout(ui.commitTimer); ui.commitTimer = setTimeout(commitSettings, 250); }
     function renderLevels() {
@@ -1857,7 +1847,7 @@
         ui.lessonSel = id; loadLessonFields(); renderLessons();
     };
     $('setting-pairs').addEventListener('input', function () { var w = selWordList(); if (w) w.text = $('setting-pairs').value; });
-    $('setting-wordlist').onchange = function () { var L = selLesson(); if (L) L.wordList = this.value; loadLessonFields(); scheduleCommit(); };
+    $('setting-wordlist').onchange = function () { pickWordList(this.value); loadLessonFields(); scheduleCommit(); };
     $('wl-new').onclick = function () {
         var n = prompt('Name of the new word list:', 'Words ' + (curLevel().wordLists.length + 1)); if (n === null) return; n = n.trim(); if (!n) return;
         var w = { id: uid('w'), name: n, text: DEFAULT_PAIRS }; curLevel().wordLists.push(w); selLesson().wordList = w.id; loadLessonFields(); scheduleCommit();
@@ -1886,14 +1876,65 @@
         return { name: lv.name, wordLists: wls.map(function (w) { return { name: w.name, text: w.text }; }),
             sessions: sessions.map(function (L) { var w = lv.wordLists.filter(function (x) { return x.id === L.wordList; })[0]; return { name: L.name, exercises: normaliseExercises(L.exercises), wordList: w ? w.name : '' }; }) };
     }
+    function setupToText(levels, title) {
+        var out = ['ROCKET SETUP · ' + title + ' · exported ' + todayStr(), ''];
+        levels.forEach(function (lv) {
+            out.push('LEVEL ' + lv.name, '');
+            lv.wordLists.forEach(function (w) { var n = String(w.text || '').split('\n').filter(function (x) { return x.trim(); }); out.push('=== ' + w.name + ' (' + n.length + ' pairs) ===', n.join('\n'), ''); });
+            lv.sessions.forEach(function (S) {
+                out.push('SESSION: ' + S.name + (S.wordList ? ' (word list: ' + S.wordList + ')' : ''));
+                S.exercises.forEach(function (e) { out.push('p. ' + e.page + ' ex. ' + e.exercise + ' - ' + e.questions + ' questions - ' + e.time + ' seconds'); });
+                out.push('');
+            });
+        });
+        return out.join('\n');
+    }
     $('lesson-export').onclick = function () {
         saveLessonDraft();
-        var ticked = ui.lessons.filter(function (L) { return ui.ticked[L.id]; });
-        var payload = { app: 'rocket-setup', version: 1, exportedAt: new Date().toISOString(), levels: [] };
-        if (ticked.length) payload.levels.push(levelOut(curLevel(), ticked)); else ui.levels.forEach(function (lv) { payload.levels.push(levelOut(lv, lv.lessons)); });
-        downloadText('rocket-' + (ticked.length ? 'sessions' : 'setup') + '-' + todayStr() + '.json', JSON.stringify(payload, null, 1));
-        var msg = $('lesson-msg'); msg.style.color = '#55efc4'; msg.textContent = '✔ Exported ' + (ticked.length ? ticked.length + (ticked.length === 1 ? ' session' : ' sessions') : 'everything');
+        var ticked = ui.lessons.filter(function (L) { return ui.ticked[L.id]; }), levs = [];
+        if (ticked.length) levs.push(levelOut(curLevel(), ticked)); else ui.levels.forEach(function (lv) { levs.push(levelOut(lv, lv.lessons)); });
+        downloadText('rocket-' + (ticked.length ? 'sessions' : 'setup') + '-' + todayStr() + '.txt', setupToText(levs, ticked.length ? 'sessions' : 'everything'));
+        var msg = $('lesson-msg'); msg.style.color = '#55efc4'; msg.textContent = '✔ Exported ' + (ticked.length ? ticked.length + (ticked.length === 1 ? ' session' : ' sessions') : 'everything') + ' as a text file';
     };
+    function parseExerciseLine(line) {
+        var ex = null;
+        if (/"page"\s*:/.test(line)) {
+            var om = line.match(/\{[^}]*\}/);
+            if (om) { try { var o = JSON.parse(om[0]); ex = { page: Number(o.page), exercise: Number(o.exercise), questions: Math.floor(Number(o.questions)), time: o.time === undefined ? NaN : parseTimeText(o.time) }; } catch (e) { ex = null; } }
+        } else {
+            var nums = line.match(/\d+(?::\d{2})?/g);
+            if (nums && nums.length >= 3) ex = { page: parseInt(nums[0], 10), exercise: parseInt(nums[1], 10), questions: parseInt(nums[2], 10), time: nums.length >= 4 ? parseTimeText(nums[3]) : NaN };
+        }
+        return ex;
+    }
+    function parseSetupText(text) {
+        var levels = [], curLv = null, curList = null, curSes = null, bad = 0;
+        function level(name) { var lv = levels.filter(function (x) { return (x.name || '') === (name || ''); })[0]; if (!lv) { lv = { name: name || null, wordLists: [], sessions: [] }; levels.push(lv); } curLv = lv; curList = null; curSes = null; return lv; }
+        String(text || '').split(/\r?\n/).forEach(function (raw) {
+            var line = raw.trim(); if (!line || /^skipped\b/i.test(line)) return;
+            var m = line.match(/^level\s+(.+?)\s*(?:[·•|:]|\s-\s|$)/i);
+            if (m) { level(m[1].trim()); return; }
+            m = line.match(/^=+\s*(.+?)\s*=+$/);
+            if (m) {
+                var nm = m[1].replace(/\s*\(\s*\d+\s*pairs?\s*\)\s*$/i, '').trim();
+                curList = { name: nm, lines: [] }; (curLv || level(null)).wordLists.push(curList); curSes = null; return;
+            }
+            if (/^(session|lesson)\b/i.test(line)) {
+                var wl = line.match(/\(\s*word list\s*:\s*(.+?)\s*\)\s*$/i), head = line.replace(/\s*\(\s*word list\s*:[^)]*\)\s*$/i, '');
+                var sn = head.match(/^session\s*:\s*(.+)$/i); head = sn ? sn[1].trim() : head.replace(/[:\s]+$/, '').replace(/\s+/g, ' ');
+                if (!sn && head === head.toUpperCase()) head = head.charAt(0) + head.slice(1).toLowerCase();
+                curSes = { name: head, exercises: [], wordList: wl ? wl[1] : undefined }; (curLv || level(null)).sessions.push(curSes); curList = null; return;
+            }
+            if (curList) { curList.lines.push(line); return; }
+            var ex = parseExerciseLine(line); if (!ex) return;
+            if (isNaN(ex.page) || isNaN(ex.exercise) || !(ex.questions >= 1 && ex.questions <= 12)) { bad++; return; }
+            if (isNaN(ex.time) || ex.time <= 0) ex.time = defaultTime(ex.questions);
+            if (!curSes) { curSes = { name: 'Imported', exercises: [] }; (curLv || level(null)).sessions.push(curSes); }
+            curSes.exercises.push(ex);
+        });
+        levels.forEach(function (lv) { lv.wordLists = lv.wordLists.map(function (w) { return { name: w.name, text: w.lines.join('\n') }; }).filter(function (w) { return w.text.trim(); }); lv.sessions = lv.sessions.filter(function (x) { return x.exercises.length; }); });
+        return { levels: levels, bad: bad };
+    }
     function uniqueName(name, taken) {
         var n = name, low = function (x) { return String(x).toLowerCase(); };
         function used(v) { return taken.some(function (t) { return low(t) === low(v); }); }
@@ -1943,10 +1984,9 @@
                 res = importSetupObject(obj); total = res.total;
                 if (res.level) { ui.levelSel = res.level.id; if (res.session) res.level.lessonSel = res.session.id; selectLevelUI(res.level.id); }
             } else {
-                var parsed = parseLessonsText(text); bad = parsed.bad;
-                var lv = curLevel();
-                var added = addSessionsToLevel(lv, parsed.lessons.map(function (n) { return { name: n.name, exercises: n.exercises }; }), {});
-                total = added.length; if (added.length) { lv.lessonSel = added[0].id; selectLevelUI(lv.id); }
+                var parsed = parseSetupText(text); bad = parsed.bad; var cur = curLevel();
+                res = importSetupObject({ levels: parsed.levels.map(function (l) { return { name: l.name || cur.name, wordLists: l.wordLists, sessions: l.sessions }; }) }); total = res.total;
+                if (res.level) { ui.levelSel = res.level.id; if (res.session) res.level.lessonSel = res.session.id; selectLevelUI(res.level.id); }
             }
             var nl = res ? res.lists : 0;
             if (!total && !nl) { msg.style.color = '#ff7675'; msg.textContent = 'No exercises or word lists found in that file.'; return; }
