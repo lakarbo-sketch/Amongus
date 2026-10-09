@@ -147,7 +147,6 @@
     .rules-text[contenteditable="true"] { outline: 2px dashed #f1c40f; padding: 0.4rem; }
 
     .settings-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 1.2rem; overflow: hidden; font-size: 0.9rem; }
-    @media (max-width: 900px) { .settings-body { grid-template-columns: 1fr; overflow: auto; } }
     .settings-col { display: flex; flex-direction: column; gap: 0.55rem; min-height: 0; }
     .form-group label { display: block; font-size: 0.85rem; margin-bottom: 0.2rem; color: #b0bec5; font-weight: bold; }
     .form-group input[type="text"], .form-group textarea, .form-group input[type="number"], .form-group select { width: 100%; background: #131b2e; border: 2px solid #3b4d71; color: #fff; padding: 0.4rem; border-radius: 8px; font-size: 0.9rem; }
@@ -291,8 +290,42 @@
     .award-bar { position: fixed; left: 50%; bottom: 1rem; transform: translateX(-50%); z-index: 3100; display: none; }
     .award-bar .btn { font-size: 1.5rem; padding: 0.8rem 2.2rem; }
     #settings-overlay { z-index: 300000; }
+    #demo-overlay { z-index: 3300; }
+    .student-pill { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+    .demo-help { display: flex; gap: 2.4rem; flex-wrap: wrap; justify-content: center; font-size: clamp(18px, 2.1vw, 36px); color: #e0e0e0; margin-bottom: 1rem; }
+    .demo-help .g { color: #55efc4; } .demo-help .r { color: #ff7675; }
+    .demo-grid { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(2, 1fr); gap: 1.2rem; }
+    .demo-tile { background: #263552; border: 4px solid #3b4d71; border-radius: 22px; color: #fff; font-size: clamp(40px, 9vh, 120px); font-weight: 900; cursor: pointer; touch-action: manipulation; user-select: none; }
+    .demo-tile.correct { background: #00b894; border-color: #55efc4; color: #000; }
+    .demo-tile.incorrect { background: #d63031; border-color: #ff7675; }
+    .demo-note { text-align: center; color: #9fb3d9; font-size: clamp(16px, 2vw, 32px); margin-top: 0.8rem; }
+    .dlg-overlay { position: fixed; inset: 0; z-index: 400000; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.78); }
+    .dlg-box { background: #0f1626; border: 3px solid #00ffcc; border-radius: 18px; padding: 2rem 2.4rem; width: min(62rem, 94vw); display: flex; flex-direction: column; gap: 1.5rem; }
+    .dlg-box h3 { color: #fff; font-size: clamp(22px, 3vw, 44px); line-height: 1.25; }
+    .dlg-box input { background: #131b2e; border: 3px solid #3b4d71; color: #fff; padding: 0.7rem 0.9rem; border-radius: 12px; font-size: clamp(22px, 3vw, 40px); width: 100%; }
+    .dlg-btns { display: flex; gap: 1rem; justify-content: flex-end; }
+    .dlg-btns .btn { font-size: clamp(20px, 2.6vw, 38px); padding: 0.7rem 2rem; }
     /* Decoy second screen: every line stays inside the screen */
+    .decoy-label { text-align: center; max-width: 13rem; line-height: 1.15; }
     .warning { overflow: hidden; }
+    .warning.peek { animation: peekFlash .5s steps(1, end) infinite alternate; }
+    @keyframes peekFlash { 0% { background: #3b2a00; } 100% { background: #1c1400; } }
+    .warning.peek .kill { display: block; color: #fff; white-space: normal; font-size: clamp(36px, 8.5vw, 150px); }
+    .warning.peek h2 { font-size: clamp(22px, 3.2vw, 52px); }
+    .wscene { display: none; position: relative; width: 100%; height: 30vh; overflow: hidden; }
+    .warning.scene .wscene { display: block; }
+    .wscene .wdoor { position: absolute; left: 6%; bottom: 8%; font-size: clamp(60px, 14vh, 160px); animation: doorPulse 1s ease-in-out infinite; }
+    .wscene .wfly { position: absolute; left: 14%; bottom: 14%; font-size: clamp(28px, 6vh, 64px); font-weight: 900; background: #fff; color: #000; padding: 0.2em 0.7em; border-radius: 999px; white-space: nowrap; animation: wFly 3s ease-in infinite; }
+    .wscene .wdrift { position: absolute; left: 12%; top: 30%; font-size: clamp(28px, 6vh, 64px); font-weight: 900; background: #1f293d; color: #cfd8dc; padding: 0.2em 0.7em; border-radius: 999px; white-space: nowrap; animation: wDrift 6s linear infinite; }
+    .wscene .wrock { position: absolute; left: 4%; top: 22%; font-size: clamp(50px, 12vh, 130px); }
+    .wscene .wsig { position: absolute; left: 30%; top: 60%; font-size: clamp(24px, 5vh, 56px); color: #9fb3d9; animation: wBlink 1.6s steps(1, end) infinite; letter-spacing: 0.3em; }
+    .wscene .wstar { position: absolute; font-size: clamp(18px, 4vh, 40px); animation: wBlink 1.2s steps(1, end) infinite; }
+    .wscene .weyes { position: absolute; left: 0; right: 0; top: 10%; font-size: clamp(70px, 18vh, 200px); animation: eyesLook 1.4s ease-in-out infinite; }
+    @keyframes doorPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+    @keyframes wFly { 0% { transform: translate(0, 0) rotate(0) scale(1); opacity: 1; } 100% { transform: translate(62vw, -22vh) rotate(1080deg) scale(0.05); opacity: 0; } }
+    @keyframes wDrift { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(60vw, 8vh) scale(0.2); opacity: 0; } }
+    @keyframes wBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.15; } }
+    @keyframes eyesLook { 0%, 100% { transform: translateX(-4vw); } 50% { transform: translateX(4vw); } }
     .warning.level2 h2 { font-size: clamp(24px, 4vw, 64px); }
     .warning.level2 .kill { white-space: nowrap; font-size: clamp(28px, 5.6vw, 200px); }
     .settings-body { align-content: stretch; grid-template-rows: minmax(0, 1fr); }
@@ -304,7 +337,7 @@
     .version-tag { color: #6c7a99; font-size: 0.8rem; margin-left: 0.8rem; font-weight: normal; }
     @container (max-width: 200px) { .nodes-grid { grid-template-columns: repeat(3, 1fr); } }
     .lesson-tools { flex-wrap: wrap; }
-    .lesson-msg { font-size: 0.85rem; color: #55efc4; min-height: 1.1rem; }
+    .lesson-msg { font-size: 0.85rem; color: #55efc4; min-height: 0; }
     .lesson-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
     .lesson-chip { background: #1f293d; color: #fff; border: 2px solid #3b4d71; border-radius: 8px; padding: 0.25rem 0.6rem; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
     .lesson-chip.sel { background: #00b894; color: #000; border-color: #55efc4; }
@@ -343,6 +376,13 @@
     .lesson-chips.big .lesson-chip { font-size: 1.05rem; padding: 0.4rem 1rem; }
     .lesson-chips.big .chip-tick { width: 1.1rem; height: 1.1rem; }
     .level-manage { display: flex; flex-direction: column; gap: 0.3rem; }
+    .repair-lists { display: flex; flex-direction: column; gap: 0.35rem; }
+    .rl-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding: 0.25rem 0.4rem; border: 2px solid transparent; border-radius: 8px; }
+    .rl-row.sel { border-color: #55efc4; }
+    .rl-n { color: #00ffcc; font-weight: bold; min-width: 4.5rem; }
+    .rl-row select { flex: 1; min-width: 8rem; background: #131b2e; border: 2px solid #3b4d71; color: #fff; padding: 0.3rem; border-radius: 8px; font-size: 0.9em; }
+    .rl-count { font-weight: bold; color: #55efc4; white-space: nowrap; }
+    .rl-count.low { color: #ffb347; }
     .lm-row { display: flex; align-items: center; gap: 0.5rem; font-weight: bold; }
     .lm-row .lm-name { flex: 1; }
     .lm-row .lm-name.hid { color: #6c7a99; }
@@ -352,6 +392,63 @@
     .ex-mv { background: #1f293d; color: #cfd8dc; border: 2px solid #3b4d71; border-radius: 6px; padding: 0.05rem 0.4rem; font-size: 0.8rem; cursor: pointer; }
     .ex-mv-gap { display: inline-block; width: 1.5rem; }
     .toast { position: fixed; left: 50%; bottom: 2rem; transform: translateX(-50%); z-index: 400000; display: none; background: #7a2530; color: #fff; border: 2px solid #ff7675; border-radius: 10px; padding: 0.7rem 1.4rem; font-size: 1.1rem; font-weight: bold; max-width: 80vw; text-align: center; }
+
+    /* Settings: the open section uses the whole width and the height under the top rows */
+    #settings-overlay { padding: 0.8rem 1.2rem; }
+    #settings-overlay .settings-body { display: grid; grid-template-columns: repeat(var(--npills, 6), minmax(0, 1fr)); grid-template-rows: auto minmax(0, 1fr); gap: 0.5rem 0.6rem; align-content: start; overflow: hidden; font-size: 1rem; }
+    #settings-overlay .settings-col { display: contents; }
+    #settings-overlay details.sec { grid-row: 1; min-width: 0; padding: 0; border: none; background: transparent; }
+    #settings-overlay details.sec > summary { list-style: none; text-align: center; padding: 0.7rem 0.4rem; font-size: 1.15em; background: #1f293d; border: 2px solid #3b4d71; border-radius: 12px; color: #00ffcc; }
+    #settings-overlay details.sec > summary::-webkit-details-marker { display: none; }
+    #settings-overlay details.sec[open] { grid-row: 2; grid-column: 1 / -1; min-height: 0; overflow: hidden; background: #0f1626; border: 1px solid #22304f; border-radius: 12px; padding: 0.6rem 1rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); align-content: start; gap: 0.6rem 1.4rem; }
+    #settings-overlay details.sec[open] > summary { grid-column: 1 / -1; text-align: left; background: transparent; border: none; padding: 0 0 0.2rem 0; font-size: 1.3em; }
+    #settings-overlay details.sec[open]::details-content { display: contents; }
+    #settings-overlay .form-group label { font-size: 1em; }
+    #settings-overlay .form-group input[type="text"], #settings-overlay .form-group input[type="number"], #settings-overlay .form-group select, #settings-overlay .form-group textarea { font-size: 1em; padding: 0.45rem 0.6rem; }
+    #settings-overlay .note-box { font-size: 0.95em; }
+    #settings-overlay #sec-lessons[open] { display: flex; flex-direction: column; gap: 0.5rem; }
+    #settings-overlay #sec-lessons .lesson-panel { flex: 1; min-height: 0; overflow: hidden; display: grid; grid-template-columns: repeat(var(--excols, 1), minmax(0, 1fr)); align-content: start; gap: 0.3rem 1.8rem; }
+    #settings-overlay #sec-lessons .lesson-panel > .lesson-head, #settings-overlay #sec-lessons .lesson-panel > .ex-add { grid-column: 1 / -1; justify-self: start; }
+    #settings-overlay .ex-row { font-size: 1em; margin-bottom: 0; }
+    #settings-overlay .ex-row input { font-size: 1em; width: 3.6rem; padding: 0.25rem 0.3rem; }
+    #settings-overlay details.sec.grow[open] { grid-template-columns: minmax(16rem, 1fr) 1.5fr; grid-template-rows: auto auto minmax(0, 1fr); grid-template-areas: "sum sum" "left right" "mid right"; }
+    #settings-overlay details.sec.grow[open] > summary { grid-area: sum; }
+    #settings-overlay details.sec.grow[open] > .rp-left { grid-area: left; } #settings-overlay details.sec.grow[open] > .rp-mid { grid-area: mid; } #settings-overlay details.sec.grow[open] > .rp-right { grid-area: right; }
+    #settings-overlay details.sec.grow[open] > .rp-left, #settings-overlay details.sec.grow[open] > .rp-mid, #settings-overlay details.sec.grow[open] > .rp-right { display: flex; flex-direction: column; gap: 0.6rem; min-height: 0; }
+    #settings-overlay.tight details.sec.grow[open] { grid-template-columns: 1fr 1.1fr 1.3fr; grid-template-rows: auto minmax(0, 1fr); grid-template-areas: "sum sum sum" "left mid right"; }
+    #settings-overlay .rp-right .form-group.grow textarea { min-height: 3rem; }
+    #settings-overlay .settings-top .st-row { gap: 0.8rem; }
+    /* tests only: every section open at once */
+    body.test-openall #settings-overlay .settings-body { display: block; overflow: auto; }
+    body.test-openall #settings-overlay .settings-col { display: block; }
+    body.test-openall #settings-overlay details.sec { display: block; margin-bottom: 0.4rem; }
+    body.test-openall #settings-overlay details.sec[open] { display: block; overflow: visible; }
+    body.test-openall #settings-overlay details.sec[open]::details-content { display: block; }
+    #settings-overlay.tight { padding: 0.35rem 0.7rem; }
+    #settings-overlay.tight .overlay-header { margin-bottom: 0.3rem; padding-bottom: 0.25rem; }
+    #settings-overlay.tight .overlay-header h2 { font-size: 1.2rem; }
+    #settings-overlay.tight .settings-top { gap: 0.2rem; margin-bottom: 0.25rem; }
+    #settings-overlay.tight .st-row { gap: 0.4rem; }
+    #settings-overlay.tight .seg button { padding: 0.2rem 0.8rem; font-size: 1em; }
+    #settings-overlay.tight .lesson-chips.big .lesson-chip { padding: 0.15rem 0.6rem; font-size: 1em; }
+    #settings-overlay.tight .settings-body { gap: 0.25rem 0.4rem; }
+    #settings-overlay.tight details.sec > summary { padding: 0.25rem 0.2rem; font-size: 1em; }
+    #settings-overlay.tight details.sec[open] { padding: 0.3rem 0.6rem; gap: 0.3rem 0.8rem; }
+    #settings-overlay.tight details.sec[open] > summary { font-size: 1.1em; }
+    #settings-overlay.tight .form-group label { margin-bottom: 0.05rem; }
+    #settings-overlay.tight .form-group input[type="text"], #settings-overlay.tight .form-group input[type="number"], #settings-overlay.tight .form-group select { padding: 0.15rem 0.4rem; }
+    #settings-overlay.tight .note-box { padding: 0.2rem 0.5rem; }
+    #settings-overlay.tight .btn { padding: 0.2rem 0.6rem; }
+    #settings-overlay.tight #sec-lessons[open] { gap: 0.2rem; }
+    #settings-overlay.tight .ex-row input { padding: 0.1rem 0.2rem; }
+    #settings-overlay.tight .lesson-head { margin-bottom: 0.1rem; }
+    #settings-overlay.tight .rl-row { padding: 0; gap: 0.2rem 0.3rem; }
+    #settings-overlay.tight .rl-count { font-size: 0.9em; }
+    #settings-overlay.tight .rl-row select { padding: 0.05rem 0.2rem; }
+    #settings-overlay.tight .rl-n { min-width: 3.6rem; }
+    #settings-overlay.tight .repair-lists { gap: 0.1rem; }
+    #settings-overlay.tight .rp-left, #settings-overlay.tight .rp-right { gap: 0.25rem; }
+    #settings-overlay.tight .onoff button { padding: 0.1rem 0.8rem; }
 </style>
 </head>
 <body>
@@ -378,6 +475,7 @@
             <span class="danger-status" id="danger-status"><span id="danger-label">DANGER</span>: <span id="danger-count">0</span> / <span id="danger-max">4</span></span><span class="danger-status" id="repairs-left" style="display:none"></span>
             <button class="btn btn-assign" id="btn-assign">🎲 Assign roles</button>
             <button class="btn btn-rules" id="btn-rules">📜 Rules</button>
+            <button class="btn" id="btn-demo">🎓 Demo</button>
             <button class="btn" id="btn-video">🚀 Video</button>
             <button class="btn" id="btn-settings">⚙ Settings</button>
             <button class="btn" id="btn-exit">✕ Exit</button>
@@ -427,6 +525,14 @@
     <div class="rules-body-wrap" id="rules-wrap"><div class="rules-text" id="rules-text"></div></div>
 </div>
 
+<!-- Demo -->
+<div class="fullscreen-overlay" id="demo-overlay">
+    <div class="overlay-header"><h2>🎓 Demo: how to mark a question</h2><button class="btn" id="demo-close" type="button">✕ Close the demo</button></div>
+    <div class="demo-help"><span>Tap once: <b class="g">green ✅</b> (correct)</span><span>Tap again: <b class="r">red ❌</b> (mistake)</span><span>Tap again: back to normal</span></div>
+    <div class="demo-grid" id="demo-grid"></div>
+    <div class="demo-note">This is only a demo. No danger points are counted and nothing is saved.</div>
+</div>
+
 <!-- Settings -->
 <div class="fullscreen-overlay" id="settings-overlay">
     <div class="overlay-header">
@@ -435,8 +541,8 @@
     </div>
     <div class="settings-top">
         <div class="st-row"><span class="st-label">Mode</span>
-            <div class="seg" id="mode-btns"><button type="button" data-v="classic">Classic</button><button type="button" data-v="simple">Simple</button></div>
-            <select id="setting-mode" hidden><option value="classic">Classic</option><option value="simple">Simple</option></select>
+            <div class="seg" id="mode-btns"><button type="button" data-v="classic">Classic</button><button type="button" data-v="simple">Simple</button><button type="button" data-v="individual">Individual</button></div>
+            <select id="setting-mode" hidden><option value="classic">Classic</option><option value="simple">Simple</option><option value="individual">Individual</option></select>
             <span class="st-spacer"></span>
             <button class="btn btn-assign" id="btn-newgame" type="button">🔄 New game</button>
             <button class="btn btn-test" id="btn-test" type="button">⚡ Test All Green</button>
@@ -460,14 +566,17 @@
                 <div class="form-group"><label for="setting-meeting">Meeting (seconds)</label><input type="number" id="setting-meeting" min="5" max="600"></div>
                 <div class="form-group"><label for="setting-popup">First-look popup (seconds)</label><input type="number" id="setting-popup" min="1" max="10"></div>
             </details>
-            <details class="sec" data-mode="simple"><summary>Simple game</summary>
+            <details class="sec" data-mode="simple individual"><summary>Simple game</summary>
                 <div class="form-group"><label for="setting-errors-per">Questions for each error</label><input type="number" id="setting-errors-per" min="1" max="50"></div>
-                <div class="form-group"><label for="setting-repair-rounds">Repair rounds in a game</label><input type="number" id="setting-repair-rounds" min="0" max="20"></div>
+                <div class="form-group" id="grp-repair-rounds"><label for="setting-repair-rounds">Repair rounds in a game</label><input type="number" id="setting-repair-rounds" min="0" max="20"></div>
             </details>
             <details class="sec"><summary>Tools</summary>
                 <div class="form-group"><label>Who is the impostor? (press and hold)</label>
                     <button class="btn" id="btn-reveal" style="width:100%; justify-content:center;">👁 Hold to show</button>
                     <div class="reveal-box" id="reveal-box"></div></div>
+                <div class="form-group"><label>DO NOT USE button</label><div class="seg" id="decoy-btns"><button type="button" data-v="standard">Standard</button><button type="button" data-v="strict">Strict</button></div><input type="hidden" id="setting-decoy"></div>
+                <div class="note-box"><b>Strict:</b> the button says DO NOT USE UNDER ANY CIRCUMSTANCES, and the first press opens the EJECTED page.</div>
+                <div class="note-box"><b>Peeking:</b> while a student is at the board, a quick tap on another name shows the peeking warning. To open a name's pop-up (for a card), hold the name for 2 seconds.</div>
                 <button class="btn" id="btn-undo" type="button" style="align-self:flex-start;">↩ Undo</button>
             </details>
         </div>
@@ -476,13 +585,20 @@
                 <div class="filerow lesson-tools"><button class="btn" id="btn-copy-format" type="button">📋 Copy format</button></div>
                 <div id="lesson-panel" class="lesson-panel"></div>
             </details>
-            <details class="sec grow"><summary>Repair game</summary>
+            <details class="sec grow" data-mode="classic simple"><summary>Repair game</summary>
+                <div class="rp-left">
                 <div style="display:flex; gap:0.6rem;"><div class="form-group" style="flex:1"><label for="setting-repair">Time (seconds)</label><input type="number" id="setting-repair" min="10" max="600"></div>
                 <div class="form-group" style="flex:1"><label for="setting-window">Both taps within (ms)</label><input type="number" id="setting-window" min="200" max="2000" step="100"></div></div>
                 <div class="form-group"><label for="setting-delegates">Players</label><select id="setting-delegates"><option value="nominate">The class nominates two students</option><option value="random">The game draws two students</option></select></div>
                 <div class="form-group"><label>Two fingers at once (a mouse cannot play)</label><div class="onoff" data-for="setting-twofingers"><button type="button" data-v="1">On</button><button type="button" data-v="0">Off</button></div><input type="checkbox" id="setting-twofingers" hidden></div>
-                <div class="filerow lesson-tools"><select id="setting-wordlist"></select><button class="btn" id="wl-new" type="button">+ List</button><button class="btn" id="wl-rename" type="button">Rename</button><button class="btn" id="wl-delete" type="button">Delete</button></div>
+                </div>
+                <div class="rp-mid">
+                <div class="form-group"><label>Word list for each repair round (⚠ = fewer than 17 pairs)</label><div id="repair-lists" class="repair-lists"></div></div>
+                </div>
+                <div class="rp-right">
+                <div class="filerow lesson-tools"><span id="edit-label" class="lv-label"></span><button class="btn" id="wl-new" type="button">+ List</button><button class="btn" id="wl-rename" type="button">Rename</button><button class="btn" id="wl-delete" type="button">Delete</button></div>
                 <div class="form-group grow"><label for="setting-pairs">Words, one pair per line like "cat = hat"</label><textarea id="setting-pairs"></textarea></div>
+                </div>
             </details>
         </div>
         <div class="settings-col">
@@ -534,13 +650,16 @@
 <div class="award-bar" id="award-bar"><button class="btn btn-good" id="btn-award">💎 Award gems</button></div>
 
 <div class="decoy-wrap">
-    <div class="decoy-label">DO NOT USE</div>
+    <div class="decoy-label" id="decoy-label">DO NOT USE</div>
     <button class="decoy" id="decoy" type="button" aria-label="Do not use">🔒</button>
 </div>
 <div class="warning" id="warning" role="alert">
     <h2 id="warning-title"></h2>
     <p class="kill" id="warning-kill">EJECTED EJECTED EJECTED</p>
+    <div class="wscene" id="wscene"></div>
 </div>
+
+<div class="dlg-overlay" id="dlg"><div class="dlg-box"><h3 id="dlg-title"></h3><input type="text" id="dlg-input" autocomplete="off"><div class="dlg-btns"><button class="btn" id="dlg-cancel" type="button">Cancel</button><button class="btn btn-good" id="dlg-ok" type="button">OK</button></div></div></div>
 
 <script>
 (function () {
@@ -549,7 +668,7 @@
     /* ---------- Constants and defaults ---------- */
     var LS_CONFIG = 'rlm-config-v2', LS_STATE = 'rlm-state-v2', LS_RULES = 'rlm-rules-v2';
     var LIMIT = 4;
-    var VERSION = 'Version 10 · 8 Oct 2026';
+    var VERSION = 'Version 11 · 9 Oct 2026';
     var ROLES = [
         { icon: '👨‍✈️', name: 'Captain' }, { icon: '🧑‍🚀', name: 'Pilot' }, { icon: '🔧', name: 'Engineer' },
         { icon: '🩺', name: 'Doctor' }, { icon: '🧭', name: 'Navigator' }, { icon: '🔬', name: 'Scientist' },
@@ -581,7 +700,9 @@
         levels: null,
         activeLevel: '',
         shakeDelay: 5,
-        repairSeconds: 60,
+        repairSeconds: 40,
+        repairSecMig: false,
+        decoyMode: 'standard',
         twoFingers: true,
         repairPairs: DEFAULT_PAIRS,
         exercises: [
@@ -604,7 +725,7 @@
             rule('1. 🎯 Your mission', '<p>You are a crew. Your rocket must take off. Each floor of the rocket is an exercise from your book. Answer all the questions on every floor to fill the fuel tank.</p>'),
             rule('2. 🤫 Your secret role', '<p>The teacher presses "Assign roles". The screen tells everyone how many impostors there are. Then every student comes to the screen and taps their own name. You can look only one time! A small box shows your official role on the ship and your secret role. Stand close to the screen, and do not let anyone see. You can tell everyone your official role, but never tell anyone your secret role.</p>'),
             rule('3. 🎲 The picker', '<p>The teacher taps a question number. The computer chooses a student. That student answers a question from the exercise and comes to the board. Everyone must pay attention, because you can be chosen again soon!</p>'),
-            rule('4. ✅ Right and wrong', '<p>The teacher says if the answer is right or wrong. Then the student taps the number once for a green ✅ correct answer. Tap again for a red ❌ wrong answer. A wrong answer gives the ship 1 danger point. A red question is asked again until the answer is right.</p>'),
+            rule('4. ✅ Right and wrong', '<p>The teacher says if the answer is right or wrong. Then the student taps the number once for a green ✅ correct answer. Tap again for a red ❌ wrong answer. A wrong answer gives the ship 1 danger point. The question stays red, and the danger point stays too.</p>'),
             rule('5. ⚠️ Danger points', '<p>Danger points never go away. A wrong answer gives 1 danger point. A floor that runs out of time also gives 1 danger point. At 4 danger points, the rocket explodes 💥 and you lose.</p>'),
             rule('6. ⏱️ Floor timers', '<p>Each floor has a timer. The timer starts when the first question on that floor is tapped. Finish the floor before the time is over!</p>'),
             rule('7. 🕵️ The impostors', '<p>Secret impostors are in the crew. They want the rocket to fail. They can sabotage a floor. A sabotaged floor is destroyed! To repair it, two students play the repair game and the whole class helps. If the repair fails, the impostor wins. The teacher always says an impostor\'s answer is correct, even when it is wrong. Impostors should try to answer correctly, because a wrong answer can give them away.</p>'),
@@ -621,7 +742,7 @@
             rule('1. 🎯 Your mission', '<p>Your crew has to launch a rocket. Each floor of the rocket is an exercise from your book. To fill the fuel tank, you must complete every question on every floor before the danger gets too high.</p>'),
             rule('2. 🤫 Your secret role', '<p>After the teacher has pressed "Assign roles", the screen announces how many impostors there are. Then every student comes to the screen and taps their own name. You can look only once. A small box shows your official role on the ship, such as Captain or Engineer, and your secret role. Stand close to the screen and block the box with your body, so nobody else can see it. You may tell everyone your official role, but never reveal your secret role.</p>'),
             rule('3. 🎲 The random picker', '<p>When the teacher taps a question number, the computer chooses a student at random. That student answers a question from the exercise and then comes to the board. Stay alert, because you might be chosen again at any time!</p>'),
-            rule('4. ✅ Marking answers', '<p>The teacher tells the student whether the answer is correct. Then the student taps the question once to turn it green ✅ for a correct answer, and a second time to turn it red ❌ for a mistake. A mistake gives the ship 1 danger point. A red question is asked again until the answer is correct.</p>'),
+            rule('4. ✅ Marking answers', '<p>The teacher tells the student whether the answer is correct. Then the student taps the question once to turn it green ✅ for a correct answer, and a second time to turn it red ❌ for a mistake. A mistake gives the ship 1 danger point. The question stays red, and the danger point stays too.</p>'),
             rule('5. ⚠️ Danger points', '<p>Danger points never go away. You get a danger point for every mistake, and for every floor that runs out of time. If the ship reaches 4 danger points, the reactor melts down 💥 and the mission fails.</p>'),
             rule('6. ⏱️ Floor timers', '<p>Every floor has its own timer. It starts as soon as someone taps the first question on that floor, so work quickly and finish before the time runs out.</p>'),
             rule('7. 🕵️ The impostors', '<p>Secretly, one or two students are impostors. They are trying to destroy the mission, and one way they do it is by sabotaging a floor. A sabotaged floor is destroyed, and two students must play the repair game, with the whole class helping, to save it. If the repair fails, the impostor wins. The teacher always says that an impostor\'s answer is correct, even when it is wrong. Impostors should try to answer correctly, because a wrong answer could give them away.</p>'),
@@ -660,6 +781,23 @@
         ].join('')
     };
 
+    (function () {
+        function build(src) {
+            var parts = src.split('<div class="rule">').slice(1), out = [], n = 0;
+            parts.forEach(function (p) {
+                var title = (p.match(/<h3>(.*?)<\/h3>/) || [])[1] || '', body = p.replace(/<h3>.*?<\/h3>/, '').replace(/<\/div>\s*$/, '');
+                if (/Repairs/.test(title)) return;
+                n++; title = title.replace(/^\d+\./, n + '.');
+                if (/Your mission/.test(title)) body = '<p>You are the captain of a rocket. Each floor of the rocket is an exercise from your book. Answer all the questions on every floor to fill the fuel tank. When the tank is full, the rocket takes off! 🚀</p>';
+                else if (/picker|Your job|Your role/.test(title)) { body = /picker/.test(title) ? '<p>The teacher taps a question number. The question is for you. Answer it, and the teacher says if your answer is right or wrong.</p>' : '<p>You are the Captain of the ship. Your name is at the bottom of the screen.</p>'; title = title.replace('The picker', 'Your question').replace('Your job on the ship', 'Your job on the ship'); }
+                else if (/How to win|Winning/.test(title)) body = body.replace(/crew/g, 'captain');
+                out.push('<div class="rule"><h3>' + title + '</h3>' + body + '</div>');
+            });
+            return out.join('');
+        }
+        RULES_DEFAULT.ia2 = build(RULES_DEFAULT.sa2); RULES_DEFAULT.ib1 = build(RULES_DEFAULT.sb1);
+    })();
+
     /* ---------- Helpers ---------- */
     function $(id) { return document.getElementById(id); }
     function lsGet(key) { try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; } }
@@ -668,17 +806,34 @@
     function formatTime(sec) { var m = Math.floor(sec / 60), s = sec % 60; return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s; }
     function clone(o) { return JSON.parse(JSON.stringify(o)); }
     function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+    // In-game dialogs (they replace the browser's pop-ups)
+    var dlgCb = null;
+    function dlgClose(v) { $('dlg').style.display = 'none'; var cb = dlgCb; dlgCb = null; if (cb) cb(v); }
+    function dialog(title, o, cb) {
+        dlgCb = cb; $('dlg-title').textContent = title;
+        var inp = $('dlg-input'); inp.style.display = o.input === undefined ? 'none' : ''; inp.value = o.input === undefined ? '' : String(o.input);
+        $('dlg-ok').textContent = o.ok || 'OK'; $('dlg-cancel').textContent = o.cancel || 'Cancel'; $('dlg-cancel').style.display = o.cancel === null ? 'none' : '';
+        $('dlg').style.display = 'flex';
+        if (o.input !== undefined) { inp.focus(); inp.select(); } else $('dlg-ok').focus();
+    }
+    function askText(title, value, cb) { dialog(title, { input: value, ok: 'OK', cancel: 'Cancel' }, function (v) { if (v !== null) cb(v); }); }
+    function askYes(title, okLabel, cb) { dialog(title, { ok: okLabel || 'Yes', cancel: 'No' }, function (v) { if (v !== null) cb(); }); }
+    function tell(title) { dialog(title, { ok: 'OK', cancel: null }, function () { }); }
+    $('dlg-ok').onclick = function () { dlgClose($('dlg-input').style.display === 'none' ? '' : $('dlg-input').value); };
+    $('dlg-cancel').onclick = function () { dlgClose(null); };
+    $('dlg-input').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('dlg-ok').click(); else if (e.key === 'Escape') $('dlg-cancel').click(); });
+    $('dlg').addEventListener('keydown', function (e) { if (e.key === 'Escape') { if ($('dlg-cancel').style.display === 'none') $('dlg-ok').click(); else $('dlg-cancel').click(); } });
 
     /* ---------- Config and state ---------- */
     var config = (function () {
         var saved = lsGet(LS_CONFIG), c = clone(DEFAULT_CONFIG);
-        if (saved && typeof saved === 'object') { Object.keys(c).forEach(function (k) { if (saved[k] !== undefined) c[k] = saved[k]; }); if (saved.matchWindowMs === 1000) c.matchWindowMs = 600; }
+        if (saved && typeof saved === 'object') { Object.keys(c).forEach(function (k) { if (saved[k] !== undefined) c[k] = saved[k]; }); if (saved.matchWindowMs === 1000) c.matchWindowMs = 600; if (!saved.repairSecMig) { if (Number(saved.repairSeconds) === 60) c.repairSeconds = 40; c.repairSecMig = true; } }
         return c;
     })();
     function syncActiveLesson() {
         if (!Array.isArray(config.lessons) || !config.lessons.length) config.lessons = [{ id: 'l1', name: 'Lesson 1', exercises: clone(config.exercises), repairPairs: config.repairPairs }];
         var al = config.lessons.filter(function (l) { return l.id === config.activeLesson; })[0] || config.lessons[0];
-        config.activeLesson = al.id; config.exercises = al.exercises; config.repairPairs = al.repairPairs;
+        config.activeLesson = al.id; config.exercises = al.exercises; config.repairPairs = al.repairPairs; config.repairTexts = al.repairTexts;
     }
     syncActiveLesson();
     function ensureLevels() {
@@ -697,8 +852,20 @@
                 });
                 config.activeLevel = cur.id;
             }
+            ensureWordLists();
         }
     }
+    function repairRoundsN() { var r = Number(config.repairRounds); return Math.max(1, Math.min(20, isFinite(r) ? Math.floor(r) : 3)); }
+    // One word list for each repair round of a game; round 1 is the session's main list
+    function repairIdsFor(L, wordLists, n) {
+        var ids = Array.isArray(L.repairLists) ? L.repairLists.slice() : [], out = [];
+        ids[0] = L.wordList;
+        for (var i = 0; i < n; i++) { var id = ids[i]; if (!wordLists.some(function (w) { return w.id === id; })) id = L.wordList; out.push(id); }
+        return out;
+    }
+    function textsFor(ids, wordLists) { return ids.map(function (id) { var w = wordLists.filter(function (x) { return x.id === id; })[0]; return w ? w.text : DEFAULT_PAIRS; }); }
+    function pairCount(text) { return String(text || '').split('\n').filter(function (l) { var p = l.split('='); return p.length > 1 && p[0].trim() && p.slice(1).join('=').trim(); }).length; }
+    var MIN_PAIRS = 17;
     function ensureWordLists() {
         config.levels.forEach(function (lv) {
             if (!Array.isArray(lv.wordLists) || !lv.wordLists.length) {
@@ -710,21 +877,21 @@
                 });
                 if (!lv.wordLists.length) lv.wordLists.push({ id: 'w1', name: 'Words 1', text: DEFAULT_PAIRS });
             }
-            lv.lessons.forEach(function (l) { var w = lv.wordLists.filter(function (x) { return x.id === l.wordList; })[0] || lv.wordLists[0]; l.wordList = w.id; l.repairPairs = w.text; });
+            lv.lessons.forEach(function (l) { var w = lv.wordLists.filter(function (x) { return x.id === l.wordList; })[0] || lv.wordLists[0]; l.wordList = w.id; l.repairPairs = w.text; l.repairLists = repairIdsFor(l, lv.wordLists, repairRoundsN()); l.repairTexts = textsFor(l.repairLists, lv.wordLists); });
         });
         var al = config.levels.filter(function (l) { return l.id === config.activeLevel; })[0];
         var cl = al && al.lessons.filter(function (l) { return l.id === config.activeLesson; })[0];
-        if (cl) config.repairPairs = cl.repairPairs;
+        if (cl) { config.repairPairs = cl.repairPairs; config.repairTexts = cl.repairTexts; }
     }
     ensureLevels();
     function configSig() { return JSON.stringify([config.students, config.impostorCount, config.noImpostor, config.exercises]); }
 
     function newState() {
-        var names = (config.students || []).slice(0, 9);
+        var names = (config.students || []).slice(0, isIndividual() ? 1 : 9);
         var captain = ROLES.filter(function (r) { return r.name === 'Captain'; })[0];
         var roles = shuffle(ROLES.filter(function (r) { return r.name !== 'Captain'; })).slice(0, Math.max(0, names.length - 1));
         roles.splice(Math.floor(Math.random() * (roles.length + 1)), 0, captain);
-        var numImp = config.mode === 'simple' ? 0 : Math.max(0, Math.min(Math.max(1, Math.min(2, config.impostorCount || 1)), names.length));
+        var numImp = isSimple() ? 0 : Math.max(0, Math.min(Math.max(1, Math.min(2, config.impostorCount || 1)), names.length));
         var allowed = names.map(function (_, i) { return i; }).filter(function (i) { return (config.noImpostor || []).indexOf(names[i]) === -1; });
         if (allowed.length < numImp) allowed = names.map(function (_, i) { return i; });
         var imp = {};
@@ -737,7 +904,7 @@
             for (var i = 0; i < ex.questions; i++) qs.push({ s: 'normal', ghost: false, pen: false, hideAt: 0 });
             return { page: ex.page, exercise: ex.exercise, timeLeft: t, running: false, started: false, timerStartedOnce: false, timedOut: false, acc: 0, fin: false, armed: false, fireAt: 0, sabotaged: false, timerOff: false, questions: qs };
         });
-        return { v: 2, sig: configSig(), students: students, floors: floors, rolesAssigned: config.mode === 'simple', repairsUsed: 0, gemsAwarded: false, sabotageEndAt: 0, phase: 'play', nightQueue: 0, nightAt: 0, meetingFlash: false,
+        return { v: 2, sig: configSig(), students: students, floors: floors, rolesAssigned: isSimple(), repairsUsed: 0, gemsAwarded: false, sabotageEndAt: 0, phase: 'play', nightQueue: 0, nightAt: 0, meetingFlash: false,
             lastPicked: -1, sabotageUsed: 0, meetingsUsed: 0, decoyUses: 0, practiceDone: false, repairFloor: -1, ended: null, grade: 0, crewDirty: false };
     }
     var state = (function () {
@@ -769,6 +936,22 @@
     function playSuccessSound() { tone('triangle', 440, 880, 0.3, 0.2); }
     function playFailureSound() { tone('sawtooth', 220, 110, 0.35, 0.25); }
     function playTickSound() { tone('sine', 600, 600, 0.05, 0.1); }
+    // Sad trombone: wah, wah, wah, waaaah
+    function playTrombone() {
+        var ctx = ensureAudio(); if (!ctx) return;
+        try {
+            var notes = [[233, 0.0, 0.5], [220, 0.55, 0.5], [208, 1.1, 0.5], [196, 1.65, 1.5]], t0 = ctx.currentTime + 0.05;
+            notes.forEach(function (n, k) {
+                var osc = ctx.createOscillator(), f = ctx.createBiquadFilter(), g = ctx.createGain(), start = t0 + n[1], dur = n[2], last = k === notes.length - 1;
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(n[0], start);
+                if (last) { osc.frequency.setValueAtTime(n[0], start + 0.5); osc.frequency.exponentialRampToValueAtTime(n[0] * 0.8, start + dur); var lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 6; lg.gain.value = 4; lfo.connect(lg); lg.connect(osc.frequency); lfo.start(start + 0.5); lfo.stop(start + dur); }
+                else osc.frequency.exponentialRampToValueAtTime(n[0] * 0.97, start + dur);
+                f.type = 'lowpass'; f.frequency.setValueAtTime(350, start); f.frequency.linearRampToValueAtTime(1100, start + 0.18); f.frequency.linearRampToValueAtTime(500, start + dur);
+                g.gain.setValueAtTime(0.0001, start); g.gain.exponentialRampToValueAtTime(0.35, start + 0.08); g.gain.setValueAtTime(0.35, start + dur - 0.12); g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+                osc.connect(f); f.connect(g); g.connect(ctx.destination); osc.start(start); osc.stop(start + dur + 0.02);
+            });
+        } catch (e) { /* no sound */ }
+    }
     function noiseBurst(seconds, f0, f1, vol) {
         var ctx = ensureAudio(); if (!ctx) return;
         var now = ctx.currentTime, size = Math.floor(ctx.sampleRate * seconds);
@@ -838,11 +1021,12 @@
     }
 
     /* ---------- Game logic ---------- */
-    function qFinished(q) { return q.s === 'correct' || q.s === 'hidden'; }
+    function qFinished(q) { return q.s === 'correct' || q.s === 'incorrect' || q.s === 'hidden'; }
     function floorFinished(f) { return f.questions.every(qFinished); }
     function allFinished() { return state.floors.length > 0 && state.floors.every(floorFinished); }
     function unfinishedCount() { var n = 0; state.floors.forEach(function (f) { f.questions.forEach(function (q) { if (!qFinished(q)) n++; }); }); return n; }
-    function isSimple() { return config.mode === 'simple'; }
+    function isSimple() { return config.mode === 'simple' || config.mode === 'individual'; }
+    function isIndividual() { return config.mode === 'individual'; }
     function sabotageOn() { return !!config.sabotageEnabled && !isSimple(); }
     function totalQuestions() { var n = 0; state.floors.forEach(function (f) { n += f.questions.length; }); return n; }
     function allowedErrors() { return Math.floor(totalQuestions() / Math.max(1, Number(config.errorsPerQ) || 6)); }
@@ -878,8 +1062,8 @@
     }
     function undo() {
         if (ui.picking || overlayOpen() || !undoStack.length) return;
-        var snap = undoStack.pop(), keepDecoy = state.decoyUses;
-        state = JSON.parse(snap.json); state.decoyUses = keepDecoy; ui.popup = -1;
+        var snap = undoStack.pop(), keepDecoy = state.decoyUses, keepStarts = state.repairStarts;
+        state = JSON.parse(snap.json); state.decoyUses = keepDecoy; state.repairStarts = keepStarts; ui.popup = -1;
         afterChange(true);
     }
     function syncSabotage() {
@@ -961,6 +1145,7 @@
         if (!f.timerStartedOnce && f.timeLeft > 0 && !f.timerOff) { f.timerStartedOnce = true; f.running = true; }
         var n = state.students.length;
         if (n === 0) { q.s = 'assigned'; afterChange(); return; }
+        if (isIndividual()) { var s0 = state.students[0]; q.s = 'assigned'; q.ghost = s0.status !== 'active'; s0.picked = true; state.lastPicked = 0; playSuccessSound(); afterChange(); return; }
         var chosen = weightedPick();
         ui.picking = true; ui.cycling = -1; state.lastPicked = -1;
         save(); render();
@@ -1026,11 +1211,11 @@
     }
     function editTimer(fi) {
         var f = state.floors[fi];
-        var v = prompt('Enter new time in seconds for this floor:', f.timeLeft);
-        if (v === null) return;
-        var sec = parseInt(v, 10);
-        if (isNaN(sec) || sec < 0) { alert('Invalid time entered.'); return; }
-        act('edited a timer', function () { f.timeLeft = sec; f.acc = 0; });
+        askText('New time in seconds for this floor:', f.timeLeft, function (v) {
+            var sec = parseInt(v, 10);
+            if (isNaN(sec) || sec < 0) { tell('Invalid time entered.'); return; }
+            act('edited a timer', function () { f.timeLeft = sec; f.acc = 0; });
+        });
     }
     function testAllGreen() {
         if (state.ended || state.phase !== 'play') return;
@@ -1050,7 +1235,7 @@
     /* ---------- Night, meeting, assign roles ---------- */
     $('night-morning').onclick = function () { state.phase = 'play'; state.meetingFlash = true; afterChange(); };
     function meetingSecs() { return Math.max(5, Number(config.meetingSeconds) || 30); }
-    function repairSecs() { return Math.max(10, Number(config.repairSeconds) || 60); }
+    function repairSecs() { return Math.max(10, Number(config.repairSeconds) || 40); }
     function openMeeting() {
         if (!meetingAllowed()) return;
         act('emergency meeting', function () { state.meetingsUsed++; state.meetingFlash = false; });
@@ -1181,7 +1366,7 @@
             left.appendChild(el('span', '', green + ' / ' + valid));
             var right = el('div'); right.style.cssText = 'display:flex; gap:0.4rem; align-items:center;';
             if (sabotageOn()) { var ab = el('button', 'floor-sabotage-btn', '⚠️'); ab.title = 'Discreet sabotage'; ab.onclick = function () { armSabotage(fi); }; right.appendChild(ab); }
-            if (isSimple() && !state.ended && state.phase === 'play' && floorErrors(f) > 0 && repairsLeft() > 0) {
+            if (isSimple() && !isIndividual() && !state.ended && state.phase === 'play' && floorErrors(f) > 0 && repairsLeft() > 0) {
                 var rb = el('button', 'repair-floor-btn', '🔧'); rb.title = 'Repair this floor'; rb.onclick = function () { act('repair round', function () { state.phase = 'repair'; state.repairFloor = fi; }); };
                 right.appendChild(rb);
             }
@@ -1206,7 +1391,17 @@
             if (s.status !== 'active') {
                 pill.appendChild(el('span', 'pill-tag', STATUS_ICON[s.status] + ' ' + STATUS_LABEL[s.status] + (s.status === 'ejected' && !isSimple() ? ' · ' + (s.impostor ? 'Impostor' : 'Crewmate') : '')));
             }
-            pill.onclick = function (e) { e.stopPropagation(); togglePopup(i); };
+            // A quick tap on another name while a student is at the board is peeking. Holding a name for 2 seconds opens its pop-up without a warning.
+            pill.addEventListener('pointerdown', function () { clearTimeout(ui.holdT); ui.held = false; ui.holdT = setTimeout(function () { ui.held = true; if (!ui.warningActive) togglePopup(i); }, 2000); });
+            ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { pill.addEventListener(ev, function () { clearTimeout(ui.holdT); }); });
+            pill.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+            pill.onclick = function (e) {
+                e.stopPropagation();
+                if (ui.held) { ui.held = false; return; }
+                if (ui.warningActive) return;
+                if (atBoard() && i !== state.lastPicked) { ui.popup = -1; showWarning('peek'); return; }
+                togglePopup(i);
+            };
             wrap.appendChild(pill);
             if (ui.popup === i) wrap.appendChild(buildPopup(s, i));
             bar.appendChild(wrap);
@@ -1252,7 +1447,7 @@
         var d = dangerPoints();
         $('danger-count').textContent = d;
         $('danger-label').textContent = isSimple() ? 'DAMAGE' : 'DANGER'; $('danger-max').textContent = isSimple() ? allowedErrors() : LIMIT;
-        var rl = $('repairs-left'); rl.style.display = isSimple() ? '' : 'none'; rl.textContent = 'REPAIRS LEFT ' + repairsLeft();
+        var rl = $('repairs-left'); rl.style.display = isSimple() && !isIndividual() ? '' : 'none'; rl.textContent = 'REPAIRS LEFT ' + repairsLeft();
         $('btn-meeting').style.display = isSimple() ? 'none' : '';
         if ((ui.lastDanger >= 0 && d > ui.lastDanger) || ui.lastDanger === -2) { var ds = $('danger-status'); ds.classList.remove('bump'); void ds.offsetWidth; ds.classList.add('bump'); }
         ui.lastDanger = d;
@@ -1270,7 +1465,7 @@
         $('meeting-why').textContent = why; $('btn-meeting').title = why;
         var mb = $('btn-meeting'); mb.disabled = !meetingAllowed(); mb.classList.toggle('flash', !!state.meetingFlash && meetingAllowed());
         updateCountdownRibbon();
-        $('btn-assign').style.display = (state.rolesAssigned && !isSimple()) ? 'none' : ''; $('btn-assign').textContent = isSimple() ? '🎲 Scan crew' : '🎲 Assign roles';
+        $('btn-assign').style.display = ((state.rolesAssigned && !isSimple()) || isIndividual()) ? 'none' : ''; $('btn-assign').textContent = isSimple() ? '🎲 Scan crew' : '🎲 Assign roles';
         $('btn-video').style.display = /^https?:\/\//i.test(config.videoUrl || '') ? '' : 'none';
         updateRocketShake();
         $('night-overlay').style.display = state.phase === 'night' && !state.ended ? 'flex' : 'none';
@@ -1284,6 +1479,7 @@
     }
     function render() {
         $('rocket-name-display').textContent = config.rocketLabel;
+        $('decoy-label').textContent = config.decoyMode === 'strict' ? 'DO NOT USE UNDER ANY CIRCUMSTANCES' : 'DO NOT USE';
         renderFloors(); renderStudents(); renderStatus(); applyEndEffects(); renderRepair();
     }
 
@@ -1378,9 +1574,9 @@
     /* ---------- Repair game (a small Touch Match) ---------- */
     var R = null;       // runtime state of the repair screen (not saved)
     var COLOUR_CLASSES = ['cA', 'cB', 'cC', 'cD', 'cE', 'cF', 'cG', 'cH'];
-    function parsePairs() {
-        var pairs = [], decoys = [];
-        String(config.repairPairs || '').split('\n').forEach(function (line, i) {
+    function parsePairs(round) {
+        var pairs = [], decoys = [], texts = Array.isArray(config.repairTexts) && config.repairTexts.length ? config.repairTexts : [config.repairPairs];
+        String(texts[(round || 0) % texts.length] || '').split('\n').forEach(function (line, i) {
             line = line.trim(); if (!line) return;
             if (line.indexOf('=') > -1) { var p = line.split('='); var a = p[0].trim(), b = p.slice(1).join('=').trim(); if (a && b) pairs.push({ id: 'p' + i, left: a, right: b }); }
             else decoys.push(line);
@@ -1445,7 +1641,8 @@
         if (config.delegateMode === 'random') { R.delegates = shuffle(c.slice()).slice(0, 2); }
     }
     function startRepairPlay() {
-        var pd = parsePairs();
+        var round = state.repairStarts || 0; state.repairStarts = round + 1; save();
+        var pd = parsePairs(round);
         R.B = { pairs: pd.pairs, decoys: pd.decoys }; boardFill(R.B, 5, 8);
         R.stage = 'play'; R.timeLeft = repairSecs() * 1000; R.count = 0; R.msg = ''; R.msgBad = false;
         if (R.iv) clearInterval(R.iv);
@@ -1576,32 +1773,65 @@
     }
 
     /* ---------- Decoy and warning ---------- */
-    function showWarning(level) {
-        var w = $('warning'); ui.warningActive = true;
-        $('warning-title').textContent = level === 1 ? 'UNAUTHORISED ACCESS ATTEMPTED' : 'SECURITY ALERT: REPEATED ATTEMPT';
-        w.className = 'warning' + (level >= 2 ? ' level2' : ''); w.style.display = 'flex';
-        startSiren(WARNING_MS);
+    function sceneStars(box) { [[40, 20], [58, 70], [72, 28], [85, 62], [30, 80], [92, 18]].forEach(function (p, k) { var st = el('span', 'wstar', '✦'); st.style.left = p[0] + '%'; st.style.top = p[1] + '%'; st.style.animationDelay = (k * 0.2) + 's'; box.appendChild(st); }); }
+    // kind: 1 or 2 (standard button), 'strict' (Strict button), 'peek' (looking at someone else's pop-up)
+    function showWarning(kind) {
+        var w = $('warning'), scene = $('wscene'), s = state.students[state.lastPicked], eject = false, ms = WARNING_MS, page = '';
+        ui.warningActive = true; scene.innerHTML = '';
+        if (kind === 'strict') { page = s && s.status !== 'active' ? 'lost' : 'ejected'; eject = page === 'ejected' && !!s; }
+        else if (kind === 2) { page = s && s.status !== 'active' ? 'lost' : 'ejected'; eject = page === 'ejected' && !!s; }
+        else if (kind === 'peek') page = 'peek';
+        var nm = s ? s.name : 'Someone';
+        w.className = 'warning' + (page ? ' scene' : '') + (kind === 'peek' ? ' peek' : (page ? ' level2' : ''));
+        if (kind === 1) { $('warning-title').textContent = 'UNAUTHORISED ACCESS ATTEMPTED'; startSiren(ms); }
+        else if (kind === 'peek') {
+            $('warning-title').textContent = "Looking at someone else's role is cheating!"; $('warning-kill').textContent = 'PEEKING DETECTED';
+            scene.appendChild(el('div', 'weyes', '👀')); playTrombone();
+        } else if (page === 'lost') {
+            $('warning-title').textContent = kind === 'strict' ? 'UNDER NO CIRCUMSTANCES!' : 'SECURITY ALERT: REPEATED ATTEMPT'; $('warning-kill').textContent = 'LOST IN SPACE';
+            scene.appendChild(el('div', 'wrock', '🚀')); scene.appendChild(el('div', 'wdrift', '🌌 ' + nm)); scene.appendChild(el('div', 'wsig', '· · ·')); sceneStars(scene); startSiren(ms);
+        } else if (page === 'ejected') {
+            $('warning-title').textContent = kind === 'strict' ? 'UNDER NO CIRCUMSTANCES!' : 'SECURITY ALERT: REPEATED ATTEMPT'; $('warning-kill').textContent = 'EJECTED EJECTED EJECTED';
+            scene.appendChild(el('div', 'wdoor', '🚪')); scene.appendChild(el('div', 'wfly', '🧑‍🚀 ' + nm)); sceneStars(scene); startSiren(ms);
+        }
+        w.style.display = 'flex';
         setTimeout(function () {
             w.style.display = 'none'; ui.warningActive = false;
-            if (level >= 2) {
-                var s = state.students[state.lastPicked];
-                if (s && s.status === 'active') act('decoy eject', function () { s.status = 'ejected'; state.crewDirty = true; });
-            }
-        }, WARNING_MS);
+            if (eject && s && s.status === 'active') act('decoy eject', function () { s.status = 'ejected'; state.crewDirty = true; });
+        }, ms);
     }
+    function atBoard() {
+        return state.phase === 'play' && !state.ended && !ui.picking && state.lastPicked >= 0 && state.floors.some(function (f) { return f.questions.some(function (q) { return q.s === 'assigned'; }); });
+    }
+    function openDemo() {
+        var g = $('demo-grid'); g.innerHTML = '';
+        for (var i = 1; i <= 8; i++) (function (n) {
+            var t = el('button', 'demo-tile', String(n)); t.type = 'button';
+            t.onclick = function () {
+                ensureAudio();
+                if (t.classList.contains('incorrect')) { t.classList.remove('incorrect'); }
+                else if (t.classList.contains('correct')) { t.classList.remove('correct'); t.classList.add('incorrect'); playFailureSound(); }
+                else { t.classList.add('correct'); playSuccessSound(); }
+            };
+            g.appendChild(t);
+        })(i);
+        $('demo-overlay').style.display = 'flex';
+    }
+    $('btn-demo').onclick = openDemo;
+    $('demo-close').onclick = function () { $('demo-overlay').style.display = 'none'; };
     $('decoy').addEventListener('click', function () {
         ensureAudio();
         if (ui.warningActive || ui.decoyPending) return;
         ui.decoyPending = true; state.decoyUses = (state.decoyUses || 0) + 1;
-        var level = state.decoyUses === 1 ? 1 : 2; save();
-        setTimeout(function () { ui.decoyPending = false; showWarning(level); }, DECOY_DELAY_MS);
+        var kind = config.decoyMode === 'strict' ? 'strict' : (state.decoyUses === 1 ? 1 : 2); save();
+        setTimeout(function () { ui.decoyPending = false; showWarning(kind); }, DECOY_DELAY_MS);
     });
     $('warning').addEventListener('pointerdown', function (e) { e.preventDefault(); e.stopPropagation(); });
 
     /* ---------- Rules ---------- */
     var rulesEdits = lsGet(LS_RULES) || {}, rulesEditing = false;
-    function rulesKey(tab) { return (isSimple() ? 's' : '') + tab; }
-    function rulesHtml(tab) { var k = rulesKey(tab); return rulesEdits[k] || RULES_DEFAULT[k]; }
+    function rulesKey(tab) { return (isIndividual() ? 'i' : (isSimple() ? 's' : '')) + tab; }
+    function rulesHtml(tab) { var k = rulesKey(tab), h = rulesEdits[k] || RULES_DEFAULT[k]; return config.decoyMode === 'strict' ? String(h).replace(/(It says |marked )DO NOT USE/g, '$1DO NOT USE UNDER ANY CIRCUMSTANCES') : h; }
     function fitRules() {
         var t = $('rules-text'), wrap = $('rules-wrap'), avail = wrap.clientHeight;
         var px = Math.min(parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.5, 30);
@@ -1707,25 +1937,48 @@
     function todayStr() { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
     function selLesson() { return ui.lessons.filter(function (x) { return x.id === ui.lessonSel; })[0]; }
     function curLevel() { return ui.levels.filter(function (x) { return x.id === ui.levelSel; })[0]; }
-    function selWordList() { var L = selLesson(), lv = curLevel(); if (!L || !lv) return null; return lv.wordLists.filter(function (w) { return w.id === L.wordList; })[0] || lv.wordLists[0] || null; }
+    function repairN() { var r = parseInt($('setting-repair-rounds').value, 10); if (isNaN(r)) r = config.repairRounds === undefined ? 3 : config.repairRounds; return Math.max(1, Math.min(20, r)); }
+    function selWordList() { var L = selLesson(), lv = curLevel(); if (!L || !lv) return null; var ids = repairIdsFor(L, lv.wordLists, repairN()); if (!(ui.editRound >= 0 && ui.editRound < ids.length)) ui.editRound = 0; return lv.wordLists.filter(function (w) { return w.id === ids[ui.editRound]; })[0] || lv.wordLists[0] || null; }
     function saveLessonDraft() { var lv = curLevel(); if (lv) lv.lessonSel = ui.lessonSel; }
-    function loadLessonFields() {
-        var lv = curLevel(), sel = $('setting-wordlist'), w = selWordList(); sel.innerHTML = '';
-        ui.levels.forEach(function (x) {
-            var g = document.createElement('optgroup'); g.label = x.name + (x.id === ui.levelSel ? '' : ' (copies into this level)');
-            x.wordLists.forEach(function (y) { var o = document.createElement('option'); o.value = x.id + '|' + y.id; o.textContent = y.name; g.appendChild(o); });
-            sel.appendChild(g);
+    function updateRepairCounts() {
+        var L = selLesson(), lv = curLevel(); if (!L || !lv) return;
+        var ids = repairIdsFor(L, lv.wordLists, repairN());
+        Array.prototype.forEach.call($('repair-lists').querySelectorAll('.rl-count'), function (b, r) {
+            var w = lv.wordLists.filter(function (x) { return x.id === ids[r]; })[0], c = w ? pairCount(w.text) : 0;
+            b.textContent = c + ' pairs' + (c < MIN_PAIRS ? ' ⚠' : ''); b.title = c < MIN_PAIRS ? 'Too short: a list needs at least ' + MIN_PAIRS + ' pairs' : 'Enough pairs'; b.className = 'rl-count' + (c < MIN_PAIRS ? ' low' : '');
         });
-        if (w && lv) sel.value = lv.id + '|' + w.id; $('setting-pairs').value = w ? w.text : '';
     }
-    function pickWordList(value) {
+    function setRoundList(r, id) { var L = selLesson(), lv = curLevel(); L.repairLists = repairIdsFor(L, lv.wordLists, Math.max(r + 1, repairN())); L.repairLists[r] = id; if (r === 0) L.wordList = id; }
+    function loadLessonFields() {
+        var L = selLesson(), lv = curLevel(), w = selWordList(), box = $('repair-lists'); box.innerHTML = '';
+        if (!L || !lv) return;
+        var ids = repairIdsFor(L, lv.wordLists, repairN()); L.repairLists = ids;
+        ids.forEach(function (id, r) {
+            var row = el('div', 'rl-row' + (r === ui.editRound ? ' sel' : '')); row.appendChild(el('span', 'rl-n', 'Round ' + (r + 1)));
+            var sel = document.createElement('select');
+            ui.levels.forEach(function (x) {
+                var g = document.createElement('optgroup'); g.label = x.name + (x.id === ui.levelSel ? '' : ' (copies into this level)');
+                x.wordLists.forEach(function (y) { var o = document.createElement('option'); o.value = x.id + '|' + y.id; o.textContent = y.name; g.appendChild(o); });
+                sel.appendChild(g);
+            });
+            sel.value = lv.id + '|' + id;
+            sel.onchange = function () { pickWordList(r, this.value); ui.editRound = r; loadLessonFields(); scheduleCommit(); };
+            row.appendChild(sel); row.appendChild(el('span', 'rl-count', ''));
+            var ed = el('button', 'btn', '✎ Edit'); ed.type = 'button'; ed.onclick = function () { ui.editRound = r; loadLessonFields(); }; row.appendChild(ed);
+            box.appendChild(row);
+        });
+        updateRepairCounts();
+        $('edit-label').textContent = 'Editing: ' + (w ? w.name : '') + ' (round ' + ((ui.editRound || 0) + 1) + ')';
+        $('setting-pairs').value = w ? w.text : '';
+    }
+    function pickWordList(r, value) {
         var L = selLesson(), lv = curLevel(); if (!L || !lv) return;
         var parts = String(value).split('|'), from = ui.levels.filter(function (x) { return x.id === parts[0]; })[0], w = from && from.wordLists.filter(function (y) { return y.id === parts[1]; })[0];
         if (!w) return;
-        if (from.id === lv.id) { L.wordList = w.id; return; }
+        if (from.id === lv.id) { setRoundList(r, w.id); return; }
         var same = lv.wordLists.filter(function (y) { return y.name === w.name && y.text === w.text; })[0];
         if (!same) { var nm = uniqueName(w.name, lv.wordLists.map(function (y) { return y.name; }).concat([])); same = { id: uid('w'), name: nm === w.name ? w.name : w.name + ' (from ' + from.name + ')', text: w.text }; lv.wordLists.push(same); }
-        L.wordList = same.id;
+        setRoundList(r, same.id);
     }
     function scheduleCommit() { if (!ui.settingsReady) return; clearTimeout(ui.commitTimer); ui.commitTimer = setTimeout(commitSettings, 250); }
     function renderLevels() {
@@ -1754,7 +2007,7 @@
     function selectLevelUI(id) {
         ui.levelSel = id; var lv = curLevel(); ui.lessons = lv.lessons;
         ui.lessonSel = (ui.lessons.filter(function (x) { return x.id === lv.lessonSel; })[0] || ui.lessons[0]).id;
-        ui.panelOpen = false; ui.ticked = {}; loadLessonFields(); renderLevels(); renderLessons();
+        ui.panelOpen = false; ui.ticked = {}; ui.editRound = 0; loadLessonFields(); renderLevels(); renderLessons();
     }
     function switchUILevel(id) { if (id === ui.levelSel) return; saveLessonDraft(); selectLevelUI(id); }
     function renderLessons() {
@@ -1777,11 +2030,12 @@
         scheduleCommit();
         if (!L || !ui.panelOpen) { fitSettings(); return; }
         var head = el('div', 'lesson-head'); head.appendChild(el('b', '', L.name + ' · plays in the game'));
-        var rn = el('button', 'btn', 'Rename'); rn.type = 'button'; rn.onclick = function () { var n = prompt('New name for this session:', L.name); if (n === null) return; n = n.trim(); if (!n) return; L.name = n; renderLessons(); };
+        var rn = el('button', 'btn', 'Rename'); rn.type = 'button'; rn.onclick = function () { askText('New name for this session:', L.name, function (n) { n = n.trim(); if (!n) return; L.name = n; renderLessons(); }); };
         var dl = el('button', 'btn', 'Delete session'); dl.type = 'button'; dl.onclick = function () {
             if (ui.lessons.length < 2) { $('settings-error').textContent = 'You need at least one session.'; return; }
-            if (!confirm('Delete "' + L.name + '"?')) return;
-            var k = ui.lessons.indexOf(L); ui.lessons.splice(k, 1); ui.lessonSel = ui.lessons[0].id; loadLessonFields(); renderLessons();
+            askYes('Delete the session "' + L.name + '"?', 'Delete', function () {
+                var k = ui.lessons.indexOf(L); ui.lessons.splice(k, 1); ui.lessonSel = ui.lessons[0].id; loadLessonFields(); renderLessons();
+            });
         };
         head.appendChild(rn); head.appendChild(dl); panel.appendChild(head);
         function field(e, key, isTime) {
@@ -1792,8 +2046,7 @@
                 var v = isTime ? parseTimeText(inp.value) : parseInt(inp.value, 10);
                 var ok = !isNaN(v) && (key === 'questions' ? (v >= 1 && v <= 12) : v >= (isTime ? 1 : 0));
                 inp.classList.toggle('bad', !ok); if (ok) e[key] = v;
-                if (isTime) e._typed = true;
-                else if (ok && key === 'questions' && !e._typed) { e.time = defaultTime(v); var t = inp.parentNode && inp.parentNode.querySelector('.ex-time'); if (t) { t.value = e.time; t.classList.remove('bad'); } }
+                if (!isTime && ok && key === 'questions') { e.time = defaultTime(v); var t = inp.parentNode && inp.parentNode.querySelector('.ex-time'); if (t) { t.value = e.time; t.classList.remove('bad'); } }
             };
             return inp;
         }
@@ -1810,7 +2063,7 @@
             row.appendChild(x); panel.appendChild(row);
         });
         var add = el('button', 'ex-add', '+ Add exercise'); add.type = 'button';
-        add.onclick = function () { var last = L.exercises[L.exercises.length - 1]; L.exercises.push({ page: last ? last.page : 1, exercise: last ? last.exercise + 1 : 1, questions: 5, time: defaultTime(5), _typed: false }); renderLessons(); panel.scrollTop = panel.scrollHeight; };
+        add.onclick = function () { var last = L.exercises[L.exercises.length - 1]; L.exercises.push({ page: last ? last.page : 1, exercise: last ? last.exercise + 1 : 1, questions: 5, time: defaultTime(5) }); renderLessons(); panel.scrollTop = panel.scrollHeight; };
         panel.appendChild(add);
         fitSettings();
     }
@@ -1818,50 +2071,59 @@
         ui.levels = config.levels.map(function (lv) {
             return { id: lv.id, name: lv.name, hidden: !!lv.hidden, lessonSel: lv.activeLesson,
                 wordLists: lv.wordLists.map(function (w) { return { id: w.id, name: w.name, text: w.text }; }),
-                lessons: lv.lessons.map(function (l) { return { id: l.id, name: l.name, exercises: clone(l.exercises).map(function (e) { e._typed = true; return e; }), wordList: l.wordList }; }) };
+                lessons: lv.lessons.map(function (l) { return { id: l.id, name: l.name, exercises: clone(l.exercises), wordList: l.wordList, repairLists: Array.isArray(l.repairLists) ? l.repairLists.slice() : undefined }; }) };
         });
         ui.levelSel = config.activeLevel; ui.ticked = {}; var lv = curLevel(); ui.lessons = lv.lessons;
         ui.lessonSel = (ui.lessons.filter(function (x) { return x.id === lv.lessonSel; })[0] || ui.lessons[0]).id;
-        ui.panelOpen = false; loadLessonFields(); renderLevels(); renderLessons(); $('lesson-msg').textContent = '';
+        ui.panelOpen = false; ui.editRound = 0; loadLessonFields(); renderLevels(); renderLessons(); $('lesson-msg').textContent = '';
     }
     function newLevelObj(name) {
         var sid = uid('l'), wid = uid('w');
         return { id: uid('lv'), name: name, lessonSel: sid, wordLists: [{ id: wid, name: 'Words 1', text: DEFAULT_PAIRS }], lessons: [{ id: sid, name: 'Session 1', exercises: [{ page: 1, exercise: 1, questions: 5, time: defaultTime(5) }], wordList: wid }] };
     }
     $('level-new').onclick = function () {
-        var n = prompt('Name of the new level (for example B1+):', ''); if (n === null) return; n = n.trim(); if (!n) return;
-        saveLessonDraft(); var lv = newLevelObj(n); ui.levels.push(lv); selectLevelUI(lv.id);
+        askText('Name of the new level (for example B1+):', '', function (n) {
+            n = n.trim(); if (!n) return;
+            saveLessonDraft(); var lv = newLevelObj(n); ui.levels.push(lv); selectLevelUI(lv.id);
+        });
     };
     $('level-rename').onclick = function () {
-        var lv = curLevel(); var n = prompt('New name for this level:', lv.name); if (n === null) return; n = n.trim(); if (!n) return; lv.name = n; renderLevels(); scheduleCommit();
+        var lv = curLevel(); askText('New name for this level:', lv.name, function (n) { n = n.trim(); if (!n) return; lv.name = n; renderLevels(); scheduleCommit(); });
     };
     $('level-delete').onclick = function () {
         if (ui.levels.length < 2) { $('settings-error').textContent = 'You need at least one level.'; return; }
-        var lv = curLevel(); if (!confirm('Delete the level "' + lv.name + '" with all its sessions?')) return;
-        ui.levels = ui.levels.filter(function (x) { return x.id !== lv.id; }); selectLevelUI((ui.levels.filter(function (x) { return !x.hidden; })[0] || ui.levels[0]).id);
+        var lv = curLevel();
+        askYes('Delete the level "' + lv.name + '" with all its sessions?', 'Delete', function () {
+            ui.levels = ui.levels.filter(function (x) { return x.id !== lv.id; }); selectLevelUI((ui.levels.filter(function (x) { return !x.hidden; })[0] || ui.levels[0]).id);
+        });
     };
     $('lesson-new').onclick = function () {
-        var n = prompt('Name of the new session:', 'Session ' + (ui.lessons.length + 1)); if (n === null) return; n = n.trim(); if (!n) return;
-        saveLessonDraft(); var lv = curLevel(), id = uid('l');
-        ui.lessons.push({ id: id, name: n, exercises: [{ page: 1, exercise: 1, questions: 5, time: defaultTime(5) }], wordList: lv.wordLists[0].id });
-        ui.lessonSel = id; loadLessonFields(); renderLessons();
+        askText('Name of the new session:', 'Session ' + (ui.lessons.length + 1), function (n) {
+            n = n.trim(); if (!n) return;
+            saveLessonDraft(); var lv = curLevel(), id = uid('l');
+            ui.lessons.push({ id: id, name: n, exercises: [{ page: 1, exercise: 1, questions: 5, time: defaultTime(5) }], wordList: lv.wordLists[0].id });
+            ui.lessonSel = id; loadLessonFields(); renderLessons();
+        });
     };
-    $('setting-pairs').addEventListener('input', function () { var w = selWordList(); if (w) w.text = $('setting-pairs').value; });
-    $('setting-wordlist').onchange = function () { pickWordList(this.value); loadLessonFields(); scheduleCommit(); };
+    $('setting-pairs').addEventListener('input', function () { var w = selWordList(); if (w) { w.text = $('setting-pairs').value; updateRepairCounts(); } });
+    $('setting-repair-rounds').addEventListener('input', function () { loadLessonFields(); });
     $('wl-new').onclick = function () {
-        var n = prompt('Name of the new word list:', 'Words ' + (curLevel().wordLists.length + 1)); if (n === null) return; n = n.trim(); if (!n) return;
-        var w = { id: uid('w'), name: n, text: DEFAULT_PAIRS }; curLevel().wordLists.push(w); selLesson().wordList = w.id; loadLessonFields(); scheduleCommit();
+        askText('Name of the new word list:', 'Words ' + (curLevel().wordLists.length + 1), function (n) {
+            n = n.trim(); if (!n) return;
+            var w = { id: uid('w'), name: n, text: DEFAULT_PAIRS }; curLevel().wordLists.push(w); setRoundList(ui.editRound || 0, w.id); loadLessonFields(); scheduleCommit();
+        });
     };
     $('wl-rename').onclick = function () {
-        var w = selWordList(); if (!w) return; var n = prompt('New name for this word list:', w.name); if (n === null) return; n = n.trim(); if (!n) return; w.name = n; loadLessonFields(); scheduleCommit();
+        var w = selWordList(); if (!w) return; askText('New name for this word list:', w.name, function (n) { n = n.trim(); if (!n) return; w.name = n; loadLessonFields(); scheduleCommit(); });
     };
     $('wl-delete').onclick = function () {
         var lv = curLevel(), w = selWordList(); if (!w) return;
         if (lv.wordLists.length < 2) { $('settings-error').textContent = 'You need at least one word list.'; return; }
-        if (!confirm('Delete the word list "' + w.name + '"?')) return;
-        lv.wordLists = lv.wordLists.filter(function (x) { return x.id !== w.id; });
-        lv.lessons.forEach(function (l) { if (l.wordList === w.id) l.wordList = lv.wordLists[0].id; });
-        loadLessonFields(); scheduleCommit();
+        askYes('Delete the word list "' + w.name + '"?', 'Delete', function () {
+            lv.wordLists = lv.wordLists.filter(function (x) { return x.id !== w.id; });
+            lv.lessons.forEach(function (l) { if (l.wordList === w.id) l.wordList = lv.wordLists[0].id; if (Array.isArray(l.repairLists)) l.repairLists = l.repairLists.map(function (id) { return id === w.id ? lv.wordLists[0].id : id; }); });
+            loadLessonFields(); scheduleCommit();
+        });
     };
 
     /* ----- export and import ----- */
@@ -1871,10 +2133,11 @@
         setTimeout(function () { URL.revokeObjectURL(a.href); if (a.parentNode) a.parentNode.removeChild(a); }, 500);
     }
     function levelOut(lv, sessions) {
-        var used = {}; sessions.forEach(function (L) { used[L.wordList] = true; });
+        var used = {}, n = repairN();
+        sessions.forEach(function (L) { repairIdsFor(L, lv.wordLists, n).forEach(function (id) { used[id] = true; }); });
         var wls = lv.wordLists.filter(function (w) { return used[w.id]; });
         return { name: lv.name, wordLists: wls.map(function (w) { return { name: w.name, text: w.text }; }),
-            sessions: sessions.map(function (L) { var w = lv.wordLists.filter(function (x) { return x.id === L.wordList; })[0]; return { name: L.name, exercises: normaliseExercises(L.exercises), wordList: w ? w.name : '' }; }) };
+            sessions: sessions.map(function (L) { var w = lv.wordLists.filter(function (x) { return x.id === L.wordList; })[0], ids = repairIdsFor(L, lv.wordLists, n); return { name: L.name, exercises: normaliseExercises(L.exercises), wordList: w ? w.name : '', repairLists: ids.slice(1).map(function (id) { var x = lv.wordLists.filter(function (y) { return y.id === id; })[0]; return x ? x.name : ''; }) }; }) };
     }
     function setupToText(levels, title) {
         var out = ['ROCKET SETUP · ' + title + ' · exported ' + todayStr(), ''];
@@ -1882,7 +2145,7 @@
             out.push('LEVEL ' + lv.name, '');
             lv.wordLists.forEach(function (w) { var n = String(w.text || '').split('\n').filter(function (x) { return x.trim(); }); out.push('=== ' + w.name + ' (' + n.length + ' pairs) ===', n.join('\n'), ''); });
             lv.sessions.forEach(function (S) {
-                out.push('SESSION: ' + S.name + (S.wordList ? ' (word list: ' + S.wordList + ')' : ''));
+                out.push('SESSION: ' + S.name + (S.wordList ? ' (word list: ' + S.wordList + ')' : '') + ((S.repairLists || []).some(function (x) { return x && x !== S.wordList; }) ? ' (repair lists: ' + S.repairLists.join(' | ') + ')' : ''));
                 S.exercises.forEach(function (e) { out.push('p. ' + e.page + ' ex. ' + e.exercise + ' - ' + e.questions + ' questions - ' + e.time + ' seconds'); });
                 out.push('');
             });
@@ -1920,10 +2183,11 @@
                 var hl = curLv || level(null); curList = { name: nm, lines: [] }; hl.wordLists.push(curList); curSes = null; return;
             }
             if (/^(session|lesson)\b/i.test(line)) {
+                var rl = line.match(/\(\s*repair lists\s*:\s*(.+?)\s*\)\s*$/i); if (rl) line = line.replace(/\s*\(\s*repair lists\s*:[^)]*\)\s*$/i, '');
                 var wl = line.match(/\(\s*word list\s*:\s*(.+?)\s*\)\s*$/i), head = line.replace(/\s*\(\s*word list\s*:[^)]*\)\s*$/i, '');
                 var sn = head.match(/^session\s*:\s*(.+)$/i); head = sn ? sn[1].trim() : head.replace(/[:\s]+$/, '').replace(/\s+/g, ' ');
                 if (!sn && head === head.toUpperCase()) head = head.charAt(0) + head.slice(1).toLowerCase();
-                var hs = curLv || level(null); curSes = { name: head, exercises: [], wordList: wl ? wl[1] : undefined }; hs.sessions.push(curSes); curList = null; return;
+                var hs = curLv || level(null); curSes = { name: head, exercises: [], wordList: wl ? wl[1] : undefined, repairLists: rl ? rl[1].split('|').map(function (x) { return x.trim(); }) : undefined }; hs.sessions.push(curSes); curList = null; return;
             }
             if (curList) { curList.lines.push(line); return; }
             var ex = parseExerciseLine(line); if (!ex) return;
@@ -1945,7 +2209,7 @@
         sessions.forEach(function (S) {
             var name = uniqueName(S.name, lv.lessons.map(function (l) { return l.name; }));
             var wid = (S.wordList && wordListMap[S.wordList]) || lv.wordLists[0].id;
-            var L = { id: uid('l'), name: name, exercises: S.exercises, wordList: wid }; lv.lessons.push(L); added.push(L);
+            var L = { id: uid('l'), name: name, exercises: S.exercises, wordList: wid, repairLists: [wid].concat((S.repairLists || []).map(function (nm) { return (nm && wordListMap[nm]) || wid; })) }; lv.lessons.push(L); added.push(L);
         });
         return added;
     }
@@ -1965,7 +2229,7 @@
                 var nw = { id: uid('w'), name: nm, text: String(w.text || '') }; lv.wordLists.push(nw); map[w.name] = nw.id; listsAdded++;
                 if (!firstLevel) firstLevel = lv;
             });
-            var sessions = fl.sessions.filter(function (S) { return S && typeof S.name === 'string' && !checkExercises(S.exercises); }).map(function (S) { return { name: S.name, exercises: normaliseExercises(S.exercises), wordList: S.wordList }; });
+            var sessions = fl.sessions.filter(function (S) { return S && typeof S.name === 'string' && !checkExercises(S.exercises); }).map(function (S) { return { name: S.name, exercises: normaliseExercises(S.exercises), wordList: S.wordList, repairLists: S.repairLists }; });
             var added = addSessionsToLevel(lv, sessions, map); total += added.length;
             if (added.length && !firstLevel) { firstLevel = lv; firstSession = added[0]; }
             if (!lv.lessonSel && lv.lessons.length) lv.lessonSel = lv.lessons[0].id;
@@ -1997,11 +2261,24 @@
     };
     function fitSettings() {
         var ov = $('settings-overlay'); if (ov.style.display !== 'flex') return;
-        var root = document.documentElement, body = document.querySelector('.settings-body'), lo = 13, hi = 22;
-        var pn = $('lesson-panel');
-        function fits(px) { root.style.fontSize = px + 'px'; if (pn.offsetParent && pn.scrollHeight > pn.clientHeight + 1) return false; var ds = ov.querySelectorAll('details[open]'); for (var di = 0; di < ds.length; di++) if (ds[di].scrollHeight > ds[di].clientHeight + 1) return false; return body.scrollHeight <= body.clientHeight + 1 && body.scrollWidth <= body.clientWidth + 1 && ov.scrollHeight <= ov.clientHeight + 1; }
-        for (var q = 0; q < 9; q++) { var mid = (lo + hi) / 2; if (fits(mid)) lo = mid; else hi = mid; }
-        root.style.fontSize = lo + 'px';
+        document.body.classList.toggle('test-openall', !!window.__openAll);
+        if (window.__openAll) { document.documentElement.style.fontSize = '14px'; return; }
+        var root = document.documentElement, body = document.querySelector('.settings-body'), pn = $('lesson-panel');
+        function fits(px) { root.style.fontSize = px + 'px'; if (pn.offsetParent) { if (pn.scrollHeight > pn.clientHeight + 1 || pn.scrollWidth > pn.clientWidth + 1) return false; var rws = pn.querySelectorAll('.ex-row'); for (var ri = 0; ri < rws.length; ri++) if (rws[ri].scrollWidth > rws[ri].clientWidth + 1) return false; } var ds = ov.querySelectorAll('details[open]'); for (var di = 0; di < ds.length; di++) if (ds[di].scrollHeight > ds[di].clientHeight + 1 || ds[di].scrollWidth > ds[di].clientWidth + 1) return false; return body.scrollHeight <= body.clientHeight + 1 && body.scrollWidth <= body.clientWidth + 1 && ov.scrollHeight <= ov.clientHeight + 1; }
+        function search() { var lo = 13, hi = 24; for (var q = 0; q < 9; q++) { var mid = (lo + hi) / 2; if (fits(mid)) lo = mid; else hi = mid; } return lo; }
+        var np = 0; Array.prototype.forEach.call(ov.querySelectorAll('details.sec'), function (d) { if (!d.open && d.style.display !== 'none') np++; }); body.style.setProperty('--npills', Math.max(1, np));
+        function run() {
+            var best = 13, bestCols = 4, found = false;
+            if (pn.offsetParent) {
+                for (var cols = 1; cols <= 4; cols++) { pn.style.setProperty('--excols', cols); if (!fits(13)) continue; var f = search(); if (!found || f > best + 0.5) { best = f; bestCols = cols; found = true; } if (f >= 18) break; }
+                pn.style.setProperty('--excols', bestCols);
+            } else { found = fits(13); best = search(); }
+            return { best: best, found: found };
+        }
+        ov.classList.remove('tight');
+        var r = run();
+        if (!r.found) { ov.classList.add('tight'); r = run(); }
+        root.style.fontSize = r.best + 'px';
     }
     $('sec-lessons').addEventListener('toggle', function () { if (ui.syncing || !ui.settingsReady) return; if (this.open !== !!ui.panelOpen) { ui.panelOpen = this.open; renderLessons(); } });
     $('settings-overlay').addEventListener('toggle', function (e) {
@@ -2013,27 +2290,30 @@
     }, true);
     window.addEventListener('resize', function () { fitSettings(); });
     function syncModeUI() {
-        var m = $('setting-mode').value === 'simple' ? 'simple' : 'classic';
+        var m = $('setting-mode').value === 'simple' ? 'simple' : ($('setting-mode').value === 'individual' ? 'individual' : 'classic');
         Array.prototype.forEach.call($('mode-btns').children, function (b) { b.classList.toggle('sel', b.getAttribute('data-v') === m); });
-        Array.prototype.forEach.call($('settings-overlay').querySelectorAll('details[data-mode]'), function (d) { d.style.display = d.getAttribute('data-mode') === m ? '' : 'none'; });
+        Array.prototype.forEach.call($('decoy-btns').children, function (b) { b.classList.toggle('sel', b.getAttribute('data-v') === ($('setting-decoy').value === 'strict' ? 'strict' : 'standard')); });
+        Array.prototype.forEach.call($('settings-overlay').querySelectorAll('details[data-mode]'), function (d) { d.style.display = d.getAttribute('data-mode').split(' ').indexOf(m) > -1 ? '' : 'none'; });
+        $('grp-repair-rounds').style.display = m === 'individual' ? 'none' : '';
         Array.prototype.forEach.call($('settings-overlay').querySelectorAll('.onoff'), function (g) {
             var on = $(g.getAttribute('data-for')).checked;
             Array.prototype.forEach.call(g.children, function (b) { b.classList.toggle('sel', (b.getAttribute('data-v') === '1') === on); });
         });
         fitSettings();
     }
+    Array.prototype.forEach.call($('decoy-btns').children, function (b) { b.onclick = function () { $('setting-decoy').value = b.getAttribute('data-v'); syncModeUI(); scheduleCommit(); }; });
     Array.prototype.forEach.call($('mode-btns').children, function (b) { b.onclick = function () { $('setting-mode').value = b.getAttribute('data-v'); syncModeUI(); scheduleCommit(); }; });
     Array.prototype.forEach.call($('settings-overlay').querySelectorAll('.onoff'), function (g) {
         Array.prototype.forEach.call(g.children, function (b) { b.onclick = function () { $(g.getAttribute('data-for')).checked = b.getAttribute('data-v') === '1'; syncModeUI(); scheduleCommit(); }; });
     });
-    $('btn-newgame').onclick = function () { if (!confirm('Start a new game?')) return; closeSettings(); if ($('settings-overlay').style.display === 'none') restartGame(); };
+    $('btn-newgame').onclick = function () { askYes('Start a new game?', 'Start a new game', function () { closeSettings(); if ($('settings-overlay').style.display === 'none') restartGame(); }); };
     function floorSig(c) { return JSON.stringify([c.mode, c.students, c.impostorCount, c.noImpostor, c.activeLevel, c.activeLesson, c.exercises]); }
     $('btn-settings').onclick = function () {
         ui.settingsReady = false; ui.warns = [];
         $('setting-rocket-label').value = config.rocketLabel;
         $('setting-students').value = (config.students || []).join(', ');
         $('setting-impostor-count').value = config.impostorCount || 1;
-        $('setting-mode').value = config.mode === 'simple' ? 'simple' : 'classic';
+        $('setting-mode').value = config.mode === 'simple' ? 'simple' : (config.mode === 'individual' ? 'individual' : 'classic'); $('setting-decoy').value = config.decoyMode === 'strict' ? 'strict' : 'standard';
         $('setting-errors-per').value = config.errorsPerQ || 6; $('setting-repair-rounds').value = (config.repairRounds === undefined ? 3 : config.repairRounds);
         $('noimp-list').innerHTML = ''; buildNoImp();
         $('setting-weight').value = config.unpickedWeight || 3;
@@ -2080,10 +2360,10 @@
         if (next.students.length < 1 || next.students.length > 9) { warns.push('The student names need 1 to 9 names.'); next.students = (config.students || []).slice(); }
         var imp = parseInt($('setting-impostor-count').value, 10); if (isNaN(imp)) imp = 1;
         next.impostorCount = Math.max(1, Math.min(2, imp)); if (next.students.length < 2) next.impostorCount = 1;
-        next.mode = $('setting-mode').value === 'simple' ? 'simple' : 'classic';
+        next.mode = $('setting-mode').value === 'simple' ? 'simple' : ($('setting-mode').value === 'individual' ? 'individual' : 'classic');
         var ep = parseInt($('setting-errors-per').value, 10); next.errorsPerQ = isNaN(ep) ? 6 : Math.max(1, Math.min(50, ep));
         var rr = parseInt($('setting-repair-rounds').value, 10); next.repairRounds = isNaN(rr) ? 3 : Math.max(0, Math.min(20, rr));
-        next.voice = $('setting-voice').value || '';
+        next.voice = $('setting-voice').value || ''; next.decoyMode = $('setting-decoy').value === 'strict' ? 'strict' : 'standard';
         next.noImpostor = Array.prototype.filter.call($('noimp-list').querySelectorAll('input'), function (c) { return c.checked; }).map(function (c) { return c.value; }).filter(function (n) { return next.students.indexOf(n) > -1; });
         var wt = parseInt($('setting-weight').value, 10); next.unpickedWeight = isNaN(wt) ? 3 : Math.max(1, Math.min(10, wt));
         next.takeoffSound = $('setting-takeoff-sound').value.trim(); next.damageSound = $('setting-damage-sound').value.trim();
@@ -2107,7 +2387,8 @@
                     L = { id: L.id, name: L.name, wordList: L.wordList, exercises: prevL ? clone(prevL.exercises) : [{ page: 1, exercise: 1, questions: 5, time: defaultTime(5) }] };
                 }
                 var wl = wordListsOut.filter(function (w) { return w.id === L.wordList; })[0] || wordListsOut[0];
-                lessonsOut.push({ id: L.id, name: L.name, exercises: normaliseExercises(L.exercises), wordList: wl.id, repairPairs: wl.text });
+                var rIds = repairIdsFor({ wordList: wl.id, repairLists: L.repairLists }, wordListsOut, Math.max(1, next.repairRounds || 0));
+                lessonsOut.push({ id: L.id, name: L.name, exercises: normaliseExercises(L.exercises), wordList: wl.id, repairLists: rIds, repairPairs: wl.text, repairTexts: textsFor(rIds, wordListsOut) });
             }
             if (!lessonsOut.length) { warns.push('Level "' + LV.name + '" needs at least one session.'); var keep = (config.levels || []).filter(function (x) { return x.id === LV.id; })[0]; if (keep) levelsOut.push(keep); continue; }
             var pick = lessonsOut.filter(function (x) { return x.id === LV.lessonSel; })[0] || lessonsOut[0];
@@ -2116,11 +2397,11 @@
         var activeLv = levelsOut.filter(function (x) { return x.id === ui.levelSel; })[0] || levelsOut[0];
         var chosen = activeLv.lessons.filter(function (x) { return x.id === activeLv.activeLesson; })[0];
         next.levels = levelsOut; next.activeLevel = activeLv.id;
-        next.lessons = activeLv.lessons; next.activeLesson = chosen.id; next.exercises = chosen.exercises; next.repairPairs = chosen.repairPairs;
+        next.lessons = activeLv.lessons; next.activeLesson = chosen.id; next.exercises = chosen.exercises; next.repairPairs = chosen.repairPairs; next.repairTexts = chosen.repairTexts;
         var sh = parseInt($('setting-shake-delay').value, 10); next.shakeDelay = isNaN(sh) ? 5 : Math.max(0, Math.min(120, sh));
         var td = parseInt($('setting-takeoff-delay').value, 10); next.takeoffDelay = isNaN(td) ? 12 : Math.max(0, Math.min(120, td));
         var ms = parseInt($('setting-meeting').value, 10); next.meetingSeconds = isNaN(ms) ? 30 : Math.max(5, Math.min(600, ms));
-        var rs = parseInt($('setting-repair').value, 10); next.repairSeconds = isNaN(rs) ? 60 : Math.max(10, Math.min(600, rs));
+        var rs = parseInt($('setting-repair').value, 10); next.repairSeconds = isNaN(rs) ? 40 : Math.max(10, Math.min(600, rs));
         var pu = parseInt($('setting-popup').value, 10); next.popupSeconds = isNaN(pu) ? 2 : Math.max(1, Math.min(10, pu));
         err.textContent = warns.join(' '); ui.warns = warns.slice();
         return next;
@@ -2204,6 +2485,11 @@
         var d = e.data;
         if (d.type === 'fh-student-names') { fh.names = Array.isArray(d.names) ? d.names : []; scheduleFunhouse(); }          // fh-team-split is ignored: this game has no teams
         else if (d.type === 'fh-active-level') { switchLevelByName(d.level); }
+        else if (d.type === 'fh-active-group') {          // the rocket label follows the group, and the level follows the group's level
+            var gname = String(d.name || '').trim();
+            if (gname && config.rocketLabel !== gname) { config.rocketLabel = gname; lsSet(LS_CONFIG, config); $('rocket-name-display').textContent = gname; $('setting-rocket-label').value = gname; }
+            if (d.level) switchLevelByName(d.level);
+        }
         else if (d.type === 'fh-student-cards') { fh.cards = Array.isArray(d.cards) ? d.cards : []; scheduleFunhouse(); }
         else if (d.type === 'fh-export-request') {
             try { window.parent.postMessage({ type: 'fh-export-data', gameId: 'rocket', raw: JSON.stringify({ lessons: config.lessons, activeLesson: config.activeLesson, levels: config.levels, activeLevel: config.activeLevel }) }, '*'); } catch (err) { /* not embedded */ }
@@ -2214,7 +2500,7 @@
                     var out = [];
                     (arr || []).forEach(function (l, k) {
                         if (!l || typeof l.name !== 'string' || checkExercises(l.exercises)) return;
-                        out.push({ id: typeof l.id === 'string' && l.id ? l.id : 'l' + Date.now() + k, name: l.name, exercises: normaliseExercises(l.exercises), wordList: l.wordList, repairPairs: typeof l.repairPairs === 'string' ? l.repairPairs : DEFAULT_PAIRS });
+                        out.push({ id: typeof l.id === 'string' && l.id ? l.id : 'l' + Date.now() + k, name: l.name, exercises: normaliseExercises(l.exercises), wordList: l.wordList, repairLists: Array.isArray(l.repairLists) ? l.repairLists : undefined, repairPairs: typeof l.repairPairs === 'string' ? l.repairPairs : DEFAULT_PAIRS });
                     });
                     return out;
                 }
