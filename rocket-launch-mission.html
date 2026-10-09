@@ -556,6 +556,8 @@
             <details class="sec"><summary>Game</summary>
                 <div class="form-group"><label for="setting-rocket-label">Rocket label</label><input type="text" id="setting-rocket-label"></div>
                 <input type="hidden" id="setting-students">
+                <div class="form-group" id="grp-repair-rounds"><label for="setting-repair-rounds">Repair rounds in a game</label><input type="number" id="setting-repair-rounds" min="0" max="20"></div>
+                <div class="form-group"><label>Jobs</label><div class="seg" id="jobs-btns"><button type="button" data-v="normal">Normal</button><button type="button" data-v="funny">Funny</button></div><input type="hidden" id="setting-jobs"></div>
                 <div class="form-group"><label for="setting-weight">Chance of a student not picked yet (times)</label><input type="number" id="setting-weight" min="1" max="10"></div>
             </details>
             <details class="sec" data-mode="classic"><summary>Classic game</summary>
@@ -568,7 +570,6 @@
             </details>
             <details class="sec" data-mode="simple individual"><summary>Simple game</summary>
                 <div class="form-group"><label for="setting-errors-per">Questions for each error</label><input type="number" id="setting-errors-per" min="1" max="50"></div>
-                <div class="form-group" id="grp-repair-rounds"><label for="setting-repair-rounds">Repair rounds in a game</label><input type="number" id="setting-repair-rounds" min="0" max="20"></div>
             </details>
             <details class="sec"><summary>Tools</summary>
                 <div class="form-group"><label>Who is the impostor? (press and hold)</label>
@@ -668,12 +669,17 @@
     /* ---------- Constants and defaults ---------- */
     var LS_CONFIG = 'rlm-config-v2', LS_STATE = 'rlm-state-v2', LS_RULES = 'rlm-rules-v2';
     var LIMIT = 4;
-    var VERSION = 'Version 11 · 9 Oct 2026';
+    var VERSION = 'Version 12 · 9 Oct 2026';
     var ROLES = [
         { icon: '👨‍✈️', name: 'Captain' }, { icon: '🧑‍🚀', name: 'Pilot' }, { icon: '🔧', name: 'Engineer' },
         { icon: '🩺', name: 'Doctor' }, { icon: '🧭', name: 'Navigator' }, { icon: '🔬', name: 'Scientist' },
         { icon: '📡', name: 'Radio operator' }, { icon: '🍳', name: 'Cook' }, { icon: '🛡️', name: 'Security officer' },
         { icon: '🌱', name: 'Gardener' }
+    ];
+    var FUNNY_ROLES = [
+        { icon: '🧦', name: 'Sock Sorter' }, { icon: '👽', name: 'Window Washer' }, { icon: '🐱', name: 'Cat' },
+        { icon: '🪠', name: 'Plumber' }, { icon: '💇', name: 'Hairdresser' }, { icon: '🍌', name: 'Banana Peeler' },
+        { icon: '🍩', name: 'Doughnut Tester' }, { icon: '😤', name: 'Chief Complainer' }, { icon: '🔘', name: 'Button Pusher' }
     ];
     var DEFAULT_PAIRS = 'cat = hat\nlight = night\ntree = bee\nshoe = blue\nstar = car\nbell = shell\ndoor = floor\nbook = look\nphone = bone\nchair = bear\nmoon = spoon\nfish = dish';
     var DEFAULT_CONFIG = {
@@ -703,6 +709,9 @@
         repairSeconds: 40,
         repairSecMig: false,
         decoyMode: 'standard',
+        jobSet: 'normal',
+        activeGroup: '',
+        groupSettings: {},
         twoFingers: true,
         repairPairs: DEFAULT_PAIRS,
         exercises: [
@@ -725,10 +734,10 @@
             rule('1. 🎯 Your mission', '<p>You are a crew. Your rocket must take off. Each floor of the rocket is an exercise from your book. Answer all the questions on every floor to fill the fuel tank.</p>'),
             rule('2. 🤫 Your secret role', '<p>The teacher presses "Assign roles". The screen tells everyone how many impostors there are. Then every student comes to the screen and taps their own name. You can look only one time! A small box shows your official role on the ship and your secret role. Stand close to the screen, and do not let anyone see. You can tell everyone your official role, but never tell anyone your secret role.</p>'),
             rule('3. 🎲 The picker', '<p>The teacher taps a question number. The computer chooses a student. That student answers a question from the exercise and comes to the board. Everyone must pay attention, because you can be chosen again soon!</p>'),
-            rule('4. ✅ Right and wrong', '<p>The teacher says if the answer is right or wrong. Then the student taps the number once for a green ✅ correct answer. Tap again for a red ❌ wrong answer. A wrong answer gives the ship 1 danger point. The question stays red, and the danger point stays too.</p>'),
-            rule('5. ⚠️ Danger points', '<p>Danger points never go away. A wrong answer gives 1 danger point. A floor that runs out of time also gives 1 danger point. At 4 danger points, the rocket explodes 💥 and you lose.</p>'),
+            rule('4. ✅ Right and wrong', '<p>The teacher says if the answer is right or wrong. Then the student taps the number once for a green ✅ correct answer. Tap again for a red ❌ wrong answer. A wrong answer gives the ship 1 danger point. The question stays red. If the student answers it again and gets it right, it turns green and the danger point goes away.</p>'),
+            rule('5. ⚠️ Danger points', '<p>A wrong answer gives 1 danger point, but the point goes away when you answer that question correctly later. A floor that runs out of time also gives 1 danger point, and only the repair game can remove that one. At 4 danger points, the rocket explodes 💥 and you lose.</p>'),
             rule('6. ⏱️ Floor timers', '<p>Each floor has a timer. The timer starts when the first question on that floor is tapped. Finish the floor before the time is over!</p>'),
-            rule('7. 🕵️ The impostors', '<p>Secret impostors are in the crew. They want the rocket to fail. They can sabotage a floor. A sabotaged floor is destroyed! To repair it, two students play the repair game and the whole class helps. If the repair fails, the impostor wins. The teacher always says an impostor\'s answer is correct, even when it is wrong. Impostors should try to answer correctly, because a wrong answer can give them away.</p>'),
+            rule('7. 🕵️ The impostors', '<p>Secret impostors are in the crew. They want the rocket to fail. They can sabotage a floor. A sabotaged floor is destroyed! To repair it, two students play the repair game and the whole class helps. If the repair fails, the impostor wins. The class can also play the repair game for a floor that ran out of time. You can play it only a few times in one game. With no repairs left, a sabotage cannot be repaired, and the impostor wins. The teacher always says an impostor\'s answer is correct, even when it is wrong. Impostors should try to answer correctly, because a wrong answer can give them away.</p>'),
             rule('8. 🌙 The night', '<p>After every floor except the last one, it is night. Everybody goes to sleep. The impostor wakes up and points to a crewmate. Everybody wakes up, and then the teacher says who has been killed. That student becomes a ghost.</p>'),
             rule('9. 🚨 Emergency meeting', '<p>After the night, anyone can call one emergency meeting. Talk together until the timer ends. Who do you think is the impostor? Say why you think so.</p>'),
             rule('10. 🗳️ Voting', '<p>After the talk, everyone votes for one student. Or you can pass. The student with the most votes is ejected. If you eject a crewmate by mistake, the crew gets smaller! If you find all the impostors, there is no more sabotage.</p>'),
@@ -742,10 +751,10 @@
             rule('1. 🎯 Your mission', '<p>Your crew has to launch a rocket. Each floor of the rocket is an exercise from your book. To fill the fuel tank, you must complete every question on every floor before the danger gets too high.</p>'),
             rule('2. 🤫 Your secret role', '<p>After the teacher has pressed "Assign roles", the screen announces how many impostors there are. Then every student comes to the screen and taps their own name. You can look only once. A small box shows your official role on the ship, such as Captain or Engineer, and your secret role. Stand close to the screen and block the box with your body, so nobody else can see it. You may tell everyone your official role, but never reveal your secret role.</p>'),
             rule('3. 🎲 The random picker', '<p>When the teacher taps a question number, the computer chooses a student at random. That student answers a question from the exercise and then comes to the board. Stay alert, because you might be chosen again at any time!</p>'),
-            rule('4. ✅ Marking answers', '<p>The teacher tells the student whether the answer is correct. Then the student taps the question once to turn it green ✅ for a correct answer, and a second time to turn it red ❌ for a mistake. A mistake gives the ship 1 danger point. The question stays red, and the danger point stays too.</p>'),
-            rule('5. ⚠️ Danger points', '<p>Danger points never go away. You get a danger point for every mistake, and for every floor that runs out of time. If the ship reaches 4 danger points, the reactor melts down 💥 and the mission fails.</p>'),
+            rule('4. ✅ Marking answers', '<p>The teacher tells the student whether the answer is correct. Then the student taps the question once to turn it green ✅ for a correct answer, and a second time to turn it red ❌ for a mistake. A mistake gives the ship 1 danger point. The question stays red. If you answer it correctly later, it turns green and the danger point is removed.</p>'),
+            rule('5. ⚠️ Danger points', '<p>You get a danger point for every mistake, and the point goes away when you answer that question correctly later. A floor that runs out of time also gives a danger point, and only the repair game can remove it. If the ship reaches 4 danger points, the reactor melts down 💥 and the mission fails.</p>'),
             rule('6. ⏱️ Floor timers', '<p>Every floor has its own timer. It starts as soon as someone taps the first question on that floor, so work quickly and finish before the time runs out.</p>'),
-            rule('7. 🕵️ The impostors', '<p>Secretly, one or two students are impostors. They are trying to destroy the mission, and one way they do it is by sabotaging a floor. A sabotaged floor is destroyed, and two students must play the repair game, with the whole class helping, to save it. If the repair fails, the impostor wins. The teacher always says that an impostor\'s answer is correct, even when it is wrong. Impostors should try to answer correctly, because a wrong answer could give them away.</p>'),
+            rule('7. 🕵️ The impostors', '<p>Secretly, one or two students are impostors. They are trying to destroy the mission, and one way they do it is by sabotaging a floor. A sabotaged floor is destroyed, and two students must play the repair game, with the whole class helping, to save it. If the repair fails, the impostor wins. The class can also play the repair game for a floor that ran out of time, but only a few times in one game. With no repairs left, a sabotage cannot be repaired, and the impostor wins. The teacher always says that an impostor\'s answer is correct, even when it is wrong. Impostors should try to answer correctly, because a wrong answer could give them away.</p>'),
             rule('8. 🌙 The night', '<p>After every floor except the last one, the game goes dark: it\'s night. Everybody goes to sleep, and only the impostor wakes up and points to a crewmate. Then everybody wakes up, and the teacher announces who has been killed. That student becomes a ghost.</p>'),
             rule('9. 🚨 Emergency meeting', '<p>After the night, anyone can call one emergency meeting. You have a short time to discuss who you suspect and to explain your reasons. Did anyone behave strangely?</p>'),
             rule('10. 🗳️ Voting', '<p>After the discussion, each student votes for one person or chooses to pass. The student with the most votes is ejected from the ship. If you eject a crewmate by mistake, the crew gets smaller. If you find every impostor, the sabotage stops, but the mission is not over yet.</p>'),
@@ -759,7 +768,7 @@
             rule('1. 🎯 Your mission', '<p>You are the crew of a rocket. Each floor of the rocket is an exercise from your book. Answer all the questions on every floor to fill the fuel tank. When the tank is full, the rocket takes off! 🚀</p>'),
             rule('2. 👨‍✈️ Your job on the ship', '<p>Every student has a job on the ship.</p>'),
             rule('3. 🎲 The picker', '<p>The teacher taps a question number. The computer chooses a student. That student answers the question. Everyone must pay attention, because you can be chosen again soon!</p>'),
-            rule('4. ✅ Right and wrong', '<p>The teacher says if the answer is right or wrong. Tap the number once for a green ✅ answer. Tap again for a red ❌ answer. A wrong answer is 1 damage point for the ship.</p>'),
+            rule('4. ✅ Right and wrong', '<p>The teacher says if the answer is right or wrong. Tap the number once for a green ✅ answer. Tap again for a red ❌ answer. A wrong answer is 1 damage point for the ship. If the question is answered correctly later, the damage point goes away.</p>'),
             rule('5. 💥 Damage', '<p>Damage points are errors. The ship can have only a few errors. You can see them at the top of the screen: DAMAGE 2 / 6 means 2 errors, and the ship can have 6. One more error after that and the rocket explodes 💥. A floor is in danger, too. If half of the questions on one floor are wrong, the rocket explodes.</p><blockquote><b>damage</b> (noun): harm to something, so that it does not work well.</blockquote>'),
             rule('6. ⏱️ Floor timers', '<p>A floor can have a timer. If the time is over before the floor is finished, that is 1 damage point.</p>'),
             rule('7. 🔧 Repairs', '<p>A floor with errors has a 🔧 button. The class can play the repair game. If you win, one error on that floor is repaired. You can play only a few repair rounds in one game, so choose the right moment!</p>'),
@@ -771,7 +780,7 @@
             rule('1. 🎯 Your mission', '<p>Your crew has to launch a rocket. Each floor of the rocket is an exercise from your book. To fill the fuel tank, you must complete every question on every floor. When the tank is full, the rocket takes off 🚀. Your task is to avoid damage.</p>'),
             rule('2. 👨‍✈️ Your role', '<p>Each student has a job on the ship, for example captain or engineer.</p>'),
             rule('3. 🎲 The picker', '<p>The teacher taps a question number and the computer chooses a student, who answers the question. Stay focused, because you could be chosen again soon.</p>'),
-            rule('4. ✅ Right and wrong', '<p>The teacher tells you whether the answer is right or wrong. The question number turns green ✅ for a correct answer and red ❌ for a wrong one. Every wrong answer is one damage point for the ship.</p>'),
+            rule('4. ✅ Right and wrong', '<p>The teacher tells you whether the answer is right or wrong. The question number turns green ✅ for a correct answer and red ❌ for a wrong one. Every wrong answer is one damage point for the ship. If the question is answered correctly later, the damage point goes away.</p>'),
             rule('5. 💥 Damage', '<p>The ship can only take a limited amount of damage. The counter at the top shows it, for example DAMAGE 2 / 6: two errors so far, and six are allowed. One more error and the rocket explodes 💥. A single floor can also take only so much: if half of its questions are wrong, the rocket explodes, however well the other floors went.</p><blockquote><b>damage</b> (noun): physical harm to something, so that it no longer works properly. <i>The storm caused a lot of damage.</i></blockquote>'),
             rule('6. ⏱️ Timers', '<p>A floor may have a timer. If it runs out before you have finished the floor, you get one damage point. The teacher can switch a timer off for a floor.</p>'),
             rule('7. 🔧 Repairs', '<p>When a floor has errors, a 🔧 button appears on it. The class can then play the repair game. If you win, one error on that floor is repaired. The number of repair rounds in a game is limited, so use them wisely.</p>'),
@@ -886,11 +895,80 @@
     ensureLevels();
     function configSig() { return JSON.stringify([config.students, config.impostorCount, config.noImpostor, config.exercises]); }
 
+    /* ---------- Settings that belong to a group ---------- */
+    var SETTING_DEFS = [
+        ['mode', 'Mode', 'enum', { classic: 'Classic', simple: 'Simple', individual: 'Individual' }],
+        ['jobSet', 'Jobs', 'enum', { normal: 'Normal', funny: 'Funny' }],
+        ['impostorCount', 'Impostors', 'num', 1, 2],
+        ['noImpostor', 'Cannot be the impostor', 'list'],
+        ['errorsPerQ', 'Questions for each error', 'num', 1, 50],
+        ['repairRounds', 'Repair rounds in a game', 'num', 0, 20],
+        ['repairSeconds', 'Repair time (seconds)', 'num', 10, 600],
+        ['matchWindowMs', 'Repair taps within (ms)', 'num', 200, 2000],
+        ['delegateMode', 'Repair players', 'enum', { nominate: 'The class nominates two students', random: 'The game draws two students' }],
+        ['twoFingers', 'Two fingers at once', 'bool'],
+        ['sabotageEnabled', 'Sabotage', 'bool'],
+        ['sabotageDelay', 'Sabotage delay (seconds)', 'num', 0, 600],
+        ['meetingSeconds', 'Meeting (seconds)', 'num', 5, 600],
+        ['popupSeconds', 'First-look popup (seconds)', 'num', 1, 10],
+        ['unpickedWeight', 'Chance of a student not picked yet (times)', 'num', 1, 10],
+        ['takeoffSound', 'Take-off sound file', 'str'],
+        ['takeoffDelay', 'Take-off delay (seconds)', 'num', 0, 120],
+        ['shakeDelay', 'Shaking starts after (seconds)', 'num', 0, 120],
+        ['damageSound', 'Meltdown sound file', 'str'],
+        ['voice', 'Voice that reads the jobs', 'str'],
+        ['videoUrl', 'Video address', 'str'],
+        ['decoyMode', 'DO NOT USE button', 'enum', { standard: 'Standard', strict: 'Strict' }]
+    ];
+    function defByLabel(l) { l = String(l).trim().toLowerCase(); return SETTING_DEFS.filter(function (d) { return d[1].toLowerCase() === l; })[0]; }
+    function pickGroup(c) { var o = {}; SETTING_DEFS.forEach(function (d) { if (c[d[0]] !== undefined) o[d[0]] = clone(c[d[0]]); }); return o; }
+    // turns a typed or read value into a clean one; ok is false when it cannot be used
+    function cleanValue(d, raw) {
+        var kind = d[2];
+        if (kind === 'num') { var n = Math.floor(Number(raw)); if (raw === '' || raw === null || !isFinite(n)) return { ok: false }; return { ok: true, value: Math.max(d[3], Math.min(d[4], n)) }; }
+        if (kind === 'bool') { if (raw === true || raw === false) return { ok: true, value: raw }; var t = String(raw).trim().toLowerCase(); if (/^(on|yes|true|1)$/.test(t)) return { ok: true, value: true }; if (/^(off|no|false|0)$/.test(t)) return { ok: true, value: false }; return { ok: false }; }
+        if (kind === 'enum') { var tl = String(raw).trim().toLowerCase(), keys = Object.keys(d[3]); for (var i = 0; i < keys.length; i++) if (keys[i] === tl || d[3][keys[i]].toLowerCase() === tl) return { ok: true, value: keys[i] }; return { ok: false }; }
+        if (kind === 'list') { var arr = Array.isArray(raw) ? raw : String(raw).split(','); return { ok: true, value: arr.map(function (x) { return String(x).trim(); }).filter(Boolean) }; }
+        return { ok: true, value: String(raw === null || raw === undefined ? '' : raw).trim() };
+    }
+    function cleanSettings(v) { var o = {}; if (!v || typeof v !== 'object') return o; SETTING_DEFS.forEach(function (d) { if (d[0] in v) { var r = cleanValue(d, v[d[0]]); if (r.ok) o[d[0]] = r.value; } }); return o; }
+    function settingText(d, v) { if (d[2] === 'enum') return d[3][v] || String(v); if (d[2] === 'bool') return v ? 'On' : 'Off'; if (d[2] === 'list') return (v || []).join(', '); return String(v === undefined || v === null ? '' : v); }
+    function defaultGroupValues() { return pickGroup(DEFAULT_CONFIG); }
+    function findGroup(id, name) {
+        var gs = config.groupSettings || (config.groupSettings = {});
+        if (id && gs[id]) return id;
+        var low = String(name || '').trim().toLowerCase(); if (!low) return '';
+        var keys = Object.keys(gs);
+        for (var i = 0; i < keys.length; i++) if (String(gs[keys[i]].name || '').trim().toLowerCase() === low) { if (id && keys[i] !== id) { gs[id] = gs[keys[i]]; delete gs[keys[i]]; return id; } return keys[i]; }
+        return '';
+    }
+    function storeActiveGroup() { if (config.activeGroup) { var gs = config.groupSettings || (config.groupSettings = {}), e = gs[config.activeGroup] || { name: config.rocketLabel }; e.values = pickGroup(config); gs[config.activeGroup] = e; } }
+    // a group becomes active: its own Settings are used (a group seen for the first time starts with the defaults; the very first group keeps the Settings you already have)
+    function activateGroup(id, name) {
+        id = String(id || ''); name = String(name || '').trim(); if (!id && !name) return false;
+        var gs = config.groupSettings || (config.groupSettings = {}), before = floorSig(config);
+        storeActiveGroup();
+        var key = findGroup(id, name);
+        if (!key) { key = id || ('n:' + name.toLowerCase()); gs[key] = { name: name || config.rocketLabel, values: Object.keys(gs).length === 0 && !config.activeGroup ? pickGroup(config) : defaultGroupValues() }; }
+        else if (name) gs[key].name = name;
+        var vals = cleanSettings(gs[key].values), dv = defaultGroupValues();
+        Object.keys(dv).forEach(function (k) { config[k] = clone(k in vals ? vals[k] : dv[k]); });
+        config.activeGroup = key; lsSet(LS_CONFIG, config);
+        return floorSig(config) !== before;
+    }
+    function allGroupBlocks() {
+        storeActiveGroup();
+        var gs = config.groupSettings || {}, keys = Object.keys(gs);
+        if (!keys.length) return [{ name: '', values: pickGroup(config) }];
+        return keys.map(function (k) { return { name: gs[k].name || k, values: gs[k].values }; });
+    }
+
     function newState() {
         var names = (config.students || []).slice(0, isIndividual() ? 1 : 9);
         var captain = ROLES.filter(function (r) { return r.name === 'Captain'; })[0];
-        var roles = shuffle(ROLES.filter(function (r) { return r.name !== 'Captain'; })).slice(0, Math.max(0, names.length - 1));
-        roles.splice(Math.floor(Math.random() * (roles.length + 1)), 0, captain);
+        var roles;
+        if (config.jobSet === 'funny') roles = shuffle(FUNNY_ROLES.slice()).slice(0, Math.max(1, names.length));
+        else { roles = shuffle(ROLES.filter(function (r) { return r.name !== 'Captain'; })).slice(0, Math.max(0, names.length - 1)); roles.splice(Math.floor(Math.random() * (roles.length + 1)), 0, captain); }
         var numImp = isSimple() ? 0 : Math.max(0, Math.min(Math.max(1, Math.min(2, config.impostorCount || 1)), names.length));
         var allowed = names.map(function (_, i) { return i; }).filter(function (i) { return (config.noImpostor || []).indexOf(names[i]) === -1; });
         if (allowed.length < numImp) allowed = names.map(function (_, i) { return i; });
@@ -989,9 +1067,9 @@
             u.rate = 0.95; speechSynthesis.speak(u);
         } catch (e) { /* no speech */ }
     }
-    function fillVoiceSelect() {
+    function fillVoiceSelect(want) {
         var sel = document.getElementById('setting-voice'); if (!sel) return;
-        var vs = loadVoices(), cur = config.voice || '';
+        var vs = loadVoices(), cur = want === undefined ? (config.voice || '') : want;
         sel.innerHTML = ''; var o0 = document.createElement('option'); o0.value = ''; o0.textContent = 'Automatic (British male when available)'; sel.appendChild(o0);
         vs.filter(function (v) { return /^en/i.test(v.lang); }).forEach(function (v) { var o = document.createElement('option'); o.value = v.name; o.textContent = v.name + ' (' + v.lang + ')'; sel.appendChild(o); });
         sel.value = cur;
@@ -1121,7 +1199,7 @@
             if (q.ghost) {
                 if (q.s === 'assigned') { q.s = 'correct'; playSuccessSound(); q.hideAt = Date.now() + GHOST_HIDE_MS; }
                 else if (q.s === 'correct') { q.s = 'incorrect'; playFailureSound(); q.hideAt = Date.now() + GHOST_HIDE_MS; }
-            } else if (q.s === 'assigned') { q.s = 'correct'; playSuccessSound(); }
+            } else if (q.s === 'assigned') { q.s = 'correct'; q.pen = false; playSuccessSound(); }
             else if (q.s === 'correct') { q.s = 'incorrect'; q.pen = true; playFailureSound(); }
             else if (q.s === 'incorrect') { q.s = 'normal'; }
         });
@@ -1145,7 +1223,11 @@
         if (!f.timerStartedOnce && f.timeLeft > 0 && !f.timerOff) { f.timerStartedOnce = true; f.running = true; }
         var n = state.students.length;
         if (n === 0) { q.s = 'assigned'; afterChange(); return; }
-        if (isIndividual()) { var s0 = state.students[0]; q.s = 'assigned'; q.ghost = s0.status !== 'active'; s0.picked = true; state.lastPicked = 0; playSuccessSound(); afterChange(); return; }
+        if (isIndividual()) {          // no picker and no orange step: the first tap is the answer
+            var s0 = state.students[0]; s0.picked = true; state.lastPicked = 0;
+            if (s0.status === 'active') { q.s = 'correct'; q.pen = false; q.ghost = false; playSuccessSound(); } else { q.s = 'assigned'; q.ghost = true; playSuccessSound(); }
+            afterChange(); return;
+        }
         var chosen = weightedPick();
         ui.picking = true; ui.cycling = -1; state.lastPicked = -1;
         save(); render();
@@ -1267,7 +1349,7 @@
             setTimeout(function () { c.classList.add('scanning'); tone('square', 900, 1200, 0.08, 0.06); }, start + k * per);
             setTimeout(function () {
                 c.classList.remove('scanning'); c.classList.add('scanned'); playTickSound();
-                var r = state.students[k].official; c.lastChild.textContent = r.icon + ' ' + r.name; c.classList.add('flip'); speak(r.name);
+                var r = state.students[k].official; if (simple) { c.lastChild.textContent = r.icon + ' ' + r.name; speak(r.name); } else c.lastChild.textContent = '✓'; c.classList.add('flip');
             }, start + k * per + Math.round(per * 0.4));
         });
         var tEnd = start + chips.length * per + 500;
@@ -1295,7 +1377,7 @@
                 if (f.fireAt && now >= f.fireAt && state.phase === 'play') { f.fireAt = 0; f.armed = false; f.sabotaged = true; state.phase = 'sabotage'; state.sabotageEndAt = now + 4000; state.repairFloor = fi; startSiren(4000); changed = true; }
                 f.questions.forEach(function (q) { if (q.hideAt && now >= q.hideAt) { q.hideAt = 0; if (q.s === 'correct' || q.s === 'incorrect') { q.s = 'hidden'; changed = true; } } });
             });
-            if (state.phase === 'sabotage' && now >= state.sabotageEndAt) { state.phase = 'repair'; changed = true; }
+            if (state.phase === 'sabotage' && now >= state.sabotageEndAt) { if (repairsLeft() <= 0) { state.phase = 'play'; state.ended = 'impostorwin'; } else state.phase = 'repair'; changed = true; }
             if (state.phase === 'countdown' && now >= state.launchAt) { state.phase = 'play'; state.ended = 'launch'; changed = true; }
             if (state.phase === 'play' && state.nightQueue > 0 && !pendingSabotage()) {
                 if (!state.nightAt) { state.nightAt = now + NIGHT_DELAY_MS; }
@@ -1366,7 +1448,7 @@
             left.appendChild(el('span', '', green + ' / ' + valid));
             var right = el('div'); right.style.cssText = 'display:flex; gap:0.4rem; align-items:center;';
             if (sabotageOn()) { var ab = el('button', 'floor-sabotage-btn', '⚠️'); ab.title = 'Discreet sabotage'; ab.onclick = function () { armSabotage(fi); }; right.appendChild(ab); }
-            if (isSimple() && !isIndividual() && !state.ended && state.phase === 'play' && floorErrors(f) > 0 && repairsLeft() > 0) {
+            if (!isIndividual() && !state.ended && state.phase === 'play' && repairsLeft() > 0 && (isSimple() ? floorErrors(f) > 0 : (f.timedOut && !f.sabotaged))) {
                 var rb = el('button', 'repair-floor-btn', '🔧'); rb.title = 'Repair this floor'; rb.onclick = function () { act('repair round', function () { state.phase = 'repair'; state.repairFloor = fi; }); };
                 right.appendChild(rb);
             }
@@ -1416,7 +1498,7 @@
         ui.firstView = !isSimple() && !s.viewed;       // the first look shows the secret role and no buttons (classic game only)
         if (ui.popupTimer) { clearTimeout(ui.popupTimer); ui.popupTimer = null; }
         if (!s.viewed && !isSimple()) {
-            s.viewed = true; save(); ui.popupStart = Date.now();
+            s.viewed = true; save(); ui.popupStart = Date.now(); speak(s.official.name);
             ui.popupTimer = setTimeout(function () { if (ui.popup === i && ui.firstView) { ui.popup = -1; renderStudents(); } }, Math.max(1, Number(config.popupSeconds) || 2) * 1000);   // the first look closes by itself
         }
         renderStudents();
@@ -1447,7 +1529,7 @@
         var d = dangerPoints();
         $('danger-count').textContent = d;
         $('danger-label').textContent = isSimple() ? 'DAMAGE' : 'DANGER'; $('danger-max').textContent = isSimple() ? allowedErrors() : LIMIT;
-        var rl = $('repairs-left'); rl.style.display = isSimple() && !isIndividual() ? '' : 'none'; rl.textContent = 'REPAIRS LEFT ' + repairsLeft();
+        var rl = $('repairs-left'); rl.style.display = isIndividual() ? 'none' : ''; rl.textContent = 'REPAIRS LEFT ' + repairsLeft();
         $('btn-meeting').style.display = isSimple() ? 'none' : '';
         if ((ui.lastDanger >= 0 && d > ui.lastDanger) || ui.lastDanger === -2) { var ds = $('danger-status'); ds.classList.remove('bump'); void ds.offsetWidth; ds.classList.add('bump'); }
         ui.lastDanger = d;
@@ -1673,8 +1755,16 @@
             var fi = state.repairFloor, f = state.floors[fi];
             R = null; $('repair-overlay').style.display = 'none';
             if (isSimple()) { state.repairsUsed = (state.repairsUsed || 0) + 1; if (won && f) clearOneError(f); state.phase = 'play'; state.repairFloor = -1; afterChange(); }
-            else if (won) { if (f) { f.sabotaged = false; f.armed = false; } state.phase = 'play'; state.repairFloor = -1; afterChange(); }
-            else { state.phase = 'play'; state.ended = 'impostorwin'; afterChange(true); }
+            else {
+                state.repairsUsed = (state.repairsUsed || 0) + 1;
+                if (f && f.sabotaged) {
+                    if (won) { f.sabotaged = false; f.armed = false; state.phase = 'play'; state.repairFloor = -1; afterChange(); }
+                    else { state.phase = 'play'; state.ended = 'impostorwin'; afterChange(true); }
+                } else {                                   // a floor that ran out of time
+                    if (won && f && f.timedOut) { f.timedOut = false; f.timeLeft = Math.max(f.timeLeft, 60); }
+                    state.phase = 'play'; state.repairFloor = -1; afterChange();
+                }
+            }
         }, 2600);
     }
     function leaveRepair() {
@@ -1788,10 +1878,10 @@
             $('warning-title').textContent = "Looking at someone else's role is cheating!"; $('warning-kill').textContent = 'PEEKING DETECTED';
             scene.appendChild(el('div', 'weyes', '👀')); playTrombone();
         } else if (page === 'lost') {
-            $('warning-title').textContent = kind === 'strict' ? 'UNDER NO CIRCUMSTANCES!' : 'SECURITY ALERT: REPEATED ATTEMPT'; $('warning-kill').textContent = 'LOST IN SPACE';
+            $('warning-title').textContent = kind === 'strict' ? 'YOU SHOULD NOT HAVE TAMPERED WITH THE CONTROLS!' : 'SECURITY ALERT: REPEATED ATTEMPT'; $('warning-kill').textContent = 'LOST IN SPACE';
             scene.appendChild(el('div', 'wrock', '🚀')); scene.appendChild(el('div', 'wdrift', '🌌 ' + nm)); scene.appendChild(el('div', 'wsig', '· · ·')); sceneStars(scene); startSiren(ms);
         } else if (page === 'ejected') {
-            $('warning-title').textContent = kind === 'strict' ? 'UNDER NO CIRCUMSTANCES!' : 'SECURITY ALERT: REPEATED ATTEMPT'; $('warning-kill').textContent = 'EJECTED EJECTED EJECTED';
+            $('warning-title').textContent = kind === 'strict' ? 'YOU SHOULD NOT HAVE TAMPERED WITH THE CONTROLS!' : 'SECURITY ALERT: REPEATED ATTEMPT'; $('warning-kill').textContent = 'EJECTED EJECTED EJECTED';
             scene.appendChild(el('div', 'wdoor', '🚪')); scene.appendChild(el('div', 'wfly', '🧑‍🚀 ' + nm)); sceneStars(scene); startSiren(ms);
         }
         w.style.display = 'flex';
@@ -2139,8 +2229,9 @@
         return { name: lv.name, wordLists: wls.map(function (w) { return { name: w.name, text: w.text }; }),
             sessions: sessions.map(function (L) { var w = lv.wordLists.filter(function (x) { return x.id === L.wordList; })[0], ids = repairIdsFor(L, lv.wordLists, n); return { name: L.name, exercises: normaliseExercises(L.exercises), wordList: w ? w.name : '', repairLists: ids.slice(1).map(function (id) { var x = lv.wordLists.filter(function (y) { return y.id === id; })[0]; return x ? x.name : ''; }) }; }) };
     }
-    function setupToText(levels, title) {
+    function setupToText(levels, title, blocks) {
         var out = ['ROCKET SETUP · ' + title + ' · exported ' + todayStr(), ''];
+        (blocks || []).forEach(function (b) { out.push('SETTINGS' + (b.name ? ' · ' + b.name : '')); SETTING_DEFS.forEach(function (d) { if (b.values && d[0] in b.values) out.push(d[1] + ': ' + settingText(d, b.values[d[0]])); }); out.push(''); });
         levels.forEach(function (lv) {
             out.push('LEVEL ' + lv.name, '');
             lv.wordLists.forEach(function (w) { var n = String(w.text || '').split('\n').filter(function (x) { return x.trim(); }); out.push('=== ' + w.name + ' (' + n.length + ' pairs) ===', n.join('\n'), ''); });
@@ -2153,10 +2244,10 @@
         return out.join('\n');
     }
     $('lesson-export').onclick = function () {
-        saveLessonDraft();
+        saveLessonDraft(); clearTimeout(ui.commitTimer); commitSettings();
         var ticked = ui.lessons.filter(function (L) { return ui.ticked[L.id]; }), levs = [];
         if (ticked.length) levs.push(levelOut(curLevel(), ticked)); else ui.levels.forEach(function (lv) { levs.push(levelOut(lv, lv.lessons)); });
-        downloadText('rocket-' + (ticked.length ? 'sessions' : 'setup') + '-' + todayStr() + '.txt', setupToText(levs, ticked.length ? 'sessions' : 'everything'));
+        downloadText('rocket-' + (ticked.length ? 'sessions' : 'setup') + '-' + todayStr() + '.txt', setupToText(levs, ticked.length ? 'sessions' : 'everything', ticked.length ? [] : allGroupBlocks()));
         var msg = $('lesson-msg'); msg.style.color = '#55efc4'; msg.textContent = '✔ Exported ' + (ticked.length ? ticked.length + (ticked.length === 1 ? ' session' : ' sessions') : 'everything') + ' as a text file';
     };
     function parseExerciseLine(line) {
@@ -2171,10 +2262,13 @@
         return ex;
     }
     function parseSetupText(text) {
-        var levels = [], curLv = null, curList = null, curSes = null, bad = 0;
+        var levels = [], curLv = null, curList = null, curSes = null, bad = 0, settings = [], curSet = null;
         function level(name) { var lv = levels.filter(function (x) { return (x.name || '') === (name || ''); })[0]; if (!lv) { lv = { name: name || null, wordLists: [], sessions: [] }; levels.push(lv); } curLv = lv; curList = null; curSes = null; return lv; }
         String(text || '').split(/\r?\n/).forEach(function (raw) {
             var line = raw.trim(); if (!line || /^skipped\b/i.test(line) || /^rocket setup\b/i.test(line)) return;
+            if (curSet) { var m0 = line.match(/^(.+?)\s*:\s*(.*)$/), d0 = m0 && defByLabel(m0[1]); if (d0) { curSet.raw[d0[0]] = m0[2]; return; } curSet = null; }
+            var ms0 = line.match(/^settings\b\s*(?:[·•|:\-]\s*(.*))?$/i);
+            if (ms0) { curSet = { name: (ms0[1] || '').trim(), raw: {} }; settings.push(curSet); curList = null; curSes = null; return; }
             var m = line.match(/^level\s+(.+?)\s*(?:[·•|:]|\s-\s|$)/i);
             if (m) { level(m[1].trim()); return; }
             m = line.match(/^=+\s*(.+?)\s*=+$/);
@@ -2197,7 +2291,21 @@
             curSes.exercises.push(ex);
         });
         levels.forEach(function (lv) { lv.wordLists = lv.wordLists.map(function (w) { return { name: w.name, text: w.lines.join('\n') }; }).filter(function (w) { return w.text.trim(); }); lv.sessions = lv.sessions.filter(function (x) { return x.exercises.length; }); });
-        return { levels: levels, bad: bad };
+        return { levels: levels, bad: bad, settings: settings };
+    }
+    // Settings found in an imported file replace the current Settings (for the group named in the file, or for the active group)
+    function applySettingsBlocks(blocks) {
+        var n = 0;
+        (blocks || []).forEach(function (b) {
+            var vals = {}; SETTING_DEFS.forEach(function (d) { if (d[0] in b.raw) { var r = cleanValue(d, b.raw[d[0]]); if (r.ok) vals[d[0]] = r.value; } });
+            if (!Object.keys(vals).length) return;
+            n++;
+            var gs = config.groupSettings || (config.groupSettings = {}), act = config.activeGroup ? gs[config.activeGroup] : null;
+            var forActive = !b.name || (act && String(act.name || '').trim().toLowerCase() === b.name.trim().toLowerCase());
+            if (forActive) { Object.keys(vals).forEach(function (k) { config[k] = vals[k]; }); fillSettingFields(config); syncModeUI(); }
+            else { var key = findGroup('', b.name) || ('n:' + b.name.toLowerCase()); if (!gs[key]) gs[key] = { name: b.name, values: defaultGroupValues() }; Object.keys(vals).forEach(function (k) { gs[key].values[k] = vals[k]; }); }
+        });
+        return n;
     }
     function uniqueName(name, taken) {
         var n = name, low = function (x) { return String(x).toLowerCase(); };
@@ -2241,20 +2349,20 @@
         var f = this.files && this.files[0]; this.value = ''; if (!f) return;
         var rd = new FileReader();
         rd.onload = function () {
-            var text = String(rd.result || ''), msg = $('lesson-msg'), obj = null, res = null, total = 0, bad = 0;
+            var text = String(rd.result || ''), msg = $('lesson-msg'), obj = null, res = null, total = 0, bad = 0, nset = 0;
             saveLessonDraft();
             if (/^\s*\{/.test(text)) { try { obj = JSON.parse(text); } catch (e) { obj = null; } }
             if (obj && obj.app === 'rocket-setup') {
                 res = importSetupObject(obj); total = res.total;
                 if (res.level) { ui.levelSel = res.level.id; if (res.session) res.level.lessonSel = res.session.id; selectLevelUI(res.level.id); }
             } else {
-                var parsed = parseSetupText(text); bad = parsed.bad; var cur = curLevel();
+                var parsed = parseSetupText(text); bad = parsed.bad; var cur = curLevel(); nset = applySettingsBlocks(parsed.settings);
                 res = importSetupObject({ levels: parsed.levels.map(function (l) { return { name: l.name || cur.name, wordLists: l.wordLists, sessions: l.sessions }; }) }); total = res.total;
                 if (res.level) { ui.levelSel = res.level.id; if (res.session) res.level.lessonSel = res.session.id; selectLevelUI(res.level.id); }
             }
             var nl = res ? res.lists : 0;
-            if (!total && !nl) { msg.style.color = '#ff7675'; msg.textContent = 'No exercises or word lists found in that file.'; return; }
-            msg.style.color = '#55efc4'; msg.textContent = '✔ Added ' + [total ? total + (total === 1 ? ' session' : ' sessions') : '', nl ? nl + (nl === 1 ? ' word list' : ' word lists') : ''].filter(Boolean).join(' and ') + (bad ? ' (' + bad + ' lines skipped)' : '');
+            if (!total && !nl && !nset) { msg.style.color = '#ff7675'; msg.textContent = 'No exercises, word lists or settings found in that file.'; return; }
+            msg.style.color = '#55efc4'; msg.textContent = '✔ ' + [(total || nl) ? 'Added ' + [total ? total + (total === 1 ? ' session' : ' sessions') : '', nl ? nl + (nl === 1 ? ' word list' : ' word lists') : ''].filter(Boolean).join(' and ') : '', nset ? (nset === 1 ? 'Settings replaced' : nset + ' groups of Settings read') : ''].filter(Boolean).join(', ') + (bad ? ' (' + bad + ' lines skipped)' : '');
             scheduleCommit();
         };
         rd.readAsText(f);
@@ -2292,6 +2400,7 @@
     function syncModeUI() {
         var m = $('setting-mode').value === 'simple' ? 'simple' : ($('setting-mode').value === 'individual' ? 'individual' : 'classic');
         Array.prototype.forEach.call($('mode-btns').children, function (b) { b.classList.toggle('sel', b.getAttribute('data-v') === m); });
+        Array.prototype.forEach.call($('jobs-btns').children, function (b) { b.classList.toggle('sel', b.getAttribute('data-v') === ($('setting-jobs').value === 'funny' ? 'funny' : 'normal')); });
         Array.prototype.forEach.call($('decoy-btns').children, function (b) { b.classList.toggle('sel', b.getAttribute('data-v') === ($('setting-decoy').value === 'strict' ? 'strict' : 'standard')); });
         Array.prototype.forEach.call($('settings-overlay').querySelectorAll('details[data-mode]'), function (d) { d.style.display = d.getAttribute('data-mode').split(' ').indexOf(m) > -1 ? '' : 'none'; });
         $('grp-repair-rounds').style.display = m === 'individual' ? 'none' : '';
@@ -2301,28 +2410,34 @@
         });
         fitSettings();
     }
+    Array.prototype.forEach.call($('jobs-btns').children, function (b) { b.onclick = function () { $('setting-jobs').value = b.getAttribute('data-v'); syncModeUI(); scheduleCommit(); }; });
     Array.prototype.forEach.call($('decoy-btns').children, function (b) { b.onclick = function () { $('setting-decoy').value = b.getAttribute('data-v'); syncModeUI(); scheduleCommit(); }; });
     Array.prototype.forEach.call($('mode-btns').children, function (b) { b.onclick = function () { $('setting-mode').value = b.getAttribute('data-v'); syncModeUI(); scheduleCommit(); }; });
     Array.prototype.forEach.call($('settings-overlay').querySelectorAll('.onoff'), function (g) {
         Array.prototype.forEach.call(g.children, function (b) { b.onclick = function () { $(g.getAttribute('data-for')).checked = b.getAttribute('data-v') === '1'; syncModeUI(); scheduleCommit(); }; });
     });
     $('btn-newgame').onclick = function () { askYes('Start a new game?', 'Start a new game', function () { closeSettings(); if ($('settings-overlay').style.display === 'none') restartGame(); }); };
-    function floorSig(c) { return JSON.stringify([c.mode, c.students, c.impostorCount, c.noImpostor, c.activeLevel, c.activeLesson, c.exercises]); }
+    function floorSig(c) { return JSON.stringify([c.mode, c.jobSet, c.students, c.impostorCount, c.noImpostor, c.activeLevel, c.activeLesson, c.exercises]); }
+    function fillSettingFields(c) {
+        $('setting-impostor-count').value = c.impostorCount || 1;
+        $('setting-mode').value = c.mode === 'simple' ? 'simple' : (c.mode === 'individual' ? 'individual' : 'classic'); $('setting-decoy').value = c.decoyMode === 'strict' ? 'strict' : 'standard'; $('setting-jobs').value = c.jobSet === 'funny' ? 'funny' : 'normal';
+        $('setting-errors-per').value = c.errorsPerQ || 6; $('setting-repair-rounds').value = (c.repairRounds === undefined ? 3 : c.repairRounds);
+        $('noimp-list').innerHTML = ''; buildNoImp();
+        Array.prototype.forEach.call($('noimp-list').querySelectorAll('input'), function (cb) { cb.checked = (c.noImpostor || []).indexOf(cb.value) > -1; });
+        $('setting-weight').value = c.unpickedWeight || 3;
+        $('setting-takeoff-sound').value = c.takeoffSound || ''; $('setting-damage-sound').value = c.damageSound || ''; $('setting-video').value = c.videoUrl || '';
+        $('setting-sabotage-enabled').checked = !!c.sabotageEnabled; $('setting-sabotage-delay').value = c.sabotageDelay;
+        $('setting-delegates').value = c.delegateMode || 'nominate'; $('setting-window').value = c.matchWindowMs || 600; $('setting-twofingers').checked = c.twoFingers !== false;
+        $('version-tag').textContent = VERSION; $('setting-takeoff-delay').value = (c.takeoffDelay === undefined ? 12 : c.takeoffDelay); $('setting-meeting').value = Math.max(5, Number(c.meetingSeconds) || 30); $('setting-repair').value = Math.max(10, Number(c.repairSeconds) || 40);
+        fillVoiceSelect(c.voice || ''); $('setting-popup').value = c.popupSeconds || 2;
+        $('setting-shake-delay').value = (c.shakeDelay === undefined ? 5 : c.shakeDelay);
+    }
     $('btn-settings').onclick = function () {
         ui.settingsReady = false; ui.warns = [];
         $('setting-rocket-label').value = config.rocketLabel;
         $('setting-students').value = (config.students || []).join(', ');
-        $('setting-impostor-count').value = config.impostorCount || 1;
-        $('setting-mode').value = config.mode === 'simple' ? 'simple' : (config.mode === 'individual' ? 'individual' : 'classic'); $('setting-decoy').value = config.decoyMode === 'strict' ? 'strict' : 'standard';
-        $('setting-errors-per').value = config.errorsPerQ || 6; $('setting-repair-rounds').value = (config.repairRounds === undefined ? 3 : config.repairRounds);
-        $('noimp-list').innerHTML = ''; buildNoImp();
-        $('setting-weight').value = config.unpickedWeight || 3;
-        $('setting-takeoff-sound').value = config.takeoffSound || ''; $('setting-damage-sound').value = config.damageSound || ''; $('setting-video').value = config.videoUrl || '';
-        $('setting-sabotage-enabled').checked = !!config.sabotageEnabled; $('setting-sabotage-delay').value = config.sabotageDelay;
-        $('setting-delegates').value = config.delegateMode || 'nominate'; $('setting-window').value = config.matchWindowMs || 600; $('setting-twofingers').checked = config.twoFingers !== false;
-        $('version-tag').textContent = VERSION; $('setting-takeoff-delay').value = (config.takeoffDelay === undefined ? 12 : config.takeoffDelay); $('setting-meeting').value = meetingSecs(); $('setting-repair').value = repairSecs();
-        fillVoiceSelect();
-        openLessons(); $('setting-popup').value = config.popupSeconds || 2;
+        fillSettingFields(config);
+        openLessons();
         $('settings-error').textContent = ''; $('reveal-box').textContent = ''; refreshUndoBtn();
         $('setting-shake-delay').value = (config.shakeDelay === undefined ? 5 : config.shakeDelay);
         ui.sigAtOpen = floorSig(config);
@@ -2347,6 +2462,7 @@
         if (ui.sigAtOpen && floorSig(config) !== ui.sigAtOpen) restartGame();
         ui.sigAtOpen = '';
         if (why) toast('Not saved: ' + why);
+        if (ui.pendingGroup) { var pg = ui.pendingGroup; ui.pendingGroup = null; applyActiveGroup(pg); }
     }
     $('settings-close-top').onclick = closeSettings;
     $('settings-overlay').addEventListener('input', scheduleCommit);
@@ -2363,7 +2479,7 @@
         next.mode = $('setting-mode').value === 'simple' ? 'simple' : ($('setting-mode').value === 'individual' ? 'individual' : 'classic');
         var ep = parseInt($('setting-errors-per').value, 10); next.errorsPerQ = isNaN(ep) ? 6 : Math.max(1, Math.min(50, ep));
         var rr = parseInt($('setting-repair-rounds').value, 10); next.repairRounds = isNaN(rr) ? 3 : Math.max(0, Math.min(20, rr));
-        next.voice = $('setting-voice').value || ''; next.decoyMode = $('setting-decoy').value === 'strict' ? 'strict' : 'standard';
+        next.voice = $('setting-voice').value || ''; next.decoyMode = $('setting-decoy').value === 'strict' ? 'strict' : 'standard'; next.jobSet = $('setting-jobs').value === 'funny' ? 'funny' : 'normal';
         next.noImpostor = Array.prototype.filter.call($('noimp-list').querySelectorAll('input'), function (c) { return c.checked; }).map(function (c) { return c.value; }).filter(function (n) { return next.students.indexOf(n) > -1; });
         var wt = parseInt($('setting-weight').value, 10); next.unpickedWeight = isNaN(wt) ? 3 : Math.max(1, Math.min(10, wt));
         next.takeoffSound = $('setting-takeoff-sound').value.trim(); next.damageSound = $('setting-damage-sound').value.trim();
@@ -2403,6 +2519,7 @@
         var ms = parseInt($('setting-meeting').value, 10); next.meetingSeconds = isNaN(ms) ? 30 : Math.max(5, Math.min(600, ms));
         var rs = parseInt($('setting-repair').value, 10); next.repairSeconds = isNaN(rs) ? 40 : Math.max(10, Math.min(600, rs));
         var pu = parseInt($('setting-popup').value, 10); next.popupSeconds = isNaN(pu) ? 2 : Math.max(1, Math.min(10, pu));
+        if (next.activeGroup) { next.groupSettings = clone(next.groupSettings || {}); var ge = next.groupSettings[next.activeGroup] || { name: next.rocketLabel }; ge.values = pickGroup(next); next.groupSettings[next.activeGroup] = ge; }
         err.textContent = warns.join(' '); ui.warns = warns.slice();
         return next;
     }
@@ -2415,6 +2532,16 @@
         state = newState(); undoStack = []; R = null; $('repair-overlay').style.display = 'none';
         ui.popup = -1; ui.cycling = -1; ui.picking = false; ui.fx = null; ui.lastPercent = -1; ui.lastDanger = -1; ui.timeUp = {};
         resetEffects(); save(); render();
+    }
+    function applyActiveGroup(d) {
+        if ($('settings-overlay').style.display === 'flex') { ui.pendingGroup = d; return; }          // applied when Settings closes
+        var gname = String(d.name || '').trim(), changed = false;
+        if (gname && config.rocketLabel !== gname) { config.rocketLabel = gname; $('rocket-name-display').textContent = gname; }
+        changed = activateGroup(d.id, gname);
+        config.rocketLabel = gname || config.rocketLabel; lsSet(LS_CONFIG, config);
+        $('rocket-name-display').textContent = config.rocketLabel;
+        if (d.level) switchLevelByName(d.level);
+        if (changed) restartGame(); else render();
     }
     function switchLevelByName(name) {
         var n = String(name || '').trim().toLowerCase(); if (!n || $('settings-overlay').style.display === 'flex') return;
@@ -2485,17 +2612,13 @@
         var d = e.data;
         if (d.type === 'fh-student-names') { fh.names = Array.isArray(d.names) ? d.names : []; scheduleFunhouse(); }          // fh-team-split is ignored: this game has no teams
         else if (d.type === 'fh-active-level') { switchLevelByName(d.level); }
-        else if (d.type === 'fh-active-group') {          // the rocket label follows the group, and the level follows the group's level
-            var gname = String(d.name || '').trim();
-            if (gname && config.rocketLabel !== gname) { config.rocketLabel = gname; lsSet(LS_CONFIG, config); $('rocket-name-display').textContent = gname; $('setting-rocket-label').value = gname; }
-            if (d.level) switchLevelByName(d.level);
-        }
+        else if (d.type === 'fh-active-group') { applyActiveGroup(d); }
         else if (d.type === 'fh-student-cards') { fh.cards = Array.isArray(d.cards) ? d.cards : []; scheduleFunhouse(); }
         else if (d.type === 'fh-export-request') {
-            try { window.parent.postMessage({ type: 'fh-export-data', gameId: 'rocket', raw: JSON.stringify({ lessons: config.lessons, activeLesson: config.activeLesson, levels: config.levels, activeLevel: config.activeLevel }) }, '*'); } catch (err) { /* not embedded */ }
+            try { window.parent.postMessage({ type: 'fh-export-data', gameId: 'rocket', raw: JSON.stringify({ lessons: config.lessons, activeLesson: config.activeLesson, levels: config.levels, activeLevel: config.activeLevel, settings: pickGroup(config), activeGroup: config.activeGroup, groupSettings: (storeActiveGroup(), config.groupSettings) }) }, '*'); } catch (err) { /* not embedded */ }
         } else if (d.type === 'fh-import-data' && d.gameId === 'rocket') {
             try {
-                var data = JSON.parse(d.raw);
+                var data = JSON.parse(d.raw), sig0 = floorSig(config);
                 function cleanLessons(arr) {
                     var out = [];
                     (arr || []).forEach(function (l, k) {
@@ -2513,7 +2636,14 @@
                     var list = cleanLessons(data.lessons); if (!list.length) return;
                     var cl = config.levels.filter(function (l) { return l.id === config.activeLevel; })[0]; cl.lessons = list; cl.activeLesson = data.activeLesson;
                 }
+                if (data.groupSettings && typeof data.groupSettings === 'object') {
+                    var gsNew = {}; Object.keys(data.groupSettings).forEach(function (k) { var e = data.groupSettings[k]; if (e && typeof e === 'object') gsNew[k] = { name: String(e.name || k), values: cleanSettings(e.values) }; });
+                    config.groupSettings = gsNew;
+                    var gk = config.activeGroup ? findGroup(config.activeGroup, config.rocketLabel) : '';
+                    if (gk) { var gv = cleanSettings(config.groupSettings[gk].values); Object.keys(gv).forEach(function (k) { config[k] = gv[k]; }); }
+                } else if (data.settings && typeof data.settings === 'object') { var sv = cleanSettings(data.settings); Object.keys(sv).forEach(function (k) { config[k] = sv[k]; }); }
                 ensureLevels(); lsSet(LS_CONFIG, config);
+                if (floorSig(config) !== sig0) restartGame(); else render();
                 window.parent.postMessage({ type: 'fh-import-done', gameId: 'rocket' }, '*');
             } catch (err) { /* not valid */ }
         }
